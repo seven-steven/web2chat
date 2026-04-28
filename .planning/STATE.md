@@ -10,9 +10,9 @@
 ## 当前位置
 
 - Phase：1 / 7（扩展骨架）
-- Plan：当前 phase 0 / TBD
-- 状态：上下文已采集，可进入 plan
-- 最近活动：2026-04-29 — Phase 1 CONTEXT.md + DISCUSSION-LOG.md 已写入（4 个 area 全部讨论：storage 极简 / @webext-core/messaging + 混合错误模型 / popup 读写 helloCount 演示 / Tailwind v4 + GitHub Actions CI 起步）
+- Plan：当前 phase 0 / 4
+- 状态：Plans 已就绪，可执行（4 plans / 4 waves，严格串行）
+- 最近活动：2026-04-29 — Phase 1 4 个 PLAN.md 已写入并通过 plan-checker 校验（iteration 2/3 PASSED；REQ 8/8 + Decision 12/12 全覆盖；ROADMAP 已注入 wave 头与 cross-cutting 约束）
 
 进度：[░░░░░░░░░░] 0%
 
@@ -69,6 +69,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-29（Phase 1 discuss）
-- 停在哪里：Phase 1 上下文已采集；CONTEXT.md + DISCUSSION-LOG.md 写入 `.planning/phases/01-foundation/`。可通过 `/gsd-plan-phase 1` 进入规划。
-- Resume 文件：`.planning/phases/01-foundation/01-CONTEXT.md`
+- 上次会话：2026-04-29（Phase 1 plan）
+- 停在哪里：Phase 1 4 plans 已落地并通过 plan-checker 二次校验。可通过 `/gsd-execute-phase 1` 进入执行（4 waves 严格串行：scaffold → storage+i18n → messaging+SW → popup+e2e）。
+- Resume 文件：`.planning/phases/01-foundation/01-1-scaffold-PLAN.md`
