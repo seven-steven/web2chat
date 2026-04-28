@@ -1,9 +1,9 @@
 # Requirements: Web2Chat
 
-**Defined:** 2026-04-28
-**Core Value:** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
+**定义日期：** 2026-04-28
+**核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
 
-## v1 Requirements
+## v1 需求 (Requirements)
 
 v1 = MVP，覆盖 OpenClaw Web UI + Discord 两条投递通道。每条 REQ 都对应可观察的用户行为或可断言的工程产物，用于 phase 验收。
 
