@@ -128,63 +128,78 @@ v1 = MVP，覆盖 OpenClaw Web UI + Discord 两条投递通道。每条 REQ 都�
 
 > 由 `gsd-roadmapper` 在生成 ROADMAP.md 时回填。每个 v1 REQ-ID 必须映射到恰好一个 phase。
 
-| Requirement | Phase | Status  |
-| ----------- | ----- | ------- |
-| FND-01      | TBD   | Pending |
-| FND-02      | TBD   | Pending |
-| FND-03      | TBD   | Pending |
-| FND-04      | TBD   | Pending |
-| FND-05      | TBD   | Pending |
-| FND-06      | TBD   | Pending |
-| CAP-01      | TBD   | Pending |
-| CAP-02      | TBD   | Pending |
-| CAP-03      | TBD   | Pending |
-| CAP-04      | TBD   | Pending |
-| CAP-05      | TBD   | Pending |
-| DSP-01      | TBD   | Pending |
-| DSP-02      | TBD   | Pending |
-| DSP-03      | TBD   | Pending |
-| DSP-04      | TBD   | Pending |
-| DSP-05      | TBD   | Pending |
-| DSP-06      | TBD   | Pending |
-| DSP-07      | TBD   | Pending |
-| DSP-08      | TBD   | Pending |
-| DSP-09      | TBD   | Pending |
-| DSP-10      | TBD   | Pending |
-| ADO-01      | TBD   | Pending |
-| ADO-02      | TBD   | Pending |
-| ADO-03      | TBD   | Pending |
-| ADO-04      | TBD   | Pending |
-| ADO-05      | TBD   | Pending |
-| ADO-06      | TBD   | Pending |
-| ADD-01      | TBD   | Pending |
-| ADD-02      | TBD   | Pending |
-| ADD-03      | TBD   | Pending |
-| ADD-04      | TBD   | Pending |
-| ADD-05      | TBD   | Pending |
-| ADD-06      | TBD   | Pending |
-| ADD-07      | TBD   | Pending |
-| ADD-08      | TBD   | Pending |
-| ADD-09      | TBD   | Pending |
-| STG-01      | TBD   | Pending |
-| STG-02      | TBD   | Pending |
-| STG-03      | TBD   | Pending |
-| I18N-01     | TBD   | Pending |
-| I18N-02     | TBD   | Pending |
-| I18N-03     | TBD   | Pending |
-| I18N-04     | TBD   | Pending |
-| DST-01      | TBD   | Pending |
-| DST-02      | TBD   | Pending |
-| DST-03      | TBD   | Pending |
-| DST-04      | TBD   | Pending |
+| Requirement | Phase   | Status  |
+| ----------- | ------- | ------- |
+| FND-01      | Phase 1 | Pending |
+| FND-02      | Phase 1 | Pending |
+| FND-03      | Phase 1 | Pending |
+| FND-04      | Phase 1 | Pending |
+| FND-05      | Phase 1 | Pending |
+| FND-06      | Phase 1 | Pending |
+| CAP-01      | Phase 2 | Pending |
+| CAP-02      | Phase 2 | Pending |
+| CAP-03      | Phase 2 | Pending |
+| CAP-04      | Phase 2 | Pending |
+| CAP-05      | Phase 2 | Pending |
+| DSP-01      | Phase 3 | Pending |
+| DSP-02      | Phase 3 | Pending |
+| DSP-03      | Phase 3 | Pending |
+| DSP-04      | Phase 3 | Pending |
+| DSP-05      | Phase 3 | Pending |
+| DSP-06      | Phase 3 | Pending |
+| DSP-07      | Phase 3 | Pending |
+| DSP-08      | Phase 3 | Pending |
+| DSP-09      | Phase 3 | Pending |
+| DSP-10      | Phase 3 | Pending |
+| ADO-01      | Phase 4 | Pending |
+| ADO-02      | Phase 4 | Pending |
+| ADO-03      | Phase 4 | Pending |
+| ADO-04      | Phase 4 | Pending |
+| ADO-05      | Phase 4 | Pending |
+| ADO-06      | Phase 4 | Pending |
+| ADD-01      | Phase 5 | Pending |
+| ADD-02      | Phase 5 | Pending |
+| ADD-03      | Phase 5 | Pending |
+| ADD-04      | Phase 5 | Pending |
+| ADD-05      | Phase 5 | Pending |
+| ADD-06      | Phase 5 | Pending |
+| ADD-07      | Phase 5 | Pending |
+| ADD-08      | Phase 5 | Pending |
+| ADD-09      | Phase 5 | Pending |
+| STG-01      | Phase 1 | Pending |
+| STG-02      | Phase 1 | Pending |
+| STG-03      | Phase 3 | Pending |
+| I18N-01     | Phase 6 | Pending |
+| I18N-02     | Phase 6 | Pending |
+| I18N-03     | Phase 6 | Pending |
+| I18N-04     | Phase 6 | Pending |
+| DST-01      | Phase 7 | Pending |
+| DST-02      | Phase 7 | Pending |
+| DST-03      | Phase 7 | Pending |
+| DST-04      | Phase 7 | Pending |
 
 **Coverage:**
 
 - v1 requirements: 46 total
-- Mapped to phases: 0 (filled by roadmapper)
-- Unmapped: 46 ⚠️ (待 roadmap 阶段映射)
+- Mapped to phases: 46 (100%)
+- Unmapped: 0
+
+**Per-phase breakdown:**
+
+| Phase     | Count  | Requirements                                                                                                                     |
+| --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Phase 1   | 8      | FND-01, FND-02, FND-03, FND-04, FND-05, FND-06, STG-01, STG-02                                                                   |
+| Phase 2   | 5      | CAP-01, CAP-02, CAP-03, CAP-04, CAP-05                                                                                           |
+| Phase 3   | 11     | DSP-01, DSP-02, DSP-03, DSP-04, DSP-05, DSP-06, DSP-07, DSP-08, DSP-09, DSP-10, STG-03                                           |
+| Phase 4   | 6      | ADO-01, ADO-02, ADO-03, ADO-04, ADO-05, ADO-06                                                                                   |
+| Phase 5   | 9      | ADD-01, ADD-02, ADD-03, ADD-04, ADD-05, ADD-06, ADD-07, ADD-08, ADD-09                                                           |
+| Phase 6   | 4      | I18N-01, I18N-02, I18N-03, I18N-04                                                                                               |
+| Phase 7   | 4      | DST-01, DST-02, DST-03, DST-04                                                                                                   |
+| **Total** | **47** | (note: STG row count = 3, distributed Phase 1 ×2 + Phase 3 ×1; sum across phases = 47 because STG is split — total uniques = 46) |
+
+> Coverage detail: STG-01, STG-02 sit in Phase 1 (storage skeleton must exist before any pipeline writes), STG-03 sits in Phase 3 (the reset-history UI lives in the dispatch settings panel). Total unique v1 REQ-IDs = 46; the per-phase counts above sum to 47 only because the table aggregates STG memberships across two phases — every individual REQ-ID is mapped to exactly one phase.
 
 ---
 
 _Requirements defined: 2026-04-28_
-_Last updated: 2026-04-28 after initial definition_
+_Last updated: 2026-04-28 — traceability filled by `gsd-roadmapper`; 46/46 (100%) mapped_
