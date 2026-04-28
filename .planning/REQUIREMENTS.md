@@ -186,20 +186,20 @@ v1 = MVP，覆盖 OpenClaw Web UI + Discord 两条投递通道。每条 REQ 都�
 
 **按 phase 分布：**
 
-| Phase     | Count  | Requirements                                                                                                                     |
-| --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Phase 1   | 8      | FND-01, FND-02, FND-03, FND-04, FND-05, FND-06, STG-01, STG-02                                                                   |
-| Phase 2   | 5      | CAP-01, CAP-02, CAP-03, CAP-04, CAP-05                                                                                           |
-| Phase 3   | 11     | DSP-01, DSP-02, DSP-03, DSP-04, DSP-05, DSP-06, DSP-07, DSP-08, DSP-09, DSP-10, STG-03                                           |
-| Phase 4   | 6      | ADO-01, ADO-02, ADO-03, ADO-04, ADO-05, ADO-06                                                                                   |
-| Phase 5   | 9      | ADD-01, ADD-02, ADD-03, ADD-04, ADD-05, ADD-06, ADD-07, ADD-08, ADD-09                                                           |
-| Phase 6   | 4      | I18N-01, I18N-02, I18N-03, I18N-04                                                                                               |
-| Phase 7   | 4      | DST-01, DST-02, DST-03, DST-04                                                                                                   |
-| **Total** | **47** | (note: STG row count = 3, distributed Phase 1 ×2 + Phase 3 ×1; sum across phases = 47 because STG is split — total uniques = 46) |
+| Phase     | Count  | Requirements                                                                                                             |
+| --------- | ------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Phase 1   | 8      | FND-01, FND-02, FND-03, FND-04, FND-05, FND-06, STG-01, STG-02                                                           |
+| Phase 2   | 5      | CAP-01, CAP-02, CAP-03, CAP-04, CAP-05                                                                                   |
+| Phase 3   | 11     | DSP-01, DSP-02, DSP-03, DSP-04, DSP-05, DSP-06, DSP-07, DSP-08, DSP-09, DSP-10, STG-03                                   |
+| Phase 4   | 6      | ADO-01, ADO-02, ADO-03, ADO-04, ADO-05, ADO-06                                                                           |
+| Phase 5   | 9      | ADD-01, ADD-02, ADD-03, ADD-04, ADD-05, ADD-06, ADD-07, ADD-08, ADD-09                                                   |
+| Phase 6   | 4      | I18N-01, I18N-02, I18N-03, I18N-04                                                                                       |
+| Phase 7   | 4      | DST-01, DST-02, DST-03, DST-04                                                                                           |
+| **Total** | **47** | (说明：STG 行计为 3，分布为 Phase 1 ×2 + Phase 3 ×1；按 phase 累加为 47 是因为 STG 跨两个 phase — 唯一 REQ-ID 总数 = 46) |
 
-> Coverage detail: STG-01, STG-02 sit in Phase 1 (storage skeleton must exist before any pipeline writes), STG-03 sits in Phase 3 (the reset-history UI lives in the dispatch settings panel). Total unique v1 REQ-IDs = 46; the per-phase counts above sum to 47 only because the table aggregates STG memberships across two phases — every individual REQ-ID is mapped to exactly one phase.
+> 覆盖说明：STG-01、STG-02 落在 Phase 1（任何流水线写入之前必须先有 storage 骨架），STG-03 落在 Phase 3（重置历史的 UI 位于 dispatch 设置面板）。唯一 v1 REQ-ID 总数 = 46；上方按 phase 累加得到 47 仅因为 STG 跨两个 phase — 每条 REQ-ID 实际仅映射到唯一一个 phase。
 
 ---
 
-_Requirements defined: 2026-04-28_
-_Last updated: 2026-04-28 — traceability filled by `gsd-roadmapper`; 46/46 (100%) mapped_
+_需求定义日期：2026-04-28_
+_最近更新：2026-04-28 — traceability 由 `gsd-roadmapper` 回填；46/46 (100%) 已映射_
