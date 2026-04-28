@@ -128,63 +128,63 @@ v1 = MVP，覆盖 OpenClaw Web UI + Discord 两条投递通道。每条 REQ 都�
 
 > 由 `gsd-roadmapper` 在生成 ROADMAP.md 时回填。每个 v1 REQ-ID 必须映射到恰好一个 phase。
 
-| Requirement | Phase   | Status  |
-| ----------- | ------- | ------- |
-| FND-01      | Phase 1 | Pending |
-| FND-02      | Phase 1 | Pending |
-| FND-03      | Phase 1 | Pending |
-| FND-04      | Phase 1 | Pending |
-| FND-05      | Phase 1 | Pending |
-| FND-06      | Phase 1 | Pending |
-| CAP-01      | Phase 2 | Pending |
-| CAP-02      | Phase 2 | Pending |
-| CAP-03      | Phase 2 | Pending |
-| CAP-04      | Phase 2 | Pending |
-| CAP-05      | Phase 2 | Pending |
-| DSP-01      | Phase 3 | Pending |
-| DSP-02      | Phase 3 | Pending |
-| DSP-03      | Phase 3 | Pending |
-| DSP-04      | Phase 3 | Pending |
-| DSP-05      | Phase 3 | Pending |
-| DSP-06      | Phase 3 | Pending |
-| DSP-07      | Phase 3 | Pending |
-| DSP-08      | Phase 3 | Pending |
-| DSP-09      | Phase 3 | Pending |
-| DSP-10      | Phase 3 | Pending |
-| ADO-01      | Phase 4 | Pending |
-| ADO-02      | Phase 4 | Pending |
-| ADO-03      | Phase 4 | Pending |
-| ADO-04      | Phase 4 | Pending |
-| ADO-05      | Phase 4 | Pending |
-| ADO-06      | Phase 4 | Pending |
-| ADD-01      | Phase 5 | Pending |
-| ADD-02      | Phase 5 | Pending |
-| ADD-03      | Phase 5 | Pending |
-| ADD-04      | Phase 5 | Pending |
-| ADD-05      | Phase 5 | Pending |
-| ADD-06      | Phase 5 | Pending |
-| ADD-07      | Phase 5 | Pending |
-| ADD-08      | Phase 5 | Pending |
-| ADD-09      | Phase 5 | Pending |
-| STG-01      | Phase 1 | Pending |
-| STG-02      | Phase 1 | Pending |
-| STG-03      | Phase 3 | Pending |
-| I18N-01     | Phase 6 | Pending |
-| I18N-02     | Phase 6 | Pending |
-| I18N-03     | Phase 6 | Pending |
-| I18N-04     | Phase 6 | Pending |
-| DST-01      | Phase 7 | Pending |
-| DST-02      | Phase 7 | Pending |
-| DST-03      | Phase 7 | Pending |
-| DST-04      | Phase 7 | Pending |
+| Requirement | Phase   | Status |
+| ----------- | ------- | ------ |
+| FND-01      | Phase 1 | 待办   |
+| FND-02      | Phase 1 | 待办   |
+| FND-03      | Phase 1 | 待办   |
+| FND-04      | Phase 1 | 待办   |
+| FND-05      | Phase 1 | 待办   |
+| FND-06      | Phase 1 | 待办   |
+| CAP-01      | Phase 2 | 待办   |
+| CAP-02      | Phase 2 | 待办   |
+| CAP-03      | Phase 2 | 待办   |
+| CAP-04      | Phase 2 | 待办   |
+| CAP-05      | Phase 2 | 待办   |
+| DSP-01      | Phase 3 | 待办   |
+| DSP-02      | Phase 3 | 待办   |
+| DSP-03      | Phase 3 | 待办   |
+| DSP-04      | Phase 3 | 待办   |
+| DSP-05      | Phase 3 | 待办   |
+| DSP-06      | Phase 3 | 待办   |
+| DSP-07      | Phase 3 | 待办   |
+| DSP-08      | Phase 3 | 待办   |
+| DSP-09      | Phase 3 | 待办   |
+| DSP-10      | Phase 3 | 待办   |
+| ADO-01      | Phase 4 | 待办   |
+| ADO-02      | Phase 4 | 待办   |
+| ADO-03      | Phase 4 | 待办   |
+| ADO-04      | Phase 4 | 待办   |
+| ADO-05      | Phase 4 | 待办   |
+| ADO-06      | Phase 4 | 待办   |
+| ADD-01      | Phase 5 | 待办   |
+| ADD-02      | Phase 5 | 待办   |
+| ADD-03      | Phase 5 | 待办   |
+| ADD-04      | Phase 5 | 待办   |
+| ADD-05      | Phase 5 | 待办   |
+| ADD-06      | Phase 5 | 待办   |
+| ADD-07      | Phase 5 | 待办   |
+| ADD-08      | Phase 5 | 待办   |
+| ADD-09      | Phase 5 | 待办   |
+| STG-01      | Phase 1 | 待办   |
+| STG-02      | Phase 1 | 待办   |
+| STG-03      | Phase 3 | 待办   |
+| I18N-01     | Phase 6 | 待办   |
+| I18N-02     | Phase 6 | 待办   |
+| I18N-03     | Phase 6 | 待办   |
+| I18N-04     | Phase 6 | 待办   |
+| DST-01      | Phase 7 | 待办   |
+| DST-02      | Phase 7 | 待办   |
+| DST-03      | Phase 7 | 待办   |
+| DST-04      | Phase 7 | 待办   |
 
-**Coverage:**
+**覆盖率：**
 
-- v1 requirements: 46 total
-- Mapped to phases: 46 (100%)
-- Unmapped: 0
+- v1 需求总数：46
+- 已映射到 phase：46 (100%)
+- 未映射：0
 
-**Per-phase breakdown:**
+**按 phase 分布：**
 
 | Phase     | Count  | Requirements                                                                                                                     |
 | --------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |

@@ -1,18 +1,18 @@
-# Architecture Research
+# 架构调研
 
-**Domain:** Chrome MV3 browser extension — Web Clipper + multi-IM dispatch automation
-**Researched:** 2026-04-28
-**Confidence:** HIGH (Chrome.\* APIs, manifest, message passing) / MEDIUM (per-platform IM injection mechanics — DOM contracts vary and drift)
+**领域：** Chrome MV3 浏览器扩展 — Web Clipper + 多 IM 投递自动化
+**调研时间：** 2026-04-28
+**置信度：** HIGH（Chrome.\* API、manifest、消息传递）/ MEDIUM（各平台 IM 注入机制 — DOM 契约存在差异且会随时间漂移）
 
-## Standard Architecture
+## 标准架构
 
-### System Overview
+### 系统概览
 
-Web2Chat is a Manifest V3 extension. MV3 mandates a non-persistent **service worker** as the single privileged event hub; all other surfaces (popup, content scripts) are isolated, ephemeral processes that talk to it via `chrome.runtime` / `chrome.tabs` messaging. Three logical pipelines must coexist on this seam:
+Web2Chat 是一个 Manifest V3 扩展。MV3 强制使用非持久化的 **service worker** 作为唯一的特权事件中心；所有其他界面（popup、content script）都是隔离的、临时的进程，通过 `chrome.runtime` / `chrome.tabs` 消息机制与其通信。三条逻辑流水线必须共存于这一接缝之上：
 
-1. **Capture pipeline** — popup asks SW to extract metadata + readable content from the active tab.
-2. **Dispatch pipeline** — popup confirms a target, SW opens/activates the IM tab, waits for it to load, injects a per-platform adapter, and round-trips success.
-3. **Persistence + i18n pipeline** — `chrome.storage.local` and `chrome.i18n` accessed from any surface.
+1. **Capture 流水线** — popup 请求 SW 从当前活动 tab 抓取元数据 + 可读内容。
+2. **Dispatch 流水线** — popup 确认目标，SW 打开/激活 IM tab，等待其加载完成，注入对应平台的适配器，并往返确认成功。
+3. **持久化 + i18n 流水线** — `chrome.storage.local` 与 `chrome.i18n` 可在任何界面中访问。
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
@@ -65,20 +65,20 @@ Web2Chat is a Manifest V3 extension. MV3 mandates a non-persistent **service wor
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Component Responsibilities
+### 组件职责
 
-| Component                          | Responsibility                                                                                                                                                                                                                | Typical Implementation                                                                                                 |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **popup/** (React SPA)             | All user-facing forms (send_to, prompt, history). Renders preview of captured snapshot. Holds **transient UI state only** — popup DOM is destroyed on close.                                                                  | Vite + React + TypeScript, `chrome-extension://<id>/popup.html`                                                        |
-| **background/service-worker.ts**   | Single source of truth. Owns capture orchestration, dispatch orchestration, adapter registry, storage repo, platform detection. Stateless across SW restarts — all state lives in `chrome.storage`.                           | ES module service worker (`"type": "module"`), top-level listener registration                                         |
-| **content/extractor.ts**           | Runs in source page's isolated world. Scrapes `title`, `url`, `description` (meta og/twitter), `create_at` (article:published_time, JSON-LD), and main article content via Readability. Returns `ArticleSnapshot` JSON to SW. | Programmatically injected via `chrome.scripting.executeScript({ files: [...] })` on demand. Not statically registered. |
-| **content/adapters/<platform>.ts** | Runs in target IM page's isolated world. Implements the `IMAdapter` contract: `waitForReady`, `compose`, `send`. One adapter per platform.                                                                                    | Programmatically injected per-dispatch by SW after `tabs.onUpdated.status === 'complete'`.                             |
-| **shared/types**                   | TypeScript types for messages, snapshots, targets, adapter contract. Imported by every other layer; **never bundled into a bundle that contains DOM-dependent code in the wrong direction**.                                  | Pure `.d.ts` / no runtime                                                                                              |
-| **shared/messaging**               | Typed wrappers around `chrome.runtime.sendMessage` and `chrome.tabs.sendMessage`. Discriminated-union message types.                                                                                                          | Plain TS module, used by popup, SW, content scripts                                                                    |
-| **shared/storage**                 | Typed repo over `chrome.storage.local`. Schema versioning, migration hook, listeners.                                                                                                                                         | Plain TS module                                                                                                        |
-| **shared/i18n**                    | `t(key, ...subs)` wrapper over `chrome.i18n.getMessage`. `_locales/{zh_CN,en}/messages.json` source.                                                                                                                          | Plain TS module + locale JSON                                                                                          |
+| Component                          | Responsibility                                                                                                                                                                                              | Typical Implementation                                                                       |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **popup/** (React SPA)             | 所有面向用户的表单（send_to、prompt、history）。渲染抓取快照的预览。**仅持有瞬时 UI 状态** — popup DOM 在关闭时即被销毁。                                                                                   | Vite + React + TypeScript, `chrome-extension://<id>/popup.html`                              |
+| **background/service-worker.ts**   | 唯一的事实来源。负责 capture 编排、dispatch 编排、适配器注册表、存储仓库、平台探测。跨 SW 重启无状态 — 所有状态都存放在 `chrome.storage` 中。                                                               | ES module service worker (`"type": "module"`), top-level listener registration               |
+| **content/extractor.ts**           | 运行在源页面的隔离世界中。抓取 `title`、`url`、`description`（meta og/twitter）、`create_at`（article:published_time、JSON-LD），并通过 Readability 抽取主体文章内容。将 `ArticleSnapshot` JSON 返回给 SW。 | 通过 `chrome.scripting.executeScript({ files: [...] })` 按需以编程方式注入。不进行静态注册。 |
+| **content/adapters/<platform>.ts** | 运行在目标 IM 页面的隔离世界中。实现 `IMAdapter` 契约：`waitForReady`、`compose`、`send`。每个平台对应一个适配器。                                                                                          | 在 `tabs.onUpdated.status === 'complete'` 之后由 SW 按每次投递以编程方式注入。               |
+| **shared/types**                   | 用于 message、snapshot、target、adapter 契约的 TypeScript 类型。被其他每一层引用；**绝不能以错误方向打包到包含 DOM 依赖代码的 bundle 中**。                                                                 | Pure `.d.ts` / no runtime                                                                    |
+| **shared/messaging**               | 对 `chrome.runtime.sendMessage` 与 `chrome.tabs.sendMessage` 的类型化封装。判别联合（discriminated-union）消息类型。                                                                                        | Plain TS module, used by popup, SW, content scripts                                          |
+| **shared/storage**                 | 在 `chrome.storage.local` 之上的类型化仓库。schema 版本化、迁移钩子、监听器。                                                                                                                               | Plain TS module                                                                              |
+| **shared/i18n**                    | 在 `chrome.i18n.getMessage` 之上的 `t(key, ...subs)` 封装。来源为 `_locales/{zh_CN,en}/messages.json`。                                                                                                     | Plain TS module + locale JSON                                                                |
 
-## Recommended Project Structure
+## 推荐项目结构
 
 ```
 web2chat/
@@ -157,29 +157,29 @@ web2chat/
 └── playwright.config.ts
 ```
 
-### Structure Rationale
+### 结构理由
 
-- **`shared/` first, no `chrome.*` at top level.** Top-level `chrome.*` calls in shared modules will throw in test (JSDOM) and risk wedging the SW lifecycle. Keep shared modules pure; have callers pass in `chrome.storage.local` only inside functions.
-- **`background/` separated from `shared/`** — only the SW entry registers listeners. Pipelines are factored into modules that take dependencies as args (testable without spinning up a real SW).
-- **`content/extractor.ts` and `content/adapters/*.ts` are independent bundles** — Vite must produce one output file per content script (cannot share a runtime chunk; each is injected into a different page world).
-- **`adapters/` is the single growth point** for v2 platforms. Each adapter is a self-contained file implementing one interface. Adding LINE / Slack / Telegram = adding one file + a registry entry + one host_permission.
-- **`tests/e2e/fixtures.ts`** loads the built `dist/` directory with `chromium.launchPersistentContext`, in headed (or `channel: 'chromium'` headless) mode; resolves `extensionId` from the SW URL.
+- **`shared/` 优先，不允许在顶层调用 `chrome.*`。** 在 shared 模块顶层调用 `chrome.*` 会在测试（JSDOM）中抛错，并可能卡死 SW 生命周期。保持 shared 模块纯净；让调用方仅在函数内部传入 `chrome.storage.local`。
+- **`background/` 与 `shared/` 分离** — 只有 SW 入口注册监听器。流水线被分解为接收依赖作为参数的模块（无需启动真实 SW 即可测试）。
+- **`content/extractor.ts` 与 `content/adapters/*.ts` 是独立的 bundle** — Vite 必须为每个 content script 产出一个独立的输出文件（不能共享运行时 chunk；它们各自被注入到不同的页面世界中）。
+- **`adapters/` 是 v2 平台的唯一扩展点。** 每个适配器都是一个实现单一接口的自包含文件。新增 LINE / Slack / Telegram = 添加一个文件 + 一个注册表条目 + 一个 host_permission。
+- **`tests/e2e/fixtures.ts`** 通过 `chromium.launchPersistentContext` 加载已构建的 `dist/` 目录，使用 headed 模式（或 `channel: 'chromium'` headless 模式）；从 SW URL 中解析 `extensionId`。
 
-## Architectural Patterns
+## 架构模式
 
-### Pattern 1: Single Privileged Hub (Service Worker as Coordinator)
+### 模式 1：单一特权中心（Service Worker 作为协调者）
 
-**What:** Popup never talks directly to content scripts. All cross-context communication goes popup → SW → content script (via `chrome.tabs.sendMessage` or `chrome.scripting.executeScript`).
+**含义：** popup 永远不直接与 content script 通信。所有跨上下文的通信都走 popup → SW → content script（通过 `chrome.tabs.sendMessage` 或 `chrome.scripting.executeScript`）。
 
-**When to use:** Always, for MV3. The popup is destroyed on close; if it owned a `chrome.tabs.sendMessage` round-trip, the response would land on a dead listener.
+**何时使用：** MV3 下始终如此。popup 在关闭时即被销毁；如果由它持有 `chrome.tabs.sendMessage` 的往返，响应将落到一个已死的监听器上。
 
-**Trade-offs:**
+**取舍：**
 
-- ✅ Survives popup close, SW restart, tab navigation
-- ✅ Single place to enforce permissions and rate limits
-- ❌ One extra hop for every message (acceptable; this is the convention)
+- ✅ 经得起 popup 关闭、SW 重启、tab 导航
+- ✅ 在单一位置统一执行权限与限速
+- ❌ 每条消息多一跳（可接受；这是约定俗成的做法）
 
-**Example:**
+**示例：**
 
 ```ts
 // popup/hooks/useDispatch.ts
@@ -200,20 +200,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 ```
 
-### Pattern 2: Adapter Pattern for Multi-IM Support
+### 模式 2：多 IM 支持的适配器模式
 
-**What:** Each IM platform implements a uniform `IMAdapter` interface. SW selects the adapter by URL, injects it into the target tab, and calls a stable RPC surface.
+**含义：** 每个 IM 平台都实现统一的 `IMAdapter` 接口。SW 按 URL 选择适配器，将其注入目标 tab，并调用稳定的 RPC 接口。
 
-**When to use:** Whenever the project supports more than one external surface with similar verbs but divergent DOM/UI. v1 has 2 adapters; v2 has ~14. The seam is mandatory from day one.
+**何时使用：** 当项目需支持多个具有相似动作但 DOM/UI 各异的外部界面时。v1 有 2 个适配器；v2 有 ~14 个。这一接缝从第一天起就是必备的。
 
-**Trade-offs:**
+**取舍：**
 
-- ✅ New platform = one new file, no changes to capture/dispatch core
-- ✅ Each adapter unit-testable against captured DOM fixtures (JSDOM)
-- ❌ Each adapter is a maintenance liability — IM vendors ship UI changes (esp. Discord, Slack)
-- ❌ Cannot fully share runtime code across adapters (each is a separate content-script bundle)
+- ✅ 新平台 = 一个新文件，无需改动 capture/dispatch 核心
+- ✅ 每个适配器都可针对抓取到的 DOM 固件（fixture）进行单元测试（JSDOM）
+- ❌ 每个适配器都是维护负担 — IM 厂商会发布 UI 更改（尤其 Discord、Slack）
+- ❌ 适配器之间无法完全共享运行时代码（每个都是独立的 content-script bundle）
 
-**Adapter contract (canonical TS interface):**
+**适配器契约（规范的 TS 接口）：**
 
 ```ts
 // shared/types/adapter.ts
@@ -250,7 +250,7 @@ export async function runAdapter(adapter: IMAdapter, message: string) {
 }
 ```
 
-The SW does **not** import adapter modules at build time (they live in different bundles / different page worlds). It holds a _registry of file paths and `match` predicates_:
+SW 在构建时**不**导入适配器模块（它们位于不同的 bundle / 不同的页面世界中）。它持有的是一份 _文件路径与 `match` 谓词的注册表_：
 
 ```ts
 // background/adapter-registry.ts
@@ -277,21 +277,21 @@ export const ADAPTERS: AdapterEntry[] = [
 ];
 ```
 
-### Pattern 3: Programmatic Injection over Static `content_scripts`
+### 模式 3：以编程注入取代静态 `content_scripts`
 
-**What:** Use `chrome.scripting.executeScript({ target: { tabId }, files: [...] })` rather than declaring adapters in `manifest.json` `content_scripts`.
+**含义：** 使用 `chrome.scripting.executeScript({ target: { tabId }, files: [...] })`，而不是在 `manifest.json` 的 `content_scripts` 中声明适配器。
 
-**When to use:** When the script must run _only when the user dispatches_ (not on every Discord visit), and when the set of host_permissions should remain auditable per platform.
+**何时使用：** 当脚本只应在 _用户触发投递时_ 才运行（而非每次访问 Discord 时），且 host_permissions 集合应在每个平台粒度上保持可审计时。
 
-**Trade-offs:**
+**取舍：**
 
-- ✅ Zero per-page overhead — adapter only loads when the user actually sends
-- ✅ User sees `permissions: ["scripting"]` + named hosts, never `<all_urls>`
-- ✅ Easier debugging: each invocation is a discrete event
-- ❌ Slightly later run-time than `run_at: document_idle` static injection — must `waitForReady` defensively
-- ❌ Requires the `scripting` permission (which we need anyway)
+- ✅ 零页面级开销 — 适配器只在用户实际发送时才加载
+- ✅ 用户看到的是 `permissions: ["scripting"]` + 具名 host，从不会出现 `<all_urls>`
+- ✅ 调试更简单：每次调用都是一个离散事件
+- ❌ 比 `run_at: document_idle` 静态注入略晚 — 必须保护性地 `waitForReady`
+- ❌ 需要 `scripting` 权限（无论如何我们都需要）
 
-**Example:**
+**示例：**
 
 ```ts
 // background/dispatch-pipeline.ts
@@ -310,16 +310,16 @@ async function injectAdapter(
 }
 ```
 
-### Pattern 4: Top-Level Listener Registration in the Service Worker
+### 模式 4：在 Service Worker 中进行顶层监听器注册
 
-**What:** All `chrome.*.on*.addListener` calls live at the SW module's top level. No `await` or callbacks before listener registration.
+**含义：** 所有 `chrome.*.on*.addListener` 调用都位于 SW 模块的顶层。在监听器注册之前不要有 `await` 或回调。
 
-**When to use:** Always. MV3 service workers are killed after ~30s of inactivity and _re-spawned_ when an event fires. If the listener wasn't registered synchronously at top level, the event is dropped.
+**何时使用：** 始终如此。MV3 service worker 在大约 30 秒不活动后会被杀死，并在事件触发时被 _重新启动_。如果监听器没有在顶层同步注册，事件就会被丢弃。
 
-**Trade-offs:**
+**取舍：**
 
-- ✅ Works correctly with SW restarts
-- ❌ Forces a discipline of "no async work before registration" — sometimes annoying when bootstrapping
+- ✅ 与 SW 重启正确协作
+- ❌ 强制了"在注册前不做异步工作"的纪律 — 在引导阶段有时令人头疼
 
 ```ts
 // background/service-worker.ts — CORRECT
@@ -331,21 +331,21 @@ chrome.runtime.onInstalled.addListener(handleInstall);
 storage.bootstrap(); // does its own awaits internally; doesn't block listener registration
 ```
 
-### Pattern 5: Long-Lived Port for Popup ↔ SW (Optional)
+### 模式 5：popup ↔ SW 的长生命周期 port（可选）
 
-**What:** Use `chrome.runtime.connect({ name: 'popup' })` for the popup-to-SW channel during a single popup session; fall back to `sendMessage` for one-shot RPCs.
+**含义：** 在单次 popup 会话期间，使用 `chrome.runtime.connect({ name: 'popup' })` 作为 popup 与 SW 之间的通道；对于一次性 RPC 则回退到 `sendMessage`。
 
-**When to use:** When the popup needs streaming progress updates from a long-running dispatch (`opening tab → waiting → injecting → sending → done`). One-shot `sendMessage` cannot push intermediate states.
+**何时使用：** 当 popup 需要从一次长时间运行的投递中接收流式进度更新时（`opening tab → waiting → injecting → sending → done`）。一次性 `sendMessage` 无法推送中间状态。
 
-**Trade-offs:**
+**取舍：**
 
-- ✅ Progress UI without polling
-- ✅ Auto-detects popup close (`port.onDisconnect`) so SW can cancel work
-- ❌ Slightly more boilerplate than `sendMessage`
+- ✅ 无需轮询即可呈现进度 UI
+- ✅ 自动检测 popup 关闭（`port.onDisconnect`），便于 SW 取消任务
+- ❌ 比 `sendMessage` 略多样板代码
 
-## Data Flow
+## 数据流
 
-### Capture Flow
+### Capture 数据流
 
 ```
 User clicks toolbar icon
@@ -373,7 +373,7 @@ SW returns ArticleSnapshot to popup
 popup renders preview; user fills/picks send_to + prompt
 ```
 
-### Dispatch Flow
+### Dispatch 数据流
 
 ```
 popup: user clicks "Confirm"
@@ -409,9 +409,9 @@ content/adapters/<platform>.ts (in target tab)
 SW relays { ok, error? } to popup → popup shows toast → close
 ```
 
-### State Management
+### 状态管理
 
-Web2Chat has **no in-memory shared state** that survives the SW lifecycle. Everything user-relevant lives in `chrome.storage.local`. Components subscribe via `chrome.storage.onChanged`.
+Web2Chat **没有** 跨 SW 生命周期存活的内存共享状态。所有与用户相关的内容都存放在 `chrome.storage.local` 中。各组件通过 `chrome.storage.onChanged` 订阅变更。
 
 ```
 chrome.storage.local (single source of truth)
@@ -427,7 +427,7 @@ SW writes back via shared/storage/repo.ts
 chrome.storage.local
 ```
 
-**StorageSchema (typed, versioned):**
+**StorageSchema（类型化、版本化）：**
 
 ```ts
 // shared/types/storage.ts
@@ -451,17 +451,17 @@ export interface SendTarget {
 }
 ```
 
-### Key Data Flows
+### 关键数据流
 
-1. **Capture flow:** `popup → SW → executeScript(extractor) → tabs.sendMessage → ArticleSnapshot → popup`
-2. **Dispatch flow:** `popup → SW → tabs.create/update → wait onUpdated complete → executeScript(adapter) → tabs.sendMessage → adapter compose+send → result → popup`
-3. **History/prompt persistence:** `popup → SW → storage.local.set` ; popup re-reads via `storage.onChanged` subscription
-4. **Platform detection:** synchronous, pure-function in `shared/platform/detect.ts`; called by both popup (for icon preview) and SW (for adapter selection)
-5. **i18n:** every UI surface calls `t('key')` → `chrome.i18n.getMessage('key')` → `_locales/<browser_locale>/messages.json`. No runtime locale switching in v1 (browser determines locale at extension load).
+1. **Capture 数据流：** `popup → SW → executeScript(extractor) → tabs.sendMessage → ArticleSnapshot → popup`
+2. **Dispatch 数据流：** `popup → SW → tabs.create/update → wait onUpdated complete → executeScript(adapter) → tabs.sendMessage → adapter compose+send → result → popup`
+3. **History/prompt 持久化：** `popup → SW → storage.local.set`；popup 通过 `storage.onChanged` 订阅重新读取
+4. **平台探测：** 同步、纯函数，位于 `shared/platform/detect.ts`；popup（用于图标预览）和 SW（用于适配器选择）都会调用
+5. **i18n：** 每个 UI 界面调用 `t('key')` → `chrome.i18n.getMessage('key')` → `_locales/<browser_locale>/messages.json`。v1 不支持运行时切换 locale（locale 在扩展加载时由浏览器决定）。
 
-## Build Order Implications
+## 构建顺序的影响
 
-The **build order = dependency order** = the order phases should ship.
+**构建顺序 = 依赖顺序** = 各阶段应当出货的顺序。
 
 ```
 1. shared/types          ──┐
@@ -491,18 +491,18 @@ The **build order = dependency order** = the order phases should ship.
 13. e2e tests              (must run against built dist/, not src/)
 ```
 
-**Phase-roadmap implications:**
+**对阶段路线图的影响：**
 
-- Phase 1 (foundations): items 1–5 + manifest skeleton + a hello-world popup that successfully RPCs the SW. This is the smallest end-to-end shell.
-- Phase 2 (capture): item 6 (capture pipeline only) + item 8 + popup wired to display snapshot. Lands the capture half of Core Value.
-- Phase 3 (dispatch + first adapter): item 6 (dispatch pipeline) + items 9, 10 (OpenClaw is the simpler target — known plain-input contract) + popup confirm flow. Lands MVP for OpenClaw.
-- Phase 4 (Discord adapter): item 11 — separate phase because Discord/Slate is the hardest DOM target and needs its own research + fixtures.
-- Phase 5 (i18n hardening + polish): item 12 + accessibility + history/prompt UX.
-- Phase 6+ (v2 platforms): each new adapter = +1 file + +1 host_permission + +1 fixture set.
+- 阶段 1（基础设施）：第 1–5 项 + manifest 骨架 + 一个能成功向 SW 发起 RPC 的 hello-world popup。这是最小的端到端外壳。
+- 阶段 2（capture）：第 6 项（仅 capture 流水线）+ 第 8 项 + 接通 popup 以展示 snapshot。落地核心价值的 capture 一半。
+- 阶段 3（dispatch + 首个适配器）：第 6 项（dispatch 流水线）+ 第 9、10 项（OpenClaw 是较简单的目标 — 已知的纯输入契约）+ popup 确认流程。落地 OpenClaw 的 MVP。
+- 阶段 4（Discord 适配器）：第 11 项 — 单独成一个阶段，因为 Discord/Slate 是最难的 DOM 目标，需要独立的调研 + 固件。
+- 阶段 5（i18n 加固 + 打磨）：第 12 项 + 可访问性 + history/prompt 用户体验。
+- 阶段 6+（v2 平台）：每新增一个适配器 = +1 个文件 + +1 个 host_permission + +1 套固件。
 
-## Permissions: Principle of Least Privilege
+## 权限：最小特权原则
 
-**Required (v1 MVP):**
+**必需（v1 MVP）：**
 
 ```json
 {
@@ -511,99 +511,99 @@ The **build order = dependency order** = the order phases should ship.
 }
 ```
 
-- **`activeTab`** — grants temporary host access to the active tab on user gesture (toolbar click). Lets `executeScript(extractor)` run on _any_ page the user invokes us on, without `<all_urls>`. The trick: `activeTab` is sufficient for the **capture** half because the user clicked the toolbar icon (the gesture).
-- **`scripting`** — required for `chrome.scripting.executeScript` (MV3).
-- **`storage`** — for `chrome.storage.local`.
-- **Per-IM `host_permissions`** — required for the **dispatch** half, because we navigate to/inject in a tab the user did _not_ click the icon on. Each new v2 platform adds exactly one entry here. Avoid `<all_urls>` at all costs (Web Store review friction, user-trust friction).
+- **`activeTab`** — 在用户手势（点击工具栏）下授予对当前活动 tab 的临时 host 访问权限。让 `executeScript(extractor)` 能在用户对其调用扩展的 _任意_ 页面上运行，无需 `<all_urls>`。窍门：`activeTab` 对 **capture** 一半已经足够，因为用户点击了工具栏图标（即手势）。
+- **`scripting`** — `chrome.scripting.executeScript` 所需（MV3）。
+- **`storage`** — `chrome.storage.local` 所需。
+- **每个 IM 的 `host_permissions`** — **dispatch** 一半所需，因为我们要在用户 _未_ 在其上点击图标的 tab 中导航/注入。每新增一个 v2 平台都恰好新增此处的一条。务必避免使用 `<all_urls>`（Web Store 审核摩擦、用户信任摩擦）。
 
-**Not needed:**
+**不需要：**
 
-- ❌ `tabs` (full Tab object access) — `activeTab` + `host_permissions` cover what we need
+- ❌ `tabs`（完整 Tab 对象访问） — `activeTab` + `host_permissions` 已经覆盖我们的需求
 - ❌ `<all_urls>`
-- ❌ `webNavigation` — `tabs.onUpdated` is sufficient for "navigation complete" detection
-- ❌ `nativeMessaging`, `cookies`, `downloads`, `notifications`
+- ❌ `webNavigation` — `tabs.onUpdated` 已足以检测"导航完成"
+- ❌ `nativeMessaging`、`cookies`、`downloads`、`notifications`
 
-**`i18n` permission:** none required (`chrome.i18n` is always available; `default_locale` in manifest is the trigger).
+**`i18n` 权限：** 无需声明（`chrome.i18n` 始终可用；manifest 中的 `default_locale` 是触发器）。
 
-## Scaling Considerations
+## 扩展性考量
 
-This is a single-user, single-device extension; "scale" means _codebase scale_ (number of platforms, locales, adapter complexity) rather than user scale.
+这是一个单用户、单设备的扩展；这里的"扩展性"指 _代码库规模_（平台数量、locale 数量、适配器复杂度），而非用户规模。
 
-| Scale                                    | Architecture Adjustments                                                                                                                                        |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 user, 2 IM platforms (MVP)             | Static adapter registry array. Hand-curated `host_permissions`.                                                                                                 |
-| 1 user, ~14 IM platforms (v2)            | Same registry array. Consider grouping `host_permissions` by category in docs. Add `optional_host_permissions` for less-common platforms; request at first use. |
-| Future power-user (custom URL templates) | Adapter registry becomes data-driven (read from storage). User-defined target = generic adapter that just does selector-based composition.                      |
+| Scale                                    | Architecture Adjustments                                                                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1 user, 2 IM platforms (MVP)             | 静态适配器注册表数组。手工维护的 `host_permissions`。                                                                                      |
+| 1 user, ~14 IM platforms (v2)            | 仍是同一份注册表数组。考虑在文档中按类别对 `host_permissions` 分组。对不太常用的平台添加 `optional_host_permissions`，在首次使用时再请求。 |
+| Future power-user (custom URL templates) | 适配器注册表变为数据驱动（从存储中读取）。用户自定义 target = 一个仅基于选择器进行组合的通用适配器。                                       |
 
-### Scaling Priorities
+### 扩展性优先事项
 
-1. **First bottleneck: adapter maintenance churn.** As IM vendors ship UI updates, adapters break silently. Mitigation: each adapter ships with a captured-DOM fixture in `tests/unit/adapters/<id>.fixture.html`. CI runs adapter unit tests. Add an in-popup "test adapter" diagnostic to catch breakage in production.
-2. **Second bottleneck: popup bundle size.** Every new locale and every new platform-icon eats KB. Mitigation: import locales lazily; use SVG sprite for platform icons; tree-shake aggressively (Vite default).
-3. **Third bottleneck: SW cold-start latency.** First click after browser idle wakes the SW (~200ms). Mitigation: keep the SW entry import graph tiny — defer-load pipelines via dynamic `import()`. Pre-warm only if measurements show user-visible delay.
+1. **首要瓶颈：适配器维护流失。** 随着 IM 厂商发布 UI 更新，适配器会悄无声息地坏掉。缓解措施：每个适配器都附带一份抓取的 DOM 固件，位于 `tests/unit/adapters/<id>.fixture.html`。CI 运行适配器单元测试。在 popup 中加入"测试适配器"诊断功能，以在线上捕获故障。
+2. **次要瓶颈：popup 包体积。** 每新增一种 locale、每新增一个平台图标都会吃掉若干 KB。缓解措施：按需懒加载 locale；使用 SVG 雪碧图承载平台图标；激进地进行 tree-shake（Vite 默认行为）。
+3. **第三瓶颈：SW 冷启动延迟。** 浏览器空闲后第一次点击会唤醒 SW（约 200ms）。缓解措施：保持 SW 入口的导入图最小 — 通过动态 `import()` 延迟加载流水线。仅在测量显示存在用户可见的延迟时才进行预热。
 
-## Anti-Patterns
+## 反模式
 
-### Anti-Pattern 1: Calling `chrome.tabs.sendMessage` directly from the popup
+### 反模式 1：在 popup 中直接调用 `chrome.tabs.sendMessage`
 
-**What people do:** popup queries the active tab and pings the content script directly to grab content.
-**Why it's wrong:** popup closes the moment another window gets focus or the user clicks anywhere outside it. Long-running tab message round-trips will land on a dead listener. Also breaks the security boundary (popup ends up needing to know about content-script lifecycles).
-**Do this instead:** popup → SW (RPC) → SW does `tabs.sendMessage`. SW is the only privileged caller of `tabs.*`.
+**人们的做法：** popup 查询当前活动 tab，并直接 ping content script 来抓取内容。
+**为什么错：** popup 在另一窗口获得焦点或用户点击其外部任何地方时立刻关闭。长时间运行的 tab 消息往返将落到一个已死的监听器上。这同时也破坏了安全边界（popup 最终需要了解 content-script 的生命周期）。
+**正确做法：** popup → SW（RPC）→ SW 再做 `tabs.sendMessage`。SW 是 `tabs.*` 的唯一特权调用方。
 
-### Anti-Pattern 2: Setting `value` / `textContent` on a React-managed composer
+### 反模式 2：对 React 管理的 composer 设置 `value` / `textContent`
 
-**What people do:** `document.querySelector('[role=textbox]').textContent = msg`.
-**Why it's wrong:** Discord (Slate), Slack (Lexical), and most modern IMs control the composer via React state. Direct DOM mutation is overwritten on the next render, or worse, accepted visually but discarded on send.
-**Do this instead:** Simulate user input. Two reliable techniques:
+**人们的做法：** `document.querySelector('[role=textbox]').textContent = msg`。
+**为什么错：** Discord（Slate）、Slack（Lexical）以及大多数现代 IM 都通过 React state 控制 composer。直接的 DOM 修改会在下一次渲染时被覆盖，更糟的是会在视觉上被接受却在发送时被丢弃。
+**正确做法：** 模拟用户输入。两种可靠技巧：
 
-1. **Clipboard + paste:** `navigator.clipboard.writeText(msg)` then `editor.dispatchEvent(new ClipboardEvent('paste', { clipboardData, bubbles: true }))`.
-2. **Native input setter + InputEvent:** for `<textarea>`-backed editors, use the descriptor trick — `Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(el, msg)` then dispatch `new InputEvent('input', { bubbles: true })`.
-   Each adapter picks the technique that matches that platform's editor (documented per-adapter in `content/adapters/_base.ts`).
+1. **剪贴板 + 粘贴：** `navigator.clipboard.writeText(msg)` 然后 `editor.dispatchEvent(new ClipboardEvent('paste', { clipboardData, bubbles: true }))`。
+2. **原生输入 setter + InputEvent：** 对 `<textarea>` 后端的编辑器，使用描述符技巧 — `Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(el, msg)`，然后派发 `new InputEvent('input', { bubbles: true })`。
+   每个适配器选择适合该平台编辑器的技术（在 `content/adapters/_base.ts` 中按适配器记录）。
 
-### Anti-Pattern 3: `<all_urls>` host permission "to keep things simple"
+### 反模式 3：为"图省事"而声明 `<all_urls>` host 权限
 
-**What people do:** declare `"host_permissions": ["<all_urls>"]` so the dev never has to think about which sites the extension touches.
-**Why it's wrong:** Chrome Web Store review friction; install-time warning lists "read all your data on all websites" which crashes install rate; violates MV3's least-privilege ethos.
-**Do this instead:** `activeTab` for capture (user-gesture-scoped) + explicit per-IM `host_permissions` for dispatch. Each new platform = one new host entry that the user explicitly approves.
+**人们的做法：** 声明 `"host_permissions": ["<all_urls>"]`，开发者就再也不必考虑扩展会触及哪些站点。
+**为什么错：** 会带来 Chrome Web Store 审核摩擦；安装时的警告会列出"读取你在所有网站上的所有数据"，这会重创安装率；并且违背 MV3 的最小特权理念。
+**正确做法：** 用 `activeTab` 来做 capture（用户手势作用域）+ 为每个 IM 显式声明 `host_permissions` 来做 dispatch。每新增一个平台 = 用户显式批准的一条新 host 条目。
 
-### Anti-Pattern 4: Doing async work _before_ registering SW listeners
+### 反模式 4：在注册 SW 监听器 _之前_ 做异步工作
 
-**What people do:** `await storage.bootstrap(); chrome.runtime.onMessage.addListener(...)`.
-**Why it's wrong:** SW restarts mid-session lose the listener registration; dispatched events are dropped silently. Hard to reproduce, hard to debug.
-**Do this instead:** register all listeners synchronously at module top level. Bootstrap inside the listener (lazy) or in a separate, fire-and-forget async block.
+**人们的做法：** `await storage.bootstrap(); chrome.runtime.onMessage.addListener(...)`。
+**为什么错：** 会话中途的 SW 重启会丢失监听器注册；派发的事件被静默丢弃。难以复现，难以调试。
+**正确做法：** 在模块顶层同步注册所有监听器。在监听器内部进行引导（懒加载），或在另一个独立的 fire-and-forget 异步块中进行。
 
-### Anti-Pattern 5: Treating the popup as a long-lived state container
+### 反模式 5：把 popup 当作长生命周期的状态容器
 
-**What people do:** keep send history, prompt cache, etc. in popup React state and serialize on unmount.
-**Why it's wrong:** popup unmount can be abrupt (focus loss, tab switch). State updates may not flush. Reopening the popup spawns a fresh context.
-**Do this instead:** popup is a thin view over `chrome.storage.local`. Every meaningful user action either RPCs the SW or writes to storage immediately. Subscribe via `storage.onChanged`.
+**人们的做法：** 把 send 历史、prompt 缓存等保存在 popup 的 React state 中，并在卸载时序列化。
+**为什么错：** popup 卸载可能十分突然（焦点丢失、tab 切换）。state 更新可能来不及刷新。重新打开 popup 会产生一个全新的上下文。
+**正确做法：** popup 只是 `chrome.storage.local` 之上的薄视图。每个有意义的用户操作要么 RPC 到 SW，要么立即写入存储。通过 `storage.onChanged` 进行订阅。
 
-### Anti-Pattern 6: Sharing one giant content-script bundle across all adapters
+### 反模式 6：用一个庞大的 content-script bundle 共享所有适配器
 
-**What people do:** ship a single `content.js` that contains all adapters and runs `if (location.host === 'discord.com') ...`.
-**Why it's wrong:** every visit to _any_ of the 14 platforms loads code for the other 13. Doubles your `host_permissions` because the bundle is registered for all hosts. Breaks tree-shaking. Couples adapters together (one breaking adapter breaks all).
-**Do this instead:** one bundle per adapter, programmatically injected only at dispatch time on the matched host.
+**人们的做法：** 发布单一的 `content.js`，包含所有适配器并通过 `if (location.host === 'discord.com') ...` 来判断。
+**为什么错：** 每次访问 _任一_ 14 个平台都会加载其他 13 个平台的代码。会让你的 `host_permissions` 翻倍，因为该 bundle 在所有 host 上都被注册。破坏 tree-shaking。让适配器互相耦合（一个失效的适配器会让所有适配器都失效）。
+**正确做法：** 每个适配器一个 bundle，仅在投递时按匹配的 host 编程注入。
 
-## Integration Points
+## 集成点
 
-### External Services (per-IM web targets)
+### 外部服务（每个 IM 的 web 目标）
 
-| Service                                                         | Integration Pattern                                            | Notes                                                                                                                                                                                                                                    |
-| --------------------------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OpenClaw Web UI (`http://localhost:18789/chat?session=...`)     | Programmatic `executeScript` → adapter → composer DOM          | Local-only; user-controlled UI; expected to be the simplest target. Composer is likely a plain `<textarea>` or a known-stable React form.                                                                                                |
-| Discord Web (`https://discord.com/channels/<server>/<channel>`) | Programmatic `executeScript` → adapter → Slate-backed composer | Hard target. Slate intercepts direct DOM writes. Use clipboard-paste simulation; submit via Enter `keydown` event. UI is unstable across Discord redesigns — adapter must use semantic selectors (`role`, `aria-label`) not class names. |
-| (v2: Slack, Telegram, Lark, Feishu, Teams, …)                   | Same pattern, one adapter file each                            | Each will have its own editor framework (Lexical, ProseMirror, Quill, plain textarea). Document per-adapter strategy in `content/adapters/<id>.ts` header comment.                                                                       |
+| Service                                                         | Integration Pattern                                        | Notes                                                                                                                                                                                    |
+| --------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OpenClaw Web UI (`http://localhost:18789/chat?session=...`)     | 编程方式 `executeScript` → 适配器 → composer DOM           | 仅本地；用户自有 UI；预计是最简单的目标。Composer 很可能是普通 `<textarea>` 或一个稳定的 React 表单。                                                                                    |
+| Discord Web (`https://discord.com/channels/<server>/<channel>`) | 编程方式 `executeScript` → 适配器 → 基于 Slate 的 composer | 困难目标。Slate 会拦截直接 DOM 写入。使用剪贴板粘贴模拟；通过 Enter `keydown` 事件提交。UI 在 Discord 重设计中并不稳定 — 适配器必须使用语义选择器（`role`、`aria-label`）而非 class 名。 |
+| (v2: Slack, Telegram, Lark, Feishu, Teams, …)                   | 同样的模式，每个平台一个适配器文件                         | 各自会有自己的编辑器框架（Lexical、ProseMirror、Quill、原生 textarea）。在 `content/adapters/<id>.ts` 文件头注释中记录每个适配器的策略。                                                 |
 
-### Internal Boundaries
+### 内部边界
 
-| Boundary                        | Communication                                                                                                        | Notes                                                                                                                                                                   |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| popup ↔ SW                      | `chrome.runtime.sendMessage` (one-shot RPC) **or** `chrome.runtime.connect` (long-lived port for streaming progress) | Typed by `Message` discriminated union in `shared/types/messages.ts`. Never `chrome.tabs.sendMessage` from popup.                                                       |
-| SW ↔ content script (extractor) | `chrome.scripting.executeScript` to inject; `chrome.tabs.sendMessage` for the data round-trip                        | Extractor is single-use; injected on demand; replies once and the script context goes idle until next injection.                                                        |
-| SW ↔ content script (adapter)   | Same as extractor: `executeScript` then `tabs.sendMessage(tabId, { type: 'ADAPTER_RUN', message })`                  | Adapter listens for exactly one message, performs `compose+send`, replies, exits.                                                                                       |
-| popup → storage                 | Indirect: popup RPCs SW; SW owns `chrome.storage.local` writes                                                       | Read-side: popup may read directly from `chrome.storage.local` (no permission boundary), but **writes** funnel through SW for invariants (LRU history, schema version). |
-| any layer → i18n                | Direct `chrome.i18n.getMessage` (synchronous, available everywhere)                                                  | Wrapped in `shared/i18n/t.ts` for type-safety on message keys.                                                                                                          |
+| Boundary                        | Communication                                                                                              | Notes                                                                                                                           |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| popup ↔ SW                      | `chrome.runtime.sendMessage`（一次性 RPC）**或** `chrome.runtime.connect`（用于流式进度的长生命周期 port） | 由 `shared/types/messages.ts` 中的 `Message` 判别联合类型化。绝不可在 popup 中使用 `chrome.tabs.sendMessage`。                  |
+| SW ↔ content script (extractor) | 使用 `chrome.scripting.executeScript` 注入；使用 `chrome.tabs.sendMessage` 完成数据往返                    | extractor 是一次性的；按需注入；回复一次后脚本上下文进入空闲，直至下次注入。                                                    |
+| SW ↔ content script (adapter)   | 同 extractor：先 `executeScript`，再 `tabs.sendMessage(tabId, { type: 'ADAPTER_RUN', message })`           | 适配器仅监听一条消息，执行 `compose+send`，回复后退出。                                                                         |
+| popup → storage                 | 间接：popup RPC 给 SW；由 SW 拥有 `chrome.storage.local` 的写入                                            | 读侧：popup 可以直接从 `chrome.storage.local` 读取（无权限边界），但**写**统一汇集到 SW 以维护不变量（LRU 历史、schema 版本）。 |
+| any layer → i18n                | 直接调用 `chrome.i18n.getMessage`（同步、随处可用）                                                        | 在 `shared/i18n/t.ts` 中封装以保证 message key 的类型安全。                                                                     |
 
-## Sources
+## 来源
 
 - [Chrome Extensions Docs — Service Worker Events (top-level listener registration)](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/events) — HIGH
 - [Chrome Extensions Docs — Messaging (sendMessage, ports, content-script communication)](https://developer.chrome.com/docs/extensions/develop/concepts/messaging) — HIGH
@@ -623,5 +623,5 @@ This is a single-user, single-device extension; "scale" means _codebase scale_ (
 
 ---
 
-_Architecture research for: Chrome MV3 Web Clipper + multi-IM dispatch extension_
-_Researched: 2026-04-28_
+_面向以下项目的架构调研：Chrome MV3 Web Clipper + 多 IM 投递扩展_
+_调研时间：2026-04-28_
