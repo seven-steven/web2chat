@@ -1,5 +1,5 @@
 {
-  "extends": ".wxt/tsconfig.json",
+  "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -9,5 +9,5 @@
       "@/shared/*": ["./shared/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "wxt.config.ts", "scripts/**/*.ts"]
+  "include": ["**/*.ts", "**/*.tsx", "wxt.config.ts", "scripts/**/*.ts", ".wxt/wxt.d.ts"]
 }

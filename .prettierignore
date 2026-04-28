@@ -1,0 +1,11 @@
+.output/
+.wxt/
+node_modules/
+coverage/
+dist/
+pnpm-lock.yaml
+playwright-report/
+test-results/
+public/icon/
+.claude/
+.planning/

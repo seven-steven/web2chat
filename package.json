@@ -22,7 +22,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "verify:manifest": "wxt build && tsx scripts/verify-manifest.ts",
-    "postinstall": "wxt prepare && husky"
+    "postinstall": "wxt prepare && husky",
+    "prepare": "husky"
   },
   "dependencies": {
     "@preact/signals": "^2.0.0",
@@ -34,6 +35,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.58.0",
     "@preact/preset-vite": "^2.0.0",
     "@tailwindcss/vite": "^4.0.0",
