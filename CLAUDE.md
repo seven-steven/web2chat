@@ -49,7 +49,7 @@
 - 把 SW 当作无状态：所有状态在 handler 内部从 `chrome.storage.local` / `.session` 读取；不要假设 module-scope 变量在 SW 唤醒后还存在。
 - 跨事件调度使用 `chrome.alarms`，不要使用 `setInterval` / `setTimeout`。
 
-**权限：** `manifest.json` 中只声明 `activeTab` + `scripting` + `storage` + 每个适配器对应的 `host_permissions`。永远不要使用 `<all_urls>`（会被 Web Store 拒审）。未来平台的权限通过 `optional_host_permissions` 按需申请。
+**权限：** `manifest.json` 中只声明 `activeTab` + `scripting` + `storage` + 静态 `host_permissions: ["https://discord.com/*"]`（v1 已知公共域名）+ `optional_host_permissions: ["<all_urls>"]`（覆盖用户自部署 OpenClaw 任意 origin 与未来 v2 平台）。**静态 `host_permissions` 中绝不使用 `<all_urls>`**；`<all_urls>` 只允许出现在 `optional_host_permissions` 中。OpenClaw 适配器在用户配置实例 URL 时通过 `chrome.permissions.request({ origins: [<具体 origin>] })` 动态获取该 origin 权限，授权后绑定到 send_to 历史项持久化到 storage。
 
 **适配器模式：** 每个 IM 平台对应 `content/adapters/<platform>.ts` 一个文件，实现共享的 `IMAdapter` 接口（`match` / `waitForReady` / `compose` / `send`）。投递核心绝不硬编码任何平台特定逻辑。
 

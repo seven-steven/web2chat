@@ -64,17 +64,19 @@
 - **本地优先**：所有配置 / 历史 / 密钥仅落地在 `chrome.storage.local`，禁止默认上行
 - **i18n**：所有 UI 文案必须走 `chrome.i18n` 或同等 i18n 框架，禁止硬编码字符串
 - **发送通道**：通过新开/激活 tab + content script 注入目标会话输入框完成发送，不使用平台官方 Bot API（避免 token 管理与服务端依赖）
+- **权限模型**：抓取走 `activeTab`；静态 `host_permissions` 仅声明 v1 已知公共域名（`https://discord.com/*`）；用户自部署的 OpenClaw 与未来 v2 平台通过 `optional_host_permissions: ["<all_urls>"]` + 运行时 `chrome.permissions.request` 动态获取具体 origin 权限。静态 `host_permissions` 中禁止 `<all_urls>`
 
 ## 关键决策 (Key Decisions)
 
-| 决策                                                 | 理由                                                                                     | 结果     |
-| ---------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------- |
-| Chrome MV3 only（v1）                                | 用户首发只覆盖 Chrome；MV3 是 2025 年 Chromium 主推标准，Firefox/Safari 推后避免分散精力 | — 待评估 |
-| MVP 仅集成 OpenClaw + Discord                        | 这两个平台的 URL pattern 已确定，可优先打通主链路；其余平台沉淀适配模式后批量补齐        | — 待评估 |
-| 通过新开 tab + content script 注入消息（非 Bot API） | 不需要管理服务端 token / OAuth，符合"本地优先"约束，但需要为每个平台维护 DOM 适配器      | — 待评估 |
-| 所有配置 `chrome.storage.local`                      | 隐私优先 + 单设备使用；云同步推到 v2                                                     | — 待评估 |
-| Quality 模型档（GSD agents）                         | 项目核心抽象（适配器架构、i18n 边界）需要更深入的研究与规划                              | — 待评估 |
-| send_to / prompt 绑定 + 历史                         | 让重复任务（如"沉淀到知识库 Agent"）一次配置反复使用，是 Core Value 的关键 UX            | — 待评估 |
+| 决策                                                    | 理由                                                                                                                                                                                                                                                                                                                                     | 结果     |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Chrome MV3 only（v1）                                   | 用户首发只覆盖 Chrome；MV3 是 2025 年 Chromium 主推标准，Firefox/Safari 推后避免分散精力                                                                                                                                                                                                                                                 | — 待评估 |
+| MVP 仅集成 OpenClaw + Discord                           | 这两个平台的 URL pattern 已确定，可优先打通主链路；其余平台沉淀适配模式后批量补齐                                                                                                                                                                                                                                                        | — 待评估 |
+| 通过新开 tab + content script 注入消息（非 Bot API）    | 不需要管理服务端 token / OAuth，符合"本地优先"约束，但需要为每个平台维护 DOM 适配器                                                                                                                                                                                                                                                      | — 待评估 |
+| 所有配置 `chrome.storage.local`                         | 隐私优先 + 单设备使用；云同步推到 v2                                                                                                                                                                                                                                                                                                     | — 待评估 |
+| Quality 模型档（GSD agents）                            | 项目核心抽象（适配器架构、i18n 边界）需要更深入的研究与规划                                                                                                                                                                                                                                                                              | — 待评估 |
+| send_to / prompt 绑定 + 历史                            | 让重复任务（如"沉淀到知识库 Agent"）一次配置反复使用，是 Core Value 的关键 UX                                                                                                                                                                                                                                                            | — 待评估 |
+| OpenClaw origin 走 `optional_host_permissions` 动态申请 | 用户自部署的 OpenClaw 落在任意域名 / IP+端口（如 `http://192.168.1.100:18789`、`https://openclaw.mycompany.com`），无法在 manifest 静态枚举。静态 `host_permissions` 只放 Discord；用户首次配置 OpenClaw 实例 URL 时通过 `chrome.permissions.request` 动态申请该具体 origin。Capture 仍走 `activeTab`，不会因此让出 Web Store 评审优势。 | — 待评估 |
 
 ## 演进 (Evolution)
 
