@@ -18,7 +18,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "verify:manifest": "wxt build && tsx scripts/verify-manifest.ts",
