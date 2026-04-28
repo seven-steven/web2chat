@@ -11,8 +11,8 @@
 
 - Phase：1 / 7（扩展骨架）
 - Plan：当前 phase 0 / TBD
-- 状态：可以开始规划
-- 最近活动：2026-04-28 — Roadmap 已生成（7 个 phase，46/46 个 v1 需求已映射）
+- 状态：上下文已采集，可进入 plan
+- 最近活动：2026-04-29 — Phase 1 CONTEXT.md + DISCUSSION-LOG.md 已写入（4 个 area 全部讨论：storage 极简 / @webext-core/messaging + 混合错误模型 / popup 读写 helloCount 演示 / Tailwind v4 + GitHub Actions CI 起步）
 
 进度：[░░░░░░░░░░] 0%
 
@@ -69,6 +69,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-28（roadmap 生成）
-- 停在哪里：ROADMAP.md + STATE.md 已写入；REQUIREMENTS.md 的 traceability 已回填。Phase 1 可通过 `/gsd-plan-phase 1` 开始规划。
-- Resume 文件：无
+- 上次会话：2026-04-29（Phase 1 discuss）
+- 停在哪里：Phase 1 上下文已采集；CONTEXT.md + DISCUSSION-LOG.md 写入 `.planning/phases/01-foundation/`。可通过 `/gsd-plan-phase 1` 进入规划。
+- Resume 文件：`.planning/phases/01-foundation/01-CONTEXT.md`
