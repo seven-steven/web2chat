@@ -1,0 +1,13 @@
+{
+  "extends": ".wxt/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "paths": {
+      "~/*": ["./*"],
+      "@/shared/*": ["./shared/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "wxt.config.ts", "scripts/**/*.ts"]
+}

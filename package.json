@@ -1,0 +1,54 @@
+{
+  "name": "web2chat",
+  "version": "0.1.0",
+  "description": "Chrome MV3 web-clipper extension that delivers structured page metadata + a user-defined prompt into a target IM / AI Agent web chat session.",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "build:firefox": "echo 'firefox build deferred to v2' && exit 0",
+    "zip": "wxt zip",
+    "compile": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "verify:manifest": "wxt build && tsx scripts/verify-manifest.ts",
+    "postinstall": "wxt prepare && husky"
+  },
+  "dependencies": {
+    "@preact/signals": "^2.0.0",
+    "@webext-core/messaging": "^2.0.0",
+    "@wxt-dev/browser": "^0.1.40",
+    "@wxt-dev/i18n": "^0.2.5",
+    "preact": "^10.29.1",
+    "wxt": "^0.20.25",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "@preact/preset-vite": "^2.0.0",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/chrome": "^0.1.40",
+    "eslint": "^9.20.0",
+    "eslint-config-prettier": "^10.0.0",
+    "happy-dom": "^15.0.0",
+    "husky": "^9.1.0",
+    "lint-staged": "^15.5.0",
+    "playwright": "^1.58.0",
+    "prettier": "^3.4.0",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.20.0",
+    "vitest": "^3.2.4"
+  }
+}
