@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+
+/* popup-local overrides — keep minimal in Phase 1 */
+:root {
+  color-scheme: light dark;
+}

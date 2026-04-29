@@ -4,11 +4,17 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "paths": {
       "~/*": ["./*"],
       "@/*": ["./*"],
       "@/shared/*": ["./shared/*"],
-      "#i18n": ["./.wxt/i18n/index.ts"]
+      "#i18n": ["./.wxt/i18n/index.ts"],
+      "react": ["./node_modules/preact/compat/"],
+      "react/jsx-runtime": ["./node_modules/preact/jsx-runtime/"],
+      "react-dom": ["./node_modules/preact/compat/"],
+      "react-dom/*": ["./node_modules/preact/compat/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "wxt.config.ts", "scripts/**/*.ts", ".wxt/wxt.d.ts"]
