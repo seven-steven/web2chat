@@ -19,6 +19,7 @@ pnpm build           # 生产构建到 .output/chrome-mv3/
 pnpm verify:manifest # 校验 manifest 形态（CI 同款检查）
 pnpm test            # Vitest 单元测试
 pnpm test:e2e        # Playwright e2e（本地，需要 headed Chromium；CI 不跑此步）
+                     # 首次跑前必须先安装浏览器：pnpm exec playwright install chromium
 pnpm typecheck       # tsc --noEmit
 pnpm lint            # ESLint flat config
 ```
@@ -62,13 +63,19 @@ pnpm lint            # ESLint flat config
 ### #4 — SW 重启韧性（FND-02 + ROADMAP 成功标准 #4）
 
 1. 加载 unpacked 后点击图标 → 记下当前 helloCount（设为 N）
-2. 在 `chrome://extensions` 卡片上展开 **Inspect views** → 点击 `service worker` → 在 DevTools 顶部点击 **Stop**（红色方块按钮）
-3. 立即点击 action 图标 → popup 显示 `(×{N+1})`，证明：
+2. 打开 `chrome://serviceworker-internals/`（Chrome 138+ 已从 chrome://extensions 卡片移除 Stop 按钮，必须走此页面）
+3. 在列表中找到 Web2Chat 的 SW（按 scope 中的扩展 ID 过滤），点击 **Stop**
+4. 立即点击工具栏 action 图标 → popup 显示 `(×{N+1})`，证明：
    - SW 监听器在模块顶层同步注册（FND-02）
    - chrome.scripting / chrome.runtime listener 在 SW 唤醒时正确恢复
    - 没有依赖任何模块作用域状态（陷阱 3）
 
-或一行执行：`pnpm test:e2e`（Playwright 自动用 `chrome.runtime.reload` 模拟同等路径）
+或一行执行（先安装 Chromium binary）：
+
+```bash
+pnpm exec playwright install chromium   # 首次必跑；约 150 MB
+pnpm test:e2e                            # Playwright 用 chrome.runtime.reload 模拟同等路径
+```
 
 ### #5 — 校验 CI 步骤本地复现（D-11 + ROADMAP 成功标准 #5）
 
