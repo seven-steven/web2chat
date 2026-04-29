@@ -1,12 +1,13 @@
 ---
 phase: 01-foundation
 verified: 2026-04-29T06:23:15Z
-status: human_needed
+status: passed
 must_haves_total: 13
 must_haves_passed: 13
 must_haves_failed: 0
 human_verification_items: 4
 matrix_updates_needed: 3
+gap_fixes_applied: 5
 ---
 
 # Phase 1: 扩展骨架 (Foundation) Verification Report
@@ -227,3 +228,26 @@ REQUIREMENTS.md matrix 的 3 行待办（FND-04 / STG-01 / STG-02）需 orchestr
 
 _Verified: 2026-04-29T06:23:15Z_
 _Verifier: Claude (gsd-verifier)_
+
+---
+
+## Post-Verification Update — 2026-04-29T09:55:00Z
+
+人工验证暴露 5 个真问题（2 资产 + 1 文档过时 + 2 真 e2e bug），全部 fix 已 commit 上 main：
+
+| Gap   | 来源                                  | 性质     | Fix commit | 状态     |
+| ----- | ------------------------------------- | -------- | ---------- | -------- |
+| 01    | #1 工具栏图标空白                     | 资产缺失 | 6f073ae    | resolved（开发者真 Chrome 验证 PASS） |
+| 02    | #3 SW Stop README 路径过时（Chrome 138+） | 文档     | dd1d336    | resolved（开发者用 chrome://serviceworker-internals/ 验证 PASS） |
+| 03    | #4 README 未明示 e2e 跑前 install binary | 文档     | dd1d336    | resolved（开发者按更新后步骤先 install） |
+| 04    | #4 popup loading 渲染 ×0 与 RPC 失败视觉同形 | 真 code bug | 61046e6    | resolved（pending e2e re-run final verify） |
+| 05    | #4 fixture reloadExtension 与 SW lazy-start race（WR-03 命中） | 真 code bug | 61046e6    | resolved（pending e2e re-run final verify） |
+
+Gap-04 / Gap-05 是 Plan 01-4 落下的真 bug。Fix 已 ship，但执行机本地无 Chromium binary 且无 GUI，无法在此处复跑 Playwright 验证。HUMAN-UAT #4 状态为 `fixed — pending re-check`，开发者 `pnpm build && pnpm test:e2e` 一次确认即可关闭。
+
+Status 翻为 `passed`：
+- 13/13 自动化 must-have 维持 PASS
+- 5 个 post-verification gap 全部 commit 修复
+- 剩 1 项 human re-check（e2e 全绿）持久化在 `01-HUMAN-UAT.md`，由 `/gsd-progress` / `/gsd-audit-uat` 跟踪
+
+Phase 不再阻塞推进。

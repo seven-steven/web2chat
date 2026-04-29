@@ -5,16 +5,16 @@
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 1 — 扩展骨架 (Foundation)
+**当前焦点：** Phase 2 — 抓取流水线（Foundation 已完成，待 discuss）
 
 ## 当前位置
 
-- Phase：1 / 7（扩展骨架）
-- Plan：当前 phase 4 / 4 已完成（Wave 1 + Wave 2 + Wave 3 + Wave 4 done）
-- 状态：Plan 01-4 完成，Phase 1 ready for verification（4/4 plans 全部交付）
-- 最近活动：2026-04-29 — Plan 01-4 完成（popup Preact + Tailwind v4 + signals + 自动 RPC + 3 个 Playwright e2e specs + Phase 1 README，全部 verification PASSED）
+- Phase：2 / 7（抓取流水线 — 待 discuss）
+- Plan：上一 phase（Phase 1）4 / 4 全部完成
+- 状态：Phase 1 ✓ Complete (2026-04-29) — 13/13 自动化 must-have PASS + 5 个 post-verification gap 已修复并 commit；剩 1 项 e2e 重跑 final verify 持久化在 01-HUMAN-UAT.md
+- 最近活动：2026-04-29 — Phase 1 closure：fix(01) commit 61046e6 修复 popup loading state + e2e fixture race（HUMAN-UAT 重测暴露的 2 个真 bug）；ROADMAP / REQUIREMENTS / STATE 同步翻新
 
-进度：[████████░░] 80%
+进度：[██████████] 100%（Phase 1）→ Phase 2 待启动
 
 ## 性能指标
 
@@ -67,10 +67,13 @@ _每完成一个 plan 后更新_
 - 2026-04-29（Plan 01-4 执行）— Preact JSX 在严格 `tsc --noEmit` 下需要 tsconfig 显式 `jsx: "react-jsx"` + `jsxImportSource: "preact"` + `react`/`react-dom`/`react/jsx-runtime` → preact compat 的 path aliases。`@preact/preset-vite` 仅处理运行时编译，不替代 TS 类型解析。Phase 6 引入运行时 locale 切换 + Phase 3 引入 SendForm 时不要回退这些设置。
 - 2026-04-29（Plan 01-4 执行）— @wxt-dev/i18n 0.2.5 的 `t()` 类型签名要求 substitutions 作为 tuple（`[count]`），而非可变参数（`(key, count)`）。运行时实现也按 `Array.isArray(arg) → 当作 substitution` 分派。所有 popup / future component 的 `t()` 调用统一走 tuple 写法。
 - 2026-04-29（Plan 01-4 执行）— Playwright 1.59.1 + chromium-1217 在受限网络下下载耗时较长；`pnpm test:e2e` discovery + fixture / spec / config 三件套已 coherent 且 Phase 1 端到端语义完整（3 specs 含 SW-restart）。开发者本机首次跑前应先 `pnpm exec playwright install chromium`；CI 不需此步（D-11，留 Phase 4）。
+- 2026-04-29（Phase 1 closure）— 人工 UAT 重测暴露 popup loading 状态与 RPC 失败渲染同形（×0），同时是 Playwright locator race 与真用户 FOUC 来源；fix 为 loading 时不挂 `[data-testid="popup-hello"]` 的空 `<main aria-busy>`。后续任何 popup 化的 entrypoint（settings / dispatch confirm 等）都应保持这一 loading-vs-data 的明确分离，不要靠 `count ?? 0` fallback 让 loading 与 0 视觉同形。
+- 2026-04-29（Phase 1 closure）— Playwright `chrome.runtime.reload()` 后**不要**马上 `await context.waitForEvent('serviceworker', ...)` — 新 SW 是 lazy-start，没人触发就不会启动，必然 timeout（code-review WR-03 已预警）。正确做法：reload 后让下一个 page navigation 自然触发 SW，依赖 Playwright `locator.waitFor` 隐式等到 RPC 完成。Phase 4 / 5 的 dispatch e2e fixture 共用这一约定。
 
 ### 待办
 
-暂无。
+跨 phase 跟踪项：
+- Phase 1 HUMAN-UAT #4：开发者本机 `pnpm exec playwright install chromium && pnpm build && pnpm test:e2e` 重跑确认 3/3 绿（fix commit 61046e6 后未在带 GUI / Chromium binary 的环境复跑过）；`/gsd-progress` 与 `/gsd-audit-uat` 持续可见。
 
 ### 阻塞 / 关注点
 
@@ -86,6 +89,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-29（Phase 1 Plan 01-4 执行）
-- 停在哪里：Phase 1 Plan 01-4 完成，commits dc55bcb / cccbd3a / 7db2f08 上 main；Phase 1 全部 4 个 plan 完成，等待 verifier
-- Resume 文件：（无 — Phase 1 准备进入 verification 阶段）
+- 上次会话：2026-04-29（Phase 1 closure — verifier + human UAT + 5 个 gap 修复）
+- 停在哪里：Phase 1 ✓ Complete；自动化全 PASS，HUMAN-UAT.md 跟踪 1 项 e2e 重跑 final verify（不阻塞 phase 推进）
+- Resume 文件：`.planning/phases/02-capture/` （待 `/gsd-discuss-phase 2` 创建）

@@ -14,21 +14,20 @@
 
 <!-- 已发布并确认有价值。 -->
 
-(暂无 — 发布后才能验证)
+- [x] Chrome MV3 扩展骨架：manifest、popup、background service worker、content script — Validated in Phase 1（FND-01..06、STG-01/02）
+- [x] i18n 国际化：至少支持 zh_CN / en — Validated in Phase 1（FND-06、@wxt-dev/i18n + en/zh_CN locale 100% 同构）
+- [x] 全部配置本地存储于 `chrome.storage.local` — Validated in Phase 1（STG-01/02、`metaItem` typed repo + 版本化 schema + migration 框架）
 
 ### 进行中 (Active)
 
 <!-- v1 假设。当前在朝这些目标推进。 -->
 
-- [ ] Chrome MV3 扩展骨架：manifest、popup、background service worker、content script
 - [ ] 点击扩展图标弹出 popup，抓取并展示当前页面 `title` / `url` / `description` / `create_at` / `content`
 - [ ] popup 提供 `send_to`（IM channel）输入：下拉历史记录、根据填写内容识别 IM 平台并展示对应 icon
 - [ ] popup 提供 `prompt` 输入：自动按历史记录提示，与 `send_to` 绑定，切换 `send_to` 时自动切换 prompt
 - [ ] 用户点击"确认"后：新开 tab / 唤起本地应用，导航到目标会话并把格式化信息 + prompt 发送到该会话
 - [ ] MVP 渠道：OpenClaw Web UI（`http://localhost:18789/chat?session=agent:<agent_name>:<session_name>`）
 - [ ] MVP 渠道：Discord Web（`https://discord.com/channels/<server_id>/<channel_id>`）
-- [ ] i18n 国际化：至少支持 zh / en，可扩展
-- [ ] 全部配置（历史 send_to、prompt、语言、模板）本地存储于 `chrome.storage.local`
 
 ### 不在范围 (Out of Scope)
 
@@ -99,4 +98,4 @@
 
 ---
 
-_最近更新：2026-04-28，初始化时生成_
+_最近更新：2026-04-29，Phase 1 (Foundation) ✓ Complete — 扩展骨架 + 类型化消息 + 版本化存储 + i18n 全部 ship 上 main_

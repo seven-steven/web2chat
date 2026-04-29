@@ -11,7 +11,7 @@ Web2Chat 是一个 Chrome MV3 扩展，用于抓取结构化的页面元数据 +
 - 整数 phase（1–7）：v1.0 已规划的里程碑工作
 - 小数 phase（例如 2.1）：保留给执行过程中发现的紧急插入项
 
-- [ ] **Phase 1: 扩展骨架 (Foundation)** *(In Progress — 4/4 plans complete, awaiting verifier)* - 基于 WXT 的 MV3 脚手架，从第一天起就接入类型化消息、存储 schema 与 i18n
+- [x] **Phase 1: 扩展骨架 (Foundation)** ✓ Complete (2026-04-29) - 基于 WXT 的 MV3 脚手架，从第一天起就接入类型化消息、存储 schema 与 i18n
 - [ ] **Phase 2: 抓取流水线** - 点击进入 popup 的元数据抓取 + Readability 内容抽取与 sanitisation
 - [ ] **Phase 3: 投递核心 + Popup UI** - 标签页打开/注入编排、send_to ↔ prompt 绑定、草稿持久化、生命周期 badge
 - [ ] **Phase 4: OpenClaw 适配器** - 在友好的本地目标上验证首条端到端投递链路
