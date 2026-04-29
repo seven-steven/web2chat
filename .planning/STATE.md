@@ -68,12 +68,11 @@ _每完成一个 plan 后更新_
 - 2026-04-29（Plan 01-4 执行）— @wxt-dev/i18n 0.2.5 的 `t()` 类型签名要求 substitutions 作为 tuple（`[count]`），而非可变参数（`(key, count)`）。运行时实现也按 `Array.isArray(arg) → 当作 substitution` 分派。所有 popup / future component 的 `t()` 调用统一走 tuple 写法。
 - 2026-04-29（Plan 01-4 执行）— Playwright 1.59.1 + chromium-1217 在受限网络下下载耗时较长；`pnpm test:e2e` discovery + fixture / spec / config 三件套已 coherent 且 Phase 1 端到端语义完整（3 specs 含 SW-restart）。开发者本机首次跑前应先 `pnpm exec playwright install chromium`；CI 不需此步（D-11，留 Phase 4）。
 - 2026-04-29（Phase 1 closure）— 人工 UAT 重测暴露 popup loading 状态与 RPC 失败渲染同形（×0），同时是 Playwright locator race 与真用户 FOUC 来源；fix 为 loading 时不挂 `[data-testid="popup-hello"]` 的空 `<main aria-busy>`。后续任何 popup 化的 entrypoint（settings / dispatch confirm 等）都应保持这一 loading-vs-data 的明确分离，不要靠 `count ?? 0` fallback 让 loading 与 0 视觉同形。
-- 2026-04-29（Phase 1 closure）— Playwright `chrome.runtime.reload()` 后**不要**马上 `await context.waitForEvent('serviceworker', ...)` — 新 SW 是 lazy-start，没人触发就不会启动，必然 timeout（code-review WR-03 已预警）。正确做法：reload 后让下一个 page navigation 自然触发 SW，依赖 Playwright `locator.waitFor` 隐式等到 RPC 完成。Phase 4 / 5 的 dispatch e2e fixture 共用这一约定。
+- 2026-04-29（Phase 1 closure）— Playwright `chrome.runtime.reload()` **不要**用来模拟 SW restart。在 `launchPersistentContext + --load-extension`（unpacked dev mode）下它卸载扩展但不自动重新启用——extension URL 在 5+ 秒内 `ERR_BLOCKED_BY_CLIENT`，新 SW 永远不上线。正确 API 是 CDP `ServiceWorker.stopWorker`（chrome://serviceworker-internals/ Stop 按钮的底层调用），仅杀 SW 进程不卸载扩展，下次 message 自然唤醒新 SW；fixture 通过 throwaway helper page 创建 page-level CDP session（newCDPSession 不接受 Worker，但 ServiceWorker domain 可经任意 page session 访问）。Phase 4 / 5 的 dispatch e2e fixture 共用这一约定。
 
 ### 待办
 
-跨 phase 跟踪项：
-- Phase 1 HUMAN-UAT #4：开发者本机 `pnpm exec playwright install chromium && pnpm build && pnpm test:e2e` 重跑确认 3/3 绿（fix commit 61046e6 后未在带 GUI / Chromium binary 的环境复跑过）；`/gsd-progress` 与 `/gsd-audit-uat` 持续可见。
+暂无（Phase 1 全部 closure，HUMAN-UAT.md 已 resolved）。
 
 ### 阻塞 / 关注点
 
@@ -89,6 +88,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-29（Phase 1 closure — verifier + human UAT + 5 个 gap 修复）
-- 停在哪里：Phase 1 ✓ Complete；自动化全 PASS，HUMAN-UAT.md 跟踪 1 项 e2e 重跑 final verify（不阻塞 phase 推进）
+- 上次会话：2026-04-29（Phase 1 closure — verifier + human UAT + 5 个 gap 修复 + Gap-05 v1→v4 5 次迭代后用 CDP ServiceWorker.stopWorker 终结）
+- 停在哪里：Phase 1 ✓ Complete + 100% verified（自动化 13/13 + HUMAN-UAT 4/4 全绿；e2e 3/3 本机 Xwayland 验证通过 4.2s）
 - Resume 文件：`.planning/phases/02-capture/` （待 `/gsd-discuss-phase 2` 创建）
