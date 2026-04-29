@@ -3,7 +3,7 @@ status: partial
 phase: 01-foundation
 source: [01-VERIFICATION.md]
 started: 2026-04-29T06:23:15Z
-updated: 2026-04-29T09:55:00Z
+updated: 2026-04-29T18:30:00Z
 ---
 
 # Phase 1 — 人工验证清单
@@ -43,11 +43,12 @@ updated: 2026-04-29T09:55:00Z
 - ROADMAP 成功标准 #5 末段 + #4 自动化等价路径
 - 步骤：`pnpm exec playwright install chromium` → `pnpm test:e2e`
 - expected: 3 specs 全绿（first mount=1 / 三连递增 / SW reload 后递增）
-- result: fixed — pending re-check
-- note: 首测 (2026-04-29 06:23 UTC) 因缺 chromium binary 全部 fail（不是 code bug）。重测 (09:55 UTC) install binary 后跑出 1 ✓ + 2 ✗ 真 code bug：
-  - test #2 [0,0,0] 期望 [N,N+1,N+2] — popup loading 状态渲染 `(×0)` 与 RPC 失败视觉同形 → Gap-04
-  - test #3 `waitForEvent('serviceworker')` 10s 超时 — fixture race（WR-03 已预警） → Gap-05
-  已在 commit 61046e6 修复，开发者下次 `pnpm build && pnpm test:e2e` 应 3/3 绿。
+- result: 2/3 pass — pending 3rd e2e re-run
+- note: 进度记录：
+  - 首测 (06:23 UTC): 3/3 fail — chromium binary missing（Gap-03 文档 fix）
+  - 重测 1 (09:55 UTC): 1/3 pass — 暴露 Gap-04（popup loading ×0 race）+ Gap-05（fixture race）
+  - 重测 2 (18:00 UTC): 2/3 pass — Gap-04 fix 验证 ✓；Gap-05 fix v1 走太极端，触发 ERR_BLOCKED_BY_CLIENT
+  - Gap-05 fix v2 已 commit 2485413（poll 新 SW reference），等开发者本机第 3 次 re-run 确认 3/3 绿。
 
 ## Summary
 
@@ -91,9 +92,11 @@ blocked: 0
 - status: resolved
 - commit: 61046e6
 
-### Gap-05: e2e fixture reloadExtension 与 SW lazy-start 竞态 (resolved)
+### Gap-05: e2e fixture reloadExtension 与 SW lazy-start 竞态 (resolved — 2 iterations)
 - 来源: HUMAN-UAT #4 重测 — `tests/e2e/popup-rpc.spec.ts:50` test #3 fail（10s timeout on `context.waitForEvent('serviceworker')`）
 - 描述: `tests/e2e/fixtures.ts:43-53` `reloadExtension` 先 `await sw.evaluate(() => chrome.runtime.reload())` 再 `await context.waitForEvent('serviceworker', { timeout: 10_000 })`。`chrome.runtime.reload()` 卸载 SW，新 SW 是 lazy-start，没有 trigger 不会启动 → waitForEvent 永远超时。code-review WR-03 已预警这一 race。
-- 修复: 2026-04-29 09:55 UTC — `fixtures.ts` 移除 reload 后的 `waitForEvent`。下一步 test 代码（`newPage` + `goto popup.html`）即是天然 trigger，Playwright `locator.waitFor` 隐式等待 popup mount + RPC resolve，正确闸门 assert，且无 fragile event race。
-- status: resolved
-- commit: 61046e6
+- 修复 v1 (commit 61046e6): 移除 reload 后的 `waitForEvent`，依赖下一个 page navigation 触发 SW + Playwright `locator.waitFor` 隐式等待。
+- 修复 v1 复跑结果 (2026-04-29 18:00 UTC): test #3 改报 `net::ERR_BLOCKED_BY_CLIENT` on `chrome-extension://...popup.html` — 走得太极端，extension URL 在 reload 撕掉旧进程的瞬间不可访问。
+- 修复 v2 (commit 2485413): poll `context.serviceWorkers()` 直到出现一个**不同 reference** 的新 SW 实例（chromium 在 `chrome.runtime.reload()` 后通常 eagerly re-create SW，不是 lazy；lazy 仅发生在 SW 主动 unload 后），最多 5s timeout。`evaluate()` 加 try/catch 因为旧 SW 会在 reload 中途被销毁。这才是反映 "extension reloaded and ready" 的真实信号。
+- status: resolved (pending 第三次 re-run final verify)
+- commit: 61046e6 (v1) + 2485413 (v2)
