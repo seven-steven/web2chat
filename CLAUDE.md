@@ -121,7 +121,17 @@ ASCII 图、完整目录布局、以及类型化 `IMAdapter` 接口详见 `.plan
 
 ## 开发者画像 (Developer Profile)
 
-> 画像尚未配置。运行 `/gsd-profile-user` 生成开发者画像。
-> 本节由 `generate-claude-profile` 管理 — 请勿手动编辑。
+> 由 `/gsd-profile-user` 于 2026-04-29 生成 | 270 messages / 12 projects
+> 本节由 `generate-claude-profile` 管理 — 请勿手动编辑。完整画像见 `.planning/USER-PROFILE.md`。
+
+**Language:** zh-CN (简体中文)
+**Communication:** `terse-direct` (HIGH) — 匹配简洁风格，收到任务直接执行，不复述需求。
+**Decisions:** `fast-intuitive` (MEDIUM) — 先给推荐方案 + 简短理由，不列长对比表。
+**Explanations:** `code-only` (HIGH) + override — 常规任务直接给代码；**关键设计决策和陌生技术栈需要概念性讲解**（用户明确要求）。
+**Debugging:** `hypothesis-driven` (MEDIUM) — 先验证开发者的假设，再给修复方案；修复失败时直接给纠正方案，不重复解释问题。
+**UX:** `pragmatic` (LOW) — 默认功能优先；开发者给出具体设计方向时精确执行。
+**Vendor:** `opinionated` (MEDIUM) — 尊重已选定的工具，不建议替代方案（除非有技术阻塞）。
+**Frustrations:** `regression` (MEDIUM) — 改动前验证现有功能不受影响；修复失败立即承认并纠正，不叠加更多变更。不做超出请求范围的改动。
+**Learning:** `self-directed` (MEDIUM) — 精准回答，不填充未被要求的背景上下文。
 
 <!-- GSD:profile-end -->
