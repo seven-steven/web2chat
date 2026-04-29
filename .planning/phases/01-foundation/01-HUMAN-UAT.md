@@ -1,9 +1,9 @@
 ---
-status: partial
+status: resolved
 phase: 01-foundation
 source: [01-VERIFICATION.md]
 started: 2026-04-29T06:23:15Z
-updated: 2026-04-29T18:30:00Z
+updated: 2026-04-29T18:45:00Z
 ---
 
 # Phase 1 — 人工验证清单
@@ -14,7 +14,7 @@ updated: 2026-04-29T18:30:00Z
 
 ## Current Test
 
-[awaiting human re-check after icon + README fixes]
+[all tests resolved]
 
 ## Tests
 
@@ -43,19 +43,21 @@ updated: 2026-04-29T18:30:00Z
 - ROADMAP 成功标准 #5 末段 + #4 自动化等价路径
 - 步骤：`pnpm exec playwright install chromium` → `pnpm test:e2e`
 - expected: 3 specs 全绿（first mount=1 / 三连递增 / SW reload 后递增）
-- result: 2/3 pass — pending 3rd e2e re-run
+- result: pass
 - note: 进度记录：
   - 首测 (06:23 UTC): 3/3 fail — chromium binary missing（Gap-03 文档 fix）
   - 重测 1 (09:55 UTC): 1/3 pass — 暴露 Gap-04（popup loading ×0 race）+ Gap-05（fixture race）
   - 重测 2 (18:00 UTC): 2/3 pass — Gap-04 fix 验证 ✓；Gap-05 fix v1 走太极端，触发 ERR_BLOCKED_BY_CLIENT
-  - Gap-05 fix v2 已 commit 2485413（poll 新 SW reference），等开发者本机第 3 次 re-run 确认 3/3 绿。
+  - 重测 3 (18:25 UTC): 2/3 pass — Gap-05 fix v2 polling 5s timeout（chromium 不 eagerly re-create SW after reload）
+  - 重测 4 本机 Xwayland (18:35 UTC): 2/3 pass — Gap-05 fix v3 probe `manifest.json` 仍命中 ERR_BLOCKED_BY_CLIENT；最终诊断 chrome.runtime.reload 在 launchPersistentContext + --load-extension 下不自动重新启用扩展
+  - 重测 5 本机 Xwayland (18:42 UTC): **3/3 pass** ✓ — Gap-05 fix v4 改用 CDP `ServiceWorker.stopWorker`（chrome://serviceworker-internals/ Stop 按钮的底层调用），不卸载扩展、仅杀 SW 进程；下一次 page.goto + sendMessage 自然唤醒新 SW，证实 FND-02 顶层 listener 注册契约。
 
 ## Summary
 
 total: 4
-passed: 3
+passed: 4
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 
@@ -92,11 +94,14 @@ blocked: 0
 - status: resolved
 - commit: 61046e6
 
-### Gap-05: e2e fixture reloadExtension 与 SW lazy-start 竞态 (resolved — 2 iterations)
+### Gap-05: e2e fixture reloadExtension — 5 次迭代后改用 CDP ServiceWorker.stopWorker (resolved)
 - 来源: HUMAN-UAT #4 重测 — `tests/e2e/popup-rpc.spec.ts:50` test #3 fail（10s timeout on `context.waitForEvent('serviceworker')`）
-- 描述: `tests/e2e/fixtures.ts:43-53` `reloadExtension` 先 `await sw.evaluate(() => chrome.runtime.reload())` 再 `await context.waitForEvent('serviceworker', { timeout: 10_000 })`。`chrome.runtime.reload()` 卸载 SW，新 SW 是 lazy-start，没有 trigger 不会启动 → waitForEvent 永远超时。code-review WR-03 已预警这一 race。
-- 修复 v1 (commit 61046e6): 移除 reload 后的 `waitForEvent`，依赖下一个 page navigation 触发 SW + Playwright `locator.waitFor` 隐式等待。
-- 修复 v1 复跑结果 (2026-04-29 18:00 UTC): test #3 改报 `net::ERR_BLOCKED_BY_CLIENT` on `chrome-extension://...popup.html` — 走得太极端，extension URL 在 reload 撕掉旧进程的瞬间不可访问。
-- 修复 v2 (commit 2485413): poll `context.serviceWorkers()` 直到出现一个**不同 reference** 的新 SW 实例（chromium 在 `chrome.runtime.reload()` 后通常 eagerly re-create SW，不是 lazy；lazy 仅发生在 SW 主动 unload 后），最多 5s timeout。`evaluate()` 加 try/catch 因为旧 SW 会在 reload 中途被销毁。这才是反映 "extension reloaded and ready" 的真实信号。
-- status: resolved (pending 第三次 re-run final verify)
-- commit: 61046e6 (v1) + 2485413 (v2)
+- 描述: code-review WR-03 已预警的 race。深入排查后确认根因：`chrome.runtime.reload()` 在 Playwright `launchPersistentContext + --load-extension` (unpacked dev mode) 下卸载扩展但不自动重新启用 — 这条路径仅对 packed extension 有效。
+- 修复 v1 (commit 61046e6): 移除 `waitForEvent`。结果：`page.goto chrome-extension://...` 命中 `ERR_BLOCKED_BY_CLIENT`。
+- 修复 v2 (commit 2485413): poll `context.serviceWorkers()` 等新 SW reference。结果：5s timeout，chromium 不 eagerly re-create SW。
+- 修复 v3 (commit e3cdd97): 等旧 SW 销毁 + probe `manifest.json` 唤醒新 SW，带 retry。结果：本机 Xwayland 复跑仍 `ERR_BLOCKED_BY_CLIENT` — 扩展实质上 unload 了 5+ 秒，没有 navigate 路径能将其唤醒。
+- 修复 v4 (commit fc74cd3): 弃用 `chrome.runtime.reload()`，改用 CDP `ServiceWorker.stopWorker` — 这是 chrome://serviceworker-internals/ Stop 按钮的底层 API，仅杀 SW 进程不卸载扩展。下次 page.goto popup.html → sendMessage 自然唤醒新 SW，模块顶层重新执行、listener 重新注册（FND-02 + ROADMAP #4 契约真实呈现）。
+- 实施细节：Playwright `BrowserContext.newCDPSession` 只接受 Page（不接受 Worker），所以开一个 throwaway helper page → page-level CDP session → 启用 ServiceWorker domain（domain 是 browser-scoped，可从任意 context CDP session 访问）→ 通过 `workerVersionUpdated` 事件按 `scriptURL` 含 extensionId 匹配 versionId → `stopWorker(versionId)`。
+- 本机 Xwayland 验证：`DISPLAY=:1 pnpm test:e2e` 3/3 pass (4.2s)。
+- status: resolved
+- commit: 61046e6 (v1) → 2485413 (v2) → e3cdd97 (v3) → fc74cd3 (v4 final)
