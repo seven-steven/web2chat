@@ -45,10 +45,17 @@ export const test = base.extend<{
       const [sw] = context.serviceWorkers();
       if (!sw) throw new Error('[e2e] no service worker to reload');
       // chrome.runtime.reload() restarts the extension; equivalent to
-      // chrome://extensions → Stop+restart for our purposes.
+      // chrome://serviceworker-internals/ → Stop+restart for our purposes.
+      //
+      // Important: we do NOT await `waitForEvent('serviceworker')` here.
+      // After reload(), the new SW is lazy-start — it only spins up when
+      // something triggers it (a popup navigate, a runtime message, etc.).
+      // The next test step (typically `newPage` + `goto popup.html`) is
+      // exactly such a trigger; Playwright's implicit `locator.waitFor`
+      // will block until the popup mounts AND the RPC resolves. Adding a
+      // `waitForEvent` here just produces a 10s race-condition timeout
+      // (#WR-03) without making the test more correct.
       await sw.evaluate(() => chrome.runtime.reload());
-      // Wait for the new SW to come up (replaces the old one).
-      await context.waitForEvent('serviceworker', { timeout: 10_000 });
     });
   },
 });

@@ -39,14 +39,33 @@ export function App() {
   }, []);
 
   const count = helloCount.value;
+  const error = errorMessage.value;
+
+  // Loading state: RPC in-flight, no decision yet. Render an empty,
+  // aria-busy <main> instead of popup_hello with `count=0` — the latter
+  // would (a) flash a misleading "×0" to real users for ~50–500ms and
+  // (b) make Playwright `locator('[data-testid="popup-hello"]')` race
+  // with the RPC completion (a `(×0)` placeholder defeats the locator's
+  // implicit wait). Holding the test-id back until we have a real
+  // count or a real error is the simplest way to keep both contracts honest.
+  if (count === null && error === null) {
+    return (
+      <main
+        class="flex flex-col items-center justify-center gap-2 p-6 font-sans text-base"
+        aria-busy="true"
+        data-testid="popup-loading"
+      />
+    );
+  }
+
   return (
     <main class="flex flex-col items-center justify-center gap-2 p-6 font-sans text-base">
       <h1 class="m-0 text-lg font-semibold" data-testid="popup-hello">
-        {count === null ? t('popup_hello', [0]) : t('popup_hello', [count])}
+        {t('popup_hello', [count ?? 0])}
       </h1>
-      {errorMessage.value !== null && (
+      {error !== null && (
         <p class="m-0 text-xs text-red-600" data-testid="popup-error">
-          {errorMessage.value}
+          {error}
         </p>
       )}
     </main>
