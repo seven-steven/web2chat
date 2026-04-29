@@ -42,20 +42,38 @@ export const test = base.extend<{
   },
   reloadExtension: async ({ context }, use) => {
     await use(async () => {
-      const [sw] = context.serviceWorkers();
-      if (!sw) throw new Error('[e2e] no service worker to reload');
+      const initial = context.serviceWorkers();
+      if (initial.length === 0) throw new Error('[e2e] no service worker to reload');
+      const oldSw = initial[0]!;
+
       // chrome.runtime.reload() restarts the extension; equivalent to
       // chrome://serviceworker-internals/ → Stop+restart for our purposes.
+      // The evaluate() may itself throw because the SW we're calling is
+      // about to be destroyed — swallow that, the reload still happens.
+      try {
+        await oldSw.evaluate(() => chrome.runtime.reload());
+      } catch {
+        // expected — old SW killed mid-evaluate
+      }
+
+      // Poll until a NEW SW instance (distinct reference from oldSw)
+      // is registered. We can't use `waitForEvent('serviceworker')` here
+      // because Chromium may register the new SW between our reload()
+      // call and the listener attachment (race), and we can't use a
+      // simple `waitForTimeout` because the actual settle time varies.
+      // Polling for reference inequality is the only signal that
+      // tracks the actual "extension is reloaded and ready" state.
       //
-      // Important: we do NOT await `waitForEvent('serviceworker')` here.
-      // After reload(), the new SW is lazy-start — it only spins up when
-      // something triggers it (a popup navigate, a runtime message, etc.).
-      // The next test step (typically `newPage` + `goto popup.html`) is
-      // exactly such a trigger; Playwright's implicit `locator.waitFor`
-      // will block until the popup mounts AND the RPC resolves. Adding a
-      // `waitForEvent` here just produces a 10s race-condition timeout
-      // (#WR-03) without making the test more correct.
-      await sw.evaluate(() => chrome.runtime.reload());
+      // Without this gate, the next test step's `page.goto(chrome-extension://.../popup.html)`
+      // races against the reload and may hit `net::ERR_BLOCKED_BY_CLIENT`
+      // (extension URL temporarily unreachable while the process restarts).
+      const start = Date.now();
+      while (Date.now() - start < 5_000) {
+        const sws = context.serviceWorkers();
+        if (sws.length > 0 && !sws.includes(oldSw)) return;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      throw new Error('[e2e] new service worker did not register within 5s after reload');
     });
   },
 });
