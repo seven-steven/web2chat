@@ -10,29 +10,29 @@
 ## 当前位置
 
 - Phase：1 / 7（扩展骨架）
-- Plan：当前 phase 2 / 4 已完成（Wave 1 + Wave 2 done）
-- 状态：Plan 01-2 完成，可进入 Wave 3（Plan 01-3 messaging + SW）
-- 最近活动：2026-04-29 — Plan 01-2 完成（storage schema + migrate framework + i18n facade + en/zh_CN locale + Vitest 配置 + 7 unit tests，全部 verification PASSED）
+- Plan：当前 phase 3 / 4 已完成（Wave 1 + Wave 2 + Wave 3 done）
+- 状态：Plan 01-3 完成，可进入 Wave 4（Plan 01-4 popup + e2e）
+- 最近活动：2026-04-29 — Plan 01-3 完成（messaging protocol + result type + SW background entrypoint + 9 个新单元测试，全部 verification PASSED）
 
-进度：[█████░░░░░] 50%
+进度：[██████░░░░] 60%
 
 ## 性能指标
 
 **速度：**
 
-- 已完成 plan 总数：2
-- 平均时长：8.5m
-- 累计执行时长：约 0.3 小时
+- 已完成 plan 总数：3
+- 平均时长：7.3m
+- 累计执行时长：约 0.4 小时
 
 **按 Phase：**
 
 | Phase | Plans | Total | Avg/Plan |
 | ----- | ----- | ----- | -------- |
-| 1     | 2     | 17m   | 8.5m     |
+| 1     | 3     | 22m   | 7.3m     |
 
 **近期趋势：**
 
-- 最近 5 个 plan：01-1 (11m), 01-2 (6m)
+- 最近 5 个 plan：01-1 (11m), 01-2 (6m), 01-3 (5m)
 - 趋势：加速（基础设施已就位后后续 plan 更快）
 
 _每完成一个 plan 后更新_
@@ -60,6 +60,9 @@ _每完成一个 plan 后更新_
 - 2026-04-29（Plan 01-2 执行）— @wxt-dev/i18n 0.2.5 YAML locale 默认路径为 `<srcDir>/locales/<lang>.yml`（非 `assets/locales/`）。Plan 文件中标注的 `assets/locales/` 路径不被 WXT 识别；实际使用 `locales/en.yml` + `locales/zh_CN.yml`。
 - 2026-04-29（Plan 01-2 执行）— 项目 tsconfig.json 的自定义 `paths` 会完全覆盖 WXT `.wxt/tsconfig.json` 的 `paths`（TypeScript 不合并 paths）。必须在项目 tsconfig 中显式声明 `#i18n` 和 `@/*` 等 WXT 需要的路径别名。
 - 2026-04-29（Plan 01-2 执行）— WXT 0.20.25 内部依赖 Vite 8（rolldown），Vitest 3.2 依赖 Vite 7（rollup）。`exactOptionalPropertyTypes: true` 下 WxtVitest plugin 类型不兼容，需 `as any` 绕过。运行时无影响。
+- 2026-04-29（Plan 01-3 执行）— `defineBackground` 在 WXT 0.20.x 通过 `#imports` 虚拟模块自动暴露（实现位于 `wxt/utils/define-background`）；旧的 `wxt/sandbox` 路径在 0.20.25 已废弃，build 会失败。本 plan 选择显式 `import { defineBackground } from '#imports'` 而非依赖纯 auto-import，便于 grep 验证导入路径。
+- 2026-04-29（Plan 01-3 执行）— `wrapHandler` 不按 ProtocolMap 路由名做映射类型，而是以业务返回类型 R 为单一类参（`<R>(fn: () => Promise<R>) => () => Promise<R>`）。原因：`Promise<ReturnType<ProtocolMap[K]>>` 在 K 为泛型时 TS 5.6 视为 `Promise<Promise<R>>`，触发 TS2322。Phase 1 仅一条路由，简化签名等价且 lint+typecheck 双绿。Phase 3 路由扩张时若需要按路由分派，再考虑用 `K extends keyof ProtocolMap` 重构。
+- 2026-04-29（Plan 01-3 执行）— `bumpHello` 业务核心保留在 `entrypoints/background.ts` 内的 `onMessage` 闭包中、不导出；测试侧在 `tests/unit/messaging/bumpHello.spec.ts` 中复刻 mirror 函数 `bumpHelloCore` 用于 fakeBrowser 验证。第三方 caller 出现时再考虑提取到 `shared/messaging/handlers/`。
 
 ### 待办
 
@@ -79,6 +82,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-29（Phase 1 Plan 01-2 执行）
-- 停在哪里：Phase 1 Plan 01-2 完成，commit bde6b37 上 main；下一步进入 Wave 3 / Plan 01-3（messaging + SW）
-- Resume 文件：`.planning/phases/01-foundation/01-3-messaging-sw-PLAN.md`
+- 上次会话：2026-04-29（Phase 1 Plan 01-3 执行）
+- 停在哪里：Phase 1 Plan 01-3 完成，commits 0f96cf5 / b41408c / 8f6905c 上 main；下一步进入 Wave 4 / Plan 01-4（popup + Playwright e2e）
+- Resume 文件：`.planning/phases/01-foundation/01-4-popup-e2e-PLAN.md`
