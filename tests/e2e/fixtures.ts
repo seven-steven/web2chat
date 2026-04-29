@@ -40,13 +40,13 @@ export const test = base.extend<{
     if (!id) throw new Error('[e2e] could not parse extensionId from SW URL');
     await use(id);
   },
-  reloadExtension: async ({ context }, use) => {
+  reloadExtension: async ({ context, extensionId }, use) => {
     await use(async () => {
       const initial = context.serviceWorkers();
       if (initial.length === 0) throw new Error('[e2e] no service worker to reload');
       const oldSw = initial[0]!;
 
-      // chrome.runtime.reload() restarts the extension; equivalent to
+      // chrome.runtime.reload() restarts the entire extension; equivalent to
       // chrome://serviceworker-internals/ → Stop+restart for our purposes.
       // The evaluate() may itself throw because the SW we're calling is
       // about to be destroyed — swallow that, the reload still happens.
@@ -56,24 +56,57 @@ export const test = base.extend<{
         // expected — old SW killed mid-evaluate
       }
 
-      // Poll until a NEW SW instance (distinct reference from oldSw)
-      // is registered. We can't use `waitForEvent('serviceworker')` here
-      // because Chromium may register the new SW between our reload()
-      // call and the listener attachment (race), and we can't use a
-      // simple `waitForTimeout` because the actual settle time varies.
-      // Polling for reference inequality is the only signal that
-      // tracks the actual "extension is reloaded and ready" state.
-      //
-      // Without this gate, the next test step's `page.goto(chrome-extension://.../popup.html)`
-      // races against the reload and may hit `net::ERR_BLOCKED_BY_CLIENT`
-      // (extension URL temporarily unreachable while the process restarts).
-      const start = Date.now();
-      while (Date.now() - start < 5_000) {
-        const sws = context.serviceWorkers();
-        if (sws.length > 0 && !sws.includes(oldSw)) return;
+      // STEP 1: wait for the old SW to actually be torn down.
+      // Probe by evaluating in oldSw — once it throws, the old context is gone.
+      const teardownStart = Date.now();
+      while (Date.now() - teardownStart < 5_000) {
+        try {
+          await oldSw.evaluate(() => true);
+        } catch {
+          break; // old SW destroyed
+        }
         await new Promise((r) => setTimeout(r, 100));
       }
-      throw new Error('[e2e] new service worker did not register within 5s after reload');
+
+      // STEP 2: actively trigger the new SW to spin up.
+      //
+      // Empirically (HUMAN-UAT #4 third re-run): Chromium does NOT eagerly
+      // re-create the SW after chrome.runtime.reload() — the new SW is
+      // lazy-start and stays dormant until something hits the extension.
+      // Polling `context.serviceWorkers()` therefore times out at 5s with
+      // no new SW. We must navigate to an extension URL ourselves to wake
+      // it up.
+      //
+      // The brief window between "old extension torn down" and "new
+      // extension ready to serve URLs" produces transient
+      // `net::ERR_BLOCKED_BY_CLIENT`, so we retry with backoff. We probe
+      // `manifest.json` (a static JSON resource) instead of `popup.html`
+      // to avoid mounting the popup and firing an extra sendMessage call
+      // — keeps the helloCount semantics clean for the spec.
+      const probeUrl = `chrome-extension://${extensionId}/manifest.json`;
+      const probe = await context.newPage();
+      try {
+        let lastErr: unknown = null;
+        for (let attempt = 0; attempt < 20; attempt++) {
+          try {
+            await probe.goto(probeUrl, { timeout: 2_000 });
+            lastErr = null;
+            break;
+          } catch (err) {
+            lastErr = err;
+            await new Promise((r) => setTimeout(r, 250));
+          }
+        }
+        if (lastErr) {
+          throw new Error(`[e2e] extension never came back up after reload: ${String(lastErr)}`);
+        }
+      } finally {
+        await probe.close().catch(() => {});
+      }
+
+      // At this point the extension is reachable AND the new SW has been
+      // triggered to start (the probe goto woke it up). The next test step
+      // (`page2.goto(popup.html)`) will RPC against the new SW.
     });
   },
 });
