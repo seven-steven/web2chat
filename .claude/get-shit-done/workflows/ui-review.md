@@ -3,7 +3,7 @@ Retroactive 6-pillar visual audit of implemented frontend code. Standalone comma
 </purpose>
 
 <required_reading>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ui-brand.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -73,7 +73,7 @@ Build file list for auditor:
 Build prompt:
 
 ```markdown
-Read /data/coding/projects/seven/agent-web-cliper/.claude/agents/gsd-ui-auditor.md for instructions.
+Read /Users/seven/data/coding/projects/seven/web2chat/.claude/agents/gsd-ui-auditor.md for instructions.
 
 <objective>
 Conduct 6-pillar visual audit of Phase {phase_number}: {phase_name}

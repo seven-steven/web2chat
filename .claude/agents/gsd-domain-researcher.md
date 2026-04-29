@@ -40,7 +40,7 @@ works via Bash and produces equivalent output.
 </documentation_lookup>
 
 <required_reading>
-Read `/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ai-evals.md` — specifically the rubric design and domain expert sections.
+Read `/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ai-evals.md` — specifically the rubric design and domain expert sections.
 </required_reading>
 
 <input>

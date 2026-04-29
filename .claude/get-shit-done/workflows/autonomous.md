@@ -517,7 +517,7 @@ Smart discuss is an autonomous-optimized variant of `gsd-discuss-phase`. It prop
 
 **Inputs:** `PHASE_NUM` from execute_phase.
 
-Read and execute: `/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/autonomous-smart-discuss.md`
+Read and execute: `/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/autonomous-smart-discuss.md`
 
 </step>
 

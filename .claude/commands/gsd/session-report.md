@@ -11,9 +11,9 @@ Generate a structured SESSION_REPORT.md document capturing session outcomes, wor
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/session-report.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/session-report.md
 </execution_context>
 
 <process>
-Execute the session-report workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/session-report.md end-to-end.
+Execute the session-report workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/session-report.md end-to-end.
 </process>

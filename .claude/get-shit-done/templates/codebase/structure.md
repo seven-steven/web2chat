@@ -216,7 +216,7 @@ get-shit-done/
 
 **New Workflow:**
 - Implementation: `get-shit-done/workflows/{name}.md`
-- Usage: Reference from command with `@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/{name}.md`
+- Usage: Reference from command with `@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/{name}.md`
 
 **New Reference Document:**
 - Implementation: `get-shit-done/references/{name}.md`
@@ -229,12 +229,12 @@ get-shit-done/
 ## Special Directories
 
 **get-shit-done/**
-- Purpose: Resources installed to /data/coding/projects/seven/agent-web-cliper/.claude/
+- Purpose: Resources installed to /Users/seven/data/coding/projects/seven/web2chat/.claude/
 - Source: Copied by bin/install.js during installation
 - Committed: Yes (source of truth)
 
 **commands/**
-- Purpose: Slash commands installed to /data/coding/projects/seven/agent-web-cliper/.claude/commands/
+- Purpose: Slash commands installed to /Users/seven/data/coding/projects/seven/web2chat/.claude/commands/
 - Source: Copied by bin/install.js during installation
 - Committed: Yes (source of truth)
 

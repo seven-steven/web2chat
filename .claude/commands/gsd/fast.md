@@ -22,9 +22,9 @@ you could describe in one sentence and execute in under 2 minutes.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/fast.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/fast.md
 </execution_context>
 
 <process>
-Execute the fast workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/fast.md end-to-end.
+Execute the fast workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/fast.md end-to-end.
 </process>

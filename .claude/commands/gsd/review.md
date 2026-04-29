@@ -19,7 +19,7 @@ planning via /gsd-plan-phase --reviews.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/review.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/review.md
 </execution_context>
 
 <context>
@@ -36,5 +36,5 @@ Phase number: extracted from $ARGUMENTS (required)
 </context>
 
 <process>
-Execute the review workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/review.md end-to-end.
+Execute the review workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/review.md end-to-end.
 </process>

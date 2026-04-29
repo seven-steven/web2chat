@@ -24,10 +24,10 @@ Replaces gsd-plan-phase's internal gsd-plan-checker with external AI reviewers (
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/plan-review-convergence.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/revision-loop.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/gates.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/agent-contracts.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/plan-review-convergence.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/revision-loop.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/gates.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/agent-contracts.md
 </execution_context>
 
 <runtime_note>
@@ -53,6 +53,6 @@ Phase number: extracted from $ARGUMENTS (required)
 </context>
 
 <process>
-Execute the plan-review-convergence workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/plan-review-convergence.md end-to-end.
+Execute the plan-review-convergence workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/plan-review-convergence.md end-to-end.
 Preserve all workflow gates (pre-flight, revision loop, stall detection, escalation).
 </process>

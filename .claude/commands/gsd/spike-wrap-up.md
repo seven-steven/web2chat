@@ -17,8 +17,8 @@ project history. Output skill goes to `./.claude/skills/spike-findings-[project]
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/spike-wrap-up.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ui-brand.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/spike-wrap-up.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>
@@ -26,6 +26,6 @@ project history. Output skill goes to `./.claude/skills/spike-findings-[project]
 </runtime_note>
 
 <process>
-Execute the spike-wrap-up workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/spike-wrap-up.md end-to-end.
+Execute the spike-wrap-up workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/spike-wrap-up.md end-to-end.
 Preserve all workflow gates (auto-include, feature-area grouping, skill synthesis, CLAUDE.md routing line, intelligent next-step routing).
 </process>

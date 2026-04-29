@@ -17,7 +17,7 @@ Closes the plan → execute → verify → ship loop.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/ship.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/ship.md
 </execution_context>
 
-Execute the ship workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/ship.md end-to-end.
+Execute the ship workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/ship.md end-to-end.

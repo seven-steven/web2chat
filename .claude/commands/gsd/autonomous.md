@@ -26,8 +26,8 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/autonomous.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ui-brand.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/autonomous.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -41,6 +41,6 @@ Project context, phase list, and state are resolved inside the workflow using in
 </context>
 
 <process>
-Execute the autonomous workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/autonomous.md end-to-end.
+Execute the autonomous workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/autonomous.md end-to-end.
 Preserve all workflow gates (phase discovery, per-phase execution, blocker handling, progress display).
 </process>

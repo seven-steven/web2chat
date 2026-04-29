@@ -16,7 +16,7 @@ Extract structured learnings from completed phase artifacts (PLAN.md, SUMMARY.md
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/extract_learnings.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/extract_learnings.md
 </execution_context>
 
-Execute the extract-learnings workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/extract_learnings.md end-to-end.
+Execute the extract-learnings workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/extract_learnings.md end-to-end.

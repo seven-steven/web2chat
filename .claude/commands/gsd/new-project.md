@@ -33,14 +33,14 @@ Initialize a new project through unified flow: questioning → research (optiona
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/new-project.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/questioning.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ui-brand.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/templates/project.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/templates/requirements.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/new-project.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/questioning.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ui-brand.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/templates/project.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/templates/requirements.md
 </execution_context>
 
 <process>
-Execute the new-project workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/new-project.md end-to-end.
+Execute the new-project workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/new-project.md end-to-end.
 Preserve all workflow gates (validation, approvals, commits, routing).
 </process>

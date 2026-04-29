@@ -17,7 +17,7 @@ Output: Conversational output only (no file creation) - ends with "What do you t
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/list-phase-assumptions.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/list-phase-assumptions.md
 </execution_context>
 
 <context>

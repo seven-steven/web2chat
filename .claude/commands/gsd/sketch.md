@@ -29,12 +29,12 @@ Does not require `/gsd-new-project` — auto-creates `.planning/sketches/` if ne
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/sketch.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ui-brand.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/sketch-theme-system.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/sketch-interactivity.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/sketch-tooling.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/sketch-variant-patterns.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/sketch.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ui-brand.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/sketch-theme-system.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/sketch-interactivity.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/sketch-tooling.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/sketch-variant-patterns.md
 </execution_context>
 
 <runtime_note>
@@ -49,6 +49,6 @@ Design idea: $ARGUMENTS
 </context>
 
 <process>
-Execute the sketch workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/sketch.md end-to-end.
+Execute the sketch workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/sketch.md end-to-end.
 Preserve all workflow gates (intake, decomposition, target stack research, variant evaluation, MANIFEST updates, commit patterns).
 </process>

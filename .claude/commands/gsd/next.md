@@ -20,9 +20,9 @@ Before routing to the next step, scans all prior phases for incomplete work: pla
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/next.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/next.md
 </execution_context>
 
 <process>
-Execute the next workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/next.md end-to-end.
+Execute the next workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/next.md end-to-end.
 </process>

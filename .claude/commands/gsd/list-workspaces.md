@@ -10,10 +10,10 @@ Scan `~/gsd-workspaces/` for workspace directories containing `WORKSPACE.md` man
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/list-workspaces.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ui-brand.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/list-workspaces.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <process>
-Execute the list-workspaces workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/list-workspaces.md end-to-end.
+Execute the list-workspaces workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/list-workspaces.md end-to-end.
 </process>

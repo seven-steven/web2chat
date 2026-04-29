@@ -21,9 +21,9 @@ Flow: Select Framework → Research Docs → Research Domain → Design Eval Str
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/ai-integration-phase.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ai-frameworks.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ai-evals.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/ai-integration-phase.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ai-frameworks.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ai-evals.md
 </execution_context>
 
 <context>
@@ -31,6 +31,6 @@ Phase number: $ARGUMENTS — optional, auto-detects next unplanned phase if omit
 </context>
 
 <process>
-Execute @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/ai-integration-phase.md end-to-end.
+Execute @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/ai-integration-phase.md end-to-end.
 Preserve all workflow gates.
 </process>

@@ -19,8 +19,8 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 <execution_context>
 **Load these files NOW (before proceeding):**
 
-- @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/complete-milestone.md (main workflow)
-- @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/templates/milestone-archive.md (archive template)
+- @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/complete-milestone.md (main workflow)
+- @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/templates/milestone-archive.md (archive template)
   </execution_context>
 
 <context>

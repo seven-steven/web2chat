@@ -19,7 +19,7 @@ Routes to the pause-work workflow which handles:
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/pause-work.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/pause-work.md
 </execution_context>
 
 <context>
@@ -27,7 +27,7 @@ State and phase progress are gathered in-workflow with targeted reads.
 </context>
 
 <process>
-**Follow the pause-work workflow** from `@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/pause-work.md`.
+**Follow the pause-work workflow** from `@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/pause-work.md`.
 
 The workflow handles all logic including:
 1. Phase directory detection

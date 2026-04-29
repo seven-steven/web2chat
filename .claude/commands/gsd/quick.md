@@ -39,7 +39,7 @@ Granular flags are composable: `--discuss --research --validate` gives the same 
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/quick.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/quick.md
 </execution_context>
 
 <context>
@@ -153,7 +153,7 @@ When SUBCMD=resume and SLUG is set (already sanitized):
 
 When SUBCMD=run:
 
-Execute the quick workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/quick.md end-to-end.
+Execute the quick workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/quick.md end-to-end.
 Preserve all workflow gates (validation, task description, planning, execution, state updates, commits).
 
 </process>

@@ -17,9 +17,9 @@ changes that are irrelevant to code review.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/pr-branch.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/pr-branch.md
 </execution_context>
 
 <process>
-Execute the pr-branch workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/pr-branch.md end-to-end.
+Execute the pr-branch workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/pr-branch.md end-to-end.
 </process>

@@ -22,7 +22,7 @@ Output: updated SECURITY.md.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/secure-phase.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/secure-phase.md
 </execution_context>
 
 <context>
@@ -30,6 +30,6 @@ Phase: $ARGUMENTS — optional, defaults to last completed phase.
 </context>
 
 <process>
-Execute @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/secure-phase.md.
+Execute @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/secure-phase.md.
 Preserve all workflow gates.
 </process>

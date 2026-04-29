@@ -8,7 +8,7 @@
 ## Dispatch
 
 ```
-Read @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/discuss-phase-power.md
+Read @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/discuss-phase-power.md
 ```
 
 Execute it end-to-end. Do not continue with the standard interactive steps.

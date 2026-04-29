@@ -17,8 +17,8 @@ project history. Output skill goes to `./.claude/skills/sketch-findings-[project
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/sketch-wrap-up.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ui-brand.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/sketch-wrap-up.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <runtime_note>
@@ -26,6 +26,6 @@ project history. Output skill goes to `./.claude/skills/sketch-findings-[project
 </runtime_note>
 
 <process>
-Execute the sketch-wrap-up workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/sketch-wrap-up.md end-to-end.
+Execute the sketch-wrap-up workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/sketch-wrap-up.md end-to-end.
 Preserve all curation gates (per-sketch review, grouping approval, CLAUDE.md routing line).
 </process>

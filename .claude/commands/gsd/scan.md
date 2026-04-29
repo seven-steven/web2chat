@@ -18,9 +18,9 @@ Lightweight alternative to `/gsd-map-codebase` — spawns one mapper agent inste
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/scan.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/scan.md
 </execution_context>
 
 <process>
-Execute the scan workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/scan.md end-to-end.
+Execute the scan workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/scan.md end-to-end.
 </process>

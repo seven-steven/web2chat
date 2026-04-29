@@ -3,7 +3,7 @@ Verify threat mitigations for a completed phase. Confirm PLAN.md threat register
 </purpose>
 
 <required_reading>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ui-brand.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ui-brand.md
 </required_reading>
 
 <available_agent_types>
@@ -84,7 +84,7 @@ Call AskUserQuestion with threat table and options:
 
 ```
 Task(
-  prompt="Read /data/coding/projects/seven/agent-web-cliper/.claude/agents/gsd-security-auditor.md for instructions.\n\n" +
+  prompt="Read /Users/seven/data/coding/projects/seven/web2chat/.claude/agents/gsd-security-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, SECURITY.md}</files_to_read>" +
     "<threat_register>{threat register}</threat_register>" +
     "<config>asvs_level: {SECURITY_ASVS}, block_on: {SECURITY_BLOCK_ON}</config>" +
@@ -104,7 +104,7 @@ Handle return:
 ## 6. Write/Update SECURITY.md
 
 **State B (create):**
-1. Read template from `/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/templates/SECURITY.md`
+1. Read template from `/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/templates/SECURITY.md`
 2. Fill: frontmatter, threat register, accepted risks, audit trail
 3. Write to `${PHASE_DIR}/${PADDED_PHASE}-SECURITY.md`
 

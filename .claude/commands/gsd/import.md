@@ -22,10 +22,10 @@ Future: `--prd` mode for PRD extraction is planned for a follow-up PR.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/import.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ui-brand.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/gate-prompts.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/doc-conflict-engine.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/import.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ui-brand.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/gate-prompts.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/doc-conflict-engine.md
 </execution_context>
 
 <context>

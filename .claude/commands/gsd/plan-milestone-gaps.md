@@ -18,7 +18,7 @@ One command creates all fix phases — no manual `/gsd-add-phase` per gap.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/plan-milestone-gaps.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/plan-milestone-gaps.md
 </execution_context>
 
 <context>
@@ -29,6 +29,6 @@ Original intent and current planning state are loaded on demand inside the workf
 </context>
 
 <process>
-Execute the plan-milestone-gaps workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/plan-milestone-gaps.md end-to-end.
+Execute the plan-milestone-gaps workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/plan-milestone-gaps.md end-to-end.
 Preserve all workflow gates (audit loading, prioritization, phase grouping, user confirmation, roadmap updates).
 </process>

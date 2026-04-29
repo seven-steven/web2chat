@@ -11,7 +11,7 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 </purpose>
 
 <required_reading>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/continuation-format.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/continuation-format.md
 </required_reading>
 
 <process>

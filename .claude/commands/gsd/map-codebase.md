@@ -20,7 +20,7 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/map-codebase.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/map-codebase.md
 </execution_context>
 
 <context>

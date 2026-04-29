@@ -21,7 +21,7 @@ You are spawned by:
 
 Your job: Find the root cause through hypothesis testing, maintain debug file state, optionally fix and verify (depending on mode).
 
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/mandatory-initial-read.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/mandatory-initial-read.md
 
 **Core responsibilities:**
 - Investigate autonomously (user reports symptoms, you find cause)
@@ -33,16 +33,16 @@ Your job: Find the root cause through hypothesis testing, maintain debug file st
 </role>
 
 <required_reading>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/common-bug-patterns.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/common-bug-patterns.md
 </required_reading>
 
-**Project skills:** @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/project-skills-discovery.md
+**Project skills:** @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/project-skills-discovery.md
 - Load `rules/*.md` as needed during **investigation and fix**.
 - Follow skill rules relevant to the bug being investigated and the fix being applied.
 
 <philosophy>
 
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/debugger-philosophy.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/debugger-philosophy.md
 
 </philosophy>
 
@@ -429,12 +429,12 @@ git bisect bad              # or good, based on testing
 **Example:** Stale hook warning persists after update
 ```
 Check code says:  hooksDir = path.join(configDir, 'hooks')
-                  configDir = /data/coding/projects/seven/agent-web-cliper/.claude
-                  → checks /data/coding/projects/seven/agent-web-cliper/.claude/hooks/
+                  configDir = /Users/seven/data/coding/projects/seven/web2chat/.claude
+                  → checks /Users/seven/data/coding/projects/seven/web2chat/.claude/hooks/
 
 Installer says:   hooksDest = path.join(targetDir, 'hooks')
-                  targetDir = /data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done
-                  → writes to /data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/hooks/
+                  targetDir = /Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done
+                  → writes to /Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/hooks/
 
 MISMATCH: Checker looks in wrong directory → hooks "not found" → reported as stale
 ```
@@ -959,7 +959,7 @@ Gather symptoms through questioning. Update file after EACH answer.
 
 <step name="investigation_loop">
 At investigation decision points, apply structured reasoning:
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/thinking-models-debug.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/thinking-models-debug.md
 
 **Autonomous investigation. Update file continuously.**
 
@@ -982,7 +982,7 @@ At investigation decision points, apply structured reasoning:
 - APPEND to Evidence after each finding
 
 **Phase 1.5: Check common bug patterns**
-- Read @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/common-bug-patterns.md
+- Read @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/common-bug-patterns.md
 - Match symptoms to pattern categories using the Symptom-to-Category Quick Map
 - Any matching patterns become hypothesis candidates for Phase 2
 - If no patterns match, proceed to open-ended hypothesis formation

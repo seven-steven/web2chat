@@ -15,10 +15,10 @@ Output ONLY the reference content below. Do NOT add:
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/help.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/help.md
 </execution_context>
 
 <process>
-Output the complete GSD command reference from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/help.md.
+Output the complete GSD command reference from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/help.md.
 Display the reference content directly — no additions or modifications.
 </process>

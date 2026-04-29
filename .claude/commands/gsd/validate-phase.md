@@ -22,7 +22,7 @@ Output: updated VALIDATION.md + generated test files.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/validate-phase.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/validate-phase.md
 </execution_context>
 
 <context>
@@ -30,6 +30,6 @@ Phase: $ARGUMENTS — optional, defaults to last completed phase.
 </context>
 
 <process>
-Execute @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/validate-phase.md.
+Execute @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/validate-phase.md.
 Preserve all workflow gates.
 </process>

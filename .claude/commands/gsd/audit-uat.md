@@ -12,7 +12,7 @@ Scan all phases for pending, skipped, blocked, and human_needed UAT items. Cross
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/audit-uat.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/audit-uat.md
 </execution_context>
 
 <context>

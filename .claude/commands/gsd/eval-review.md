@@ -18,8 +18,8 @@ Produces EVAL-REVIEW.md with score, verdict, gaps, and remediation plan.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/eval-review.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ai-evals.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/eval-review.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ai-evals.md
 </execution_context>
 
 <context>
@@ -27,6 +27,6 @@ Phase: $ARGUMENTS — optional, defaults to last completed phase.
 </context>
 
 <process>
-Execute @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/eval-review.md end-to-end.
+Execute @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/eval-review.md end-to-end.
 Preserve all workflow gates.
 </process>

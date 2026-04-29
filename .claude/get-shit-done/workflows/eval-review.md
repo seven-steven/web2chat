@@ -5,7 +5,7 @@ Use after /gsd-execute-phase to verify that the evaluation strategy from AI-SPEC
 </purpose>
 
 <required_reading>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ai-evals.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ai-evals.md
 </required_reading>
 
 <process>
@@ -78,7 +78,7 @@ Build file list for auditor:
 Build prompt:
 
 ```markdown
-Read /data/coding/projects/seven/agent-web-cliper/.claude/agents/gsd-eval-auditor.md for instructions.
+Read /Users/seven/data/coding/projects/seven/web2chat/.claude/agents/gsd-eval-auditor.md for instructions.
 
 <objective>
 Conduct evaluation coverage audit of Phase {phase_number}: {phase_name}

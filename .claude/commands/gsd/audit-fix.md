@@ -25,9 +25,9 @@ Flags:
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/audit-fix.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/audit-fix.md
 </execution_context>
 
 <process>
-Execute the audit-fix workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/audit-fix.md end-to-end.
+Execute the audit-fix workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/audit-fix.md end-to-end.
 </process>

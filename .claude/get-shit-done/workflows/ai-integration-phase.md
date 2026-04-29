@@ -11,8 +11,8 @@ This prevents the two most common AI development failures: choosing the wrong fr
 </purpose>
 
 <required_reading>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ai-frameworks.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/ai-evals.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ai-frameworks.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/ai-evals.md
 </required_reading>
 
 <process>
@@ -102,7 +102,7 @@ Display:
 
 Spawn `gsd-framework-selector` with:
 ```markdown
-Read /data/coding/projects/seven/agent-web-cliper/.claude/agents/gsd-framework-selector.md for instructions.
+Read /Users/seven/data/coding/projects/seven/web2chat/.claude/agents/gsd-framework-selector.md for instructions.
 
 <objective>
 Select the right AI framework for Phase {phase_number}: {phase_name}
@@ -128,7 +128,7 @@ Parse selector output for: `primary_framework`, `system_type`, `model_provider`,
 
 Copy template:
 ```bash
-cp "/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/templates/AI-SPEC.md" "${PHASE_DIR}/${PADDED_PHASE}-AI-SPEC.md"
+cp "/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/templates/AI-SPEC.md" "${PHASE_DIR}/${PADDED_PHASE}-AI-SPEC.md"
 ```
 
 Fill in header fields:
@@ -146,7 +146,7 @@ Display:
 
 Spawn `gsd-ai-researcher` with:
 ```markdown
-Read /data/coding/projects/seven/agent-web-cliper/.claude/agents/gsd-ai-researcher.md for instructions.
+Read /Users/seven/data/coding/projects/seven/web2chat/.claude/agents/gsd-ai-researcher.md for instructions.
 
 <objective>
 Research {primary_framework} for Phase {phase_number}: {phase_name}
@@ -176,7 +176,7 @@ Display:
 
 Spawn `gsd-domain-researcher` with:
 ```markdown
-Read /data/coding/projects/seven/agent-web-cliper/.claude/agents/gsd-domain-researcher.md for instructions.
+Read /Users/seven/data/coding/projects/seven/web2chat/.claude/agents/gsd-domain-researcher.md for instructions.
 
 <objective>
 Research the business domain and expert evaluation criteria for Phase {phase_number}: {phase_name}
@@ -206,7 +206,7 @@ Display:
 
 Spawn `gsd-eval-planner` with:
 ```markdown
-Read /data/coding/projects/seven/agent-web-cliper/.claude/agents/gsd-eval-planner.md for instructions.
+Read /Users/seven/data/coding/projects/seven/web2chat/.claude/agents/gsd-eval-planner.md for instructions.
 
 <objective>
 Design evaluation strategy for Phase {phase_number}: {phase_name}

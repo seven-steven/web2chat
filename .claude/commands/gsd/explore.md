@@ -19,9 +19,9 @@ Accepts an optional topic argument: `/gsd-explore authentication strategy`
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/explore.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/explore.md
 </execution_context>
 
 <process>
-Execute the explore workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/explore.md end-to-end.
+Execute the explore workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/explore.md end-to-end.
 </process>

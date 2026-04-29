@@ -11,10 +11,10 @@ Supports two modes:
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/sketch-theme-system.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/sketch-variant-patterns.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/sketch-interactivity.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/sketch-tooling.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/sketch-theme-system.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/sketch-variant-patterns.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/sketch-interactivity.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/sketch-tooling.md
 </required_reading>
 
 <process>

@@ -22,11 +22,11 @@ Use `/gsd-settings` for the common-case toggles (model profile, research/plan_ch
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/settings-advanced.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/settings-advanced.md
 </execution_context>
 
 <process>
-**Follow the settings-advanced workflow** from `@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/settings-advanced.md`.
+**Follow the settings-advanced workflow** from `@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/settings-advanced.md`.
 
 The workflow handles all logic including:
 1. Config file creation with defaults if missing (via `gsd-sdk query config-ensure-section`)

@@ -38,10 +38,10 @@ Output: [What artifacts will be created]
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/execute-plan.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/templates/summary.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/execute-plan.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/templates/summary.md
 [If plan contains checkpoint tasks (type="checkpoint:*"), add:]
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/checkpoints.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/checkpoints.md
 </execution_context>
 
 <context>
@@ -85,7 +85,7 @@ Output: [What artifacts will be created]
   <done>[Acceptance criteria]</done>
 </task>
 
-<!-- For checkpoint task examples and patterns, see @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/checkpoints.md -->
+<!-- For checkpoint task examples and patterns, see @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/checkpoints.md -->
 
 <task type="checkpoint:decision" gate="blocking">
   <decision>[What needs deciding]</decision>
@@ -278,7 +278,7 @@ TDD features get dedicated plans with `type: tdd`.
 → Yes: Create a TDD plan
 → No: Standard task in standard plan
 
-See `/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/tdd.md` for TDD plan structure.
+See `/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/tdd.md` for TDD plan structure.
 
 ---
 
@@ -382,9 +382,9 @@ Output: Working dashboard component.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/execute-plan.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/templates/summary.md
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/checkpoints.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/execute-plan.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/templates/summary.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/checkpoints.md
 </execution_context>
 
 <context>
@@ -540,7 +540,7 @@ user_setup:
 
 **Result:** Execute-plan generates `{phase}-USER-SETUP.md` with checklist for the user.
 
-See `/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/templates/user-setup.md` for full schema and examples
+See `/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/templates/user-setup.md` for full schema and examples
 
 ---
 
@@ -607,4 +607,4 @@ Task completion ≠ Goal achievement. A task "create chat component" can complet
 5. Gaps found → fix plans created → execute → re-verify
 6. All must_haves pass → phase complete
 
-See `/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/verify-phase.md` for verification logic.
+See `/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/verify-phase.md` for verification logic.

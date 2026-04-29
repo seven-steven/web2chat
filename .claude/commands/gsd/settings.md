@@ -20,11 +20,11 @@ Routes to the settings workflow which handles:
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/settings.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/settings.md
 </execution_context>
 
 <process>
-**Follow the settings workflow** from `@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/settings.md`.
+**Follow the settings workflow** from `@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/settings.md`.
 
 The workflow handles all logic including:
 1. Config file creation with defaults if missing

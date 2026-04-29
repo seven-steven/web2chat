@@ -13,14 +13,14 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 
 ## Step 0: Resolve Model Profile
 
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/model-profile-resolution.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/model-profile-resolution.md
 
 Resolve model for:
 - `gsd-phase-researcher`
 
 ## Step 1: Normalize and Validate Phase
 
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/references/phase-argument-parsing.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/references/phase-argument-parsing.md
 
 ```bash
 PHASE_INFO=$(gsd-sdk query roadmap.get-phase "${PHASE}")

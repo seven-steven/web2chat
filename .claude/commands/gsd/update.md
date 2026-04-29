@@ -19,11 +19,11 @@ Routes to the update workflow which handles:
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/update.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/update.md
 </execution_context>
 
 <process>
-**Follow the update workflow** from `@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/update.md`.
+**Follow the update workflow** from `@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/update.md`.
 
 The workflow handles all logic including:
 1. Installed version detection (local/global)

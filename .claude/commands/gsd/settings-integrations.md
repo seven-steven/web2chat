@@ -25,12 +25,12 @@ not pipeline shape.
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/settings-integrations.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/settings-integrations.md
 </execution_context>
 
 <process>
 **Follow the settings-integrations workflow** from
-`@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/settings-integrations.md`.
+`@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/settings-integrations.md`.
 
 The workflow handles:
 1. Resolving `$GSD_CONFIG_PATH` (flat vs workstream)

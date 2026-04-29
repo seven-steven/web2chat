@@ -10,9 +10,9 @@ Display comprehensive project statistics including phase progress, plan executio
 </objective>
 
 <execution_context>
-@/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/stats.md
+@/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/stats.md
 </execution_context>
 
 <process>
-Execute the stats workflow from @/data/coding/projects/seven/agent-web-cliper/.claude/get-shit-done/workflows/stats.md end-to-end.
+Execute the stats workflow from @/Users/seven/data/coding/projects/seven/web2chat/.claude/get-shit-done/workflows/stats.md end-to-end.
 </process>
