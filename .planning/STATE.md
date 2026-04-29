@@ -10,30 +10,30 @@
 ## 当前位置
 
 - Phase：1 / 7（扩展骨架）
-- Plan：当前 phase 1 / 4 已完成（Wave 1 done）
-- 状态：Plan 01-1 完成，可进入 Wave 2（Plan 01-2 storage + i18n）
-- 最近活动：2026-04-28 — Plan 01-1 完成（WXT 0.20.25 脚手架 + manifest FND-05 形态 + ESLint/Prettier/Husky/lint-staged + GitHub Actions CI + verify-manifest 校验脚本，全部 plan-level verification PASSED）
+- Plan：当前 phase 2 / 4 已完成（Wave 1 + Wave 2 done）
+- 状态：Plan 01-2 完成，可进入 Wave 3（Plan 01-3 messaging + SW）
+- 最近活动：2026-04-29 — Plan 01-2 完成（storage schema + migrate framework + i18n facade + en/zh_CN locale + Vitest 配置 + 7 unit tests，全部 verification PASSED）
 
-进度：[██░░░░░░░░] 25%
+进度：[█████░░░░░] 50%
 
 ## 性能指标
 
 **速度：**
 
-- 已完成 plan 总数：1
-- 平均时长：11m
-- 累计执行时长：约 0.2 小时
+- 已完成 plan 总数：2
+- 平均时长：8.5m
+- 累计执行时长：约 0.3 小时
 
 **按 Phase：**
 
 | Phase | Plans | Total | Avg/Plan |
 | ----- | ----- | ----- | -------- |
-| 1     | 1     | 11m   | 11m      |
+| 1     | 2     | 17m   | 8.5m     |
 
 **近期趋势：**
 
-- 最近 5 个 plan：01-1 (11m)
-- 趋势：—（基线建立中）
+- 最近 5 个 plan：01-1 (11m), 01-2 (6m)
+- 趋势：加速（基础设施已就位后后续 plan 更快）
 
 _每完成一个 plan 后更新_
 
@@ -56,6 +56,10 @@ _每完成一个 plan 后更新_
 - 2026-04-28（Plan 01-1 执行）— Tailwind v4 + WXT 0.20.x 的 Vite plugin 集成无任何坑（`vite() => ({ plugins: [tailwindcss()] })` 即工作）；D-10 锁定的"no CSS modules fallback"未被触发。Plan 04 popup 可直接走 `@import "tailwindcss";`。
 - 2026-04-28（Plan 01-1 执行）— Phase 1 Plan 01-1 不交付任何测试，但 CI 跑 `pnpm test`；vitest 默认无文件即 exit 1，因此 `package.json` 的 `test` script 加 `--passWithNoTests`。Plan 02 起追加测试后该 flag 即 no-op。
 - 2026-04-28（Plan 01-1 执行）— ESLint + Prettier ignores 必须包含 `.claude/` + `.planning/`（项目工作流文件不在 Web2Chat 源码 lint 范围内）。后续 plan 不要试图把这两个目录纳入 lint。
+- 2026-04-29（Plan 01-2 执行）— WXT `storage.defineItem<T>` 原生支持 `version` + `migrations` 字段（@wxt-dev/storage 1.2.8）；无需手写 wrapper（Path A 确认，Path B 未触发）。
+- 2026-04-29（Plan 01-2 执行）— @wxt-dev/i18n 0.2.5 YAML locale 默认路径为 `<srcDir>/locales/<lang>.yml`（非 `assets/locales/`）。Plan 文件中标注的 `assets/locales/` 路径不被 WXT 识别；实际使用 `locales/en.yml` + `locales/zh_CN.yml`。
+- 2026-04-29（Plan 01-2 执行）— 项目 tsconfig.json 的自定义 `paths` 会完全覆盖 WXT `.wxt/tsconfig.json` 的 `paths`（TypeScript 不合并 paths）。必须在项目 tsconfig 中显式声明 `#i18n` 和 `@/*` 等 WXT 需要的路径别名。
+- 2026-04-29（Plan 01-2 执行）— WXT 0.20.25 内部依赖 Vite 8（rolldown），Vitest 3.2 依赖 Vite 7（rollup）。`exactOptionalPropertyTypes: true` 下 WxtVitest plugin 类型不兼容，需 `as any` 绕过。运行时无影响。
 
 ### 待办
 
@@ -75,6 +79,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-28（Phase 1 Plan 01-1 执行）
-- 停在哪里：Phase 1 Plan 01-1 完成，4 个 task commit（263ed18 / ad1a98d / eab74a5 / da1b4b4）+ docs commit 上 main；下一步进入 Wave 2 / Plan 01-2（storage + i18n）
-- Resume 文件：`.planning/phases/01-foundation/01-2-storage-i18n-PLAN.md`
+- 上次会话：2026-04-29（Phase 1 Plan 01-2 执行）
+- 停在哪里：Phase 1 Plan 01-2 完成，commit bde6b37 上 main；下一步进入 Wave 3 / Plan 01-3（messaging + SW）
+- Resume 文件：`.planning/phases/01-foundation/01-3-messaging-sw-PLAN.md`
