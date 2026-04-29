@@ -5,14 +5,14 @@
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 2 — 抓取流水线（context gathered，待 plan）
+**当前焦点：** Phase 2 — 抓取流水线（CONTEXT + UI-SPEC 完成，待 plan）
 
 ## 当前位置
 
-- Phase：2 / 7（抓取流水线 — context 完成，待 `/gsd-plan-phase 2`）
+- Phase：2 / 7（抓取流水线 — context + UI-SPEC 完成，待 `/gsd-plan-phase 2`）
 - Plan：上一 phase（Phase 1）4 / 4 全部完成；Phase 2 plans 数 TBD
-- 状态：Phase 2 CONTEXT.md ready — 4 个灰度区敲定 D-13..D-22；下一步进入 plan
-- 最近活动：2026-04-29 — Phase 2 discuss closure：CONTEXT.md + DISCUSSION-LOG.md 落地 commit 00d8902，锁定 Readability-only 抽取、auto-trigger + 受限 URL 预检、Markdown only / 无 cap、popup 仅瞬态编辑（draft 推到 Phase 3）
+- 状态：Phase 2 02-UI-SPEC.md 已 approved（6/6 dimensions PASS）；下一步进入 plan
+- 最近活动：2026-04-30 — Phase 2 UI-SPEC closure：02-UI-SPEC.md 落地（commit f9ecb79 初稿 → revision commit 9f92f85），锁定 popup 4-state 视觉契约（loading skeleton / success 5-field always-on textarea / empty restricted+noContent / error scriptFailed）、slate + sky-600 调色板、`capture.*` i18n 键集（含 `.before/.icon/.after` 拆解）、2 weight × 3 size 字号阶梯
 
 进度：[██████████] 100%（Phase 1）→ Phase 2 待启动
 
@@ -88,6 +88,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-29（Phase 2 discuss — 4 个灰度区敲定，CONTEXT.md ship commit 00d8902）
-- 停在哪里：Phase 2 CONTEXT.md ready；下一步 `/gsd-plan-phase 2`
-- Resume 文件：`.planning/phases/02-capture/02-CONTEXT.md`
+- 上次会话：2026-04-30（Phase 2 UI-SPEC — 6/6 dimensions PASS，UI-SPEC.md ship commit 9f92f85）
+- 停在哪里：Phase 2 UI-SPEC ready；下一步 `/gsd-plan-phase 2`
+- Resume 文件：`.planning/phases/02-capture/02-UI-SPEC.md`
