@@ -5,14 +5,14 @@
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 2 — 抓取流水线（Foundation 已完成，待 discuss）
+**当前焦点：** Phase 2 — 抓取流水线（context gathered，待 plan）
 
 ## 当前位置
 
-- Phase：2 / 7（抓取流水线 — 待 discuss）
-- Plan：上一 phase（Phase 1）4 / 4 全部完成
-- 状态：Phase 1 ✓ Complete (2026-04-29) — 13/13 自动化 must-have PASS + 5 个 post-verification gap 已修复并 commit；剩 1 项 e2e 重跑 final verify 持久化在 01-HUMAN-UAT.md
-- 最近活动：2026-04-29 — Phase 1 closure：fix(01) commit 61046e6 修复 popup loading state + e2e fixture race（HUMAN-UAT 重测暴露的 2 个真 bug）；ROADMAP / REQUIREMENTS / STATE 同步翻新
+- Phase：2 / 7（抓取流水线 — context 完成，待 `/gsd-plan-phase 2`）
+- Plan：上一 phase（Phase 1）4 / 4 全部完成；Phase 2 plans 数 TBD
+- 状态：Phase 2 CONTEXT.md ready — 4 个灰度区敲定 D-13..D-22；下一步进入 plan
+- 最近活动：2026-04-29 — Phase 2 discuss closure：CONTEXT.md + DISCUSSION-LOG.md 落地 commit 00d8902，锁定 Readability-only 抽取、auto-trigger + 受限 URL 预检、Markdown only / 无 cap、popup 仅瞬态编辑（draft 推到 Phase 3）
 
 进度：[██████████] 100%（Phase 1）→ Phase 2 待启动
 
@@ -88,6 +88,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-29（Phase 1 closure — verifier + human UAT + 5 个 gap 修复 + Gap-05 v1→v4 5 次迭代后用 CDP ServiceWorker.stopWorker 终结）
-- 停在哪里：Phase 1 ✓ Complete + 100% verified（自动化 13/13 + HUMAN-UAT 4/4 全绿；e2e 3/3 本机 Xwayland 验证通过 4.2s）
-- Resume 文件：`.planning/phases/02-capture/` （待 `/gsd-discuss-phase 2` 创建）
+- 上次会话：2026-04-29（Phase 2 discuss — 4 个灰度区敲定，CONTEXT.md ship commit 00d8902）
+- 停在哪里：Phase 2 CONTEXT.md ready；下一步 `/gsd-plan-phase 2`
+- Resume 文件：`.planning/phases/02-capture/02-CONTEXT.md`
