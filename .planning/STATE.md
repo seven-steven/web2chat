@@ -10,30 +10,30 @@
 ## 当前位置
 
 - Phase：1 / 7（扩展骨架）
-- Plan：当前 phase 3 / 4 已完成（Wave 1 + Wave 2 + Wave 3 done）
-- 状态：Plan 01-3 完成，可进入 Wave 4（Plan 01-4 popup + e2e）
-- 最近活动：2026-04-29 — Plan 01-3 完成（messaging protocol + result type + SW background entrypoint + 9 个新单元测试，全部 verification PASSED）
+- Plan：当前 phase 4 / 4 已完成（Wave 1 + Wave 2 + Wave 3 + Wave 4 done）
+- 状态：Plan 01-4 完成，Phase 1 ready for verification（4/4 plans 全部交付）
+- 最近活动：2026-04-29 — Plan 01-4 完成（popup Preact + Tailwind v4 + signals + 自动 RPC + 3 个 Playwright e2e specs + Phase 1 README，全部 verification PASSED）
 
-进度：[██████░░░░] 60%
+进度：[████████░░] 80%
 
 ## 性能指标
 
 **速度：**
 
-- 已完成 plan 总数：3
-- 平均时长：7.3m
-- 累计执行时长：约 0.4 小时
+- 已完成 plan 总数：4
+- 平均时长：7.5m
+- 累计执行时长：约 0.5 小时
 
 **按 Phase：**
 
 | Phase | Plans | Total | Avg/Plan |
 | ----- | ----- | ----- | -------- |
-| 1     | 3     | 22m   | 7.3m     |
+| 1     | 4     | 42m   | 10.5m    |
 
 **近期趋势：**
 
-- 最近 5 个 plan：01-1 (11m), 01-2 (6m), 01-3 (5m)
-- 趋势：加速（基础设施已就位后后续 plan 更快）
+- 最近 5 个 plan：01-1 (11m), 01-2 (6m), 01-3 (5m), 01-4 (~20m)
+- 趋势：Plan 01-4 含 Playwright chromium 后台下载等待，去除环境耗时后核心实现仍约 8m
 
 _每完成一个 plan 后更新_
 
@@ -63,6 +63,10 @@ _每完成一个 plan 后更新_
 - 2026-04-29（Plan 01-3 执行）— `defineBackground` 在 WXT 0.20.x 通过 `#imports` 虚拟模块自动暴露（实现位于 `wxt/utils/define-background`）；旧的 `wxt/sandbox` 路径在 0.20.25 已废弃，build 会失败。本 plan 选择显式 `import { defineBackground } from '#imports'` 而非依赖纯 auto-import，便于 grep 验证导入路径。
 - 2026-04-29（Plan 01-3 执行）— `wrapHandler` 不按 ProtocolMap 路由名做映射类型，而是以业务返回类型 R 为单一类参（`<R>(fn: () => Promise<R>) => () => Promise<R>`）。原因：`Promise<ReturnType<ProtocolMap[K]>>` 在 K 为泛型时 TS 5.6 视为 `Promise<Promise<R>>`，触发 TS2322。Phase 1 仅一条路由，简化签名等价且 lint+typecheck 双绿。Phase 3 路由扩张时若需要按路由分派，再考虑用 `K extends keyof ProtocolMap` 重构。
 - 2026-04-29（Plan 01-3 执行）— `bumpHello` 业务核心保留在 `entrypoints/background.ts` 内的 `onMessage` 闭包中、不导出；测试侧在 `tests/unit/messaging/bumpHello.spec.ts` 中复刻 mirror 函数 `bumpHelloCore` 用于 fakeBrowser 验证。第三方 caller 出现时再考虑提取到 `shared/messaging/handlers/`。
+- 2026-04-29（Plan 01-4 执行）— WXT 0.20.x 把 popup HTML `<title>` 写入 `manifest.action.default_title`，覆盖 `wxt.config.ts` 中的字段。要让 manifest 保留 `__MSG_action_default_title__` 占位符，HTML `<title>` 也必须写成 `__MSG_action_default_title__`。verify-manifest 第一次跑出 FAIL 后由此一行修正得到 OK；后续所有引入新 popup-like entrypoint 的 phase 都要遵守这条。
+- 2026-04-29（Plan 01-4 执行）— Preact JSX 在严格 `tsc --noEmit` 下需要 tsconfig 显式 `jsx: "react-jsx"` + `jsxImportSource: "preact"` + `react`/`react-dom`/`react/jsx-runtime` → preact compat 的 path aliases。`@preact/preset-vite` 仅处理运行时编译，不替代 TS 类型解析。Phase 6 引入运行时 locale 切换 + Phase 3 引入 SendForm 时不要回退这些设置。
+- 2026-04-29（Plan 01-4 执行）— @wxt-dev/i18n 0.2.5 的 `t()` 类型签名要求 substitutions 作为 tuple（`[count]`），而非可变参数（`(key, count)`）。运行时实现也按 `Array.isArray(arg) → 当作 substitution` 分派。所有 popup / future component 的 `t()` 调用统一走 tuple 写法。
+- 2026-04-29（Plan 01-4 执行）— Playwright 1.59.1 + chromium-1217 在受限网络下下载耗时较长；`pnpm test:e2e` discovery + fixture / spec / config 三件套已 coherent 且 Phase 1 端到端语义完整（3 specs 含 SW-restart）。开发者本机首次跑前应先 `pnpm exec playwright install chromium`；CI 不需此步（D-11，留 Phase 4）。
 
 ### 待办
 
@@ -82,6 +86,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-29（Phase 1 Plan 01-3 执行）
-- 停在哪里：Phase 1 Plan 01-3 完成，commits 0f96cf5 / b41408c / 8f6905c 上 main；下一步进入 Wave 4 / Plan 01-4（popup + Playwright e2e）
-- Resume 文件：`.planning/phases/01-foundation/01-4-popup-e2e-PLAN.md`
+- 上次会话：2026-04-29（Phase 1 Plan 01-4 执行）
+- 停在哪里：Phase 1 Plan 01-4 完成，commits dc55bcb / cccbd3a / 7db2f08 上 main；Phase 1 全部 4 个 plan 完成，等待 verifier
+- Resume 文件：（无 — Phase 1 准备进入 verification 阶段）
