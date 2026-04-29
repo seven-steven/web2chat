@@ -1,0 +1,15 @@
+extension_name:
+  message: 'Web2Chat'
+
+extension_description:
+  message: '一键把当前网页投递到 IM 或 AI Agent 聊天会话'
+
+action_default_title:
+  message: 'Web2Chat — 投递当前页面'
+
+popup_hello:
+  message: '你好，世界 ×$COUNT$'
+  placeholders:
+    count:
+      content: '$1'
+      example: '5'

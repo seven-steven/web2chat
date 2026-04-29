@@ -6,7 +6,9 @@
     "exactOptionalPropertyTypes": true,
     "paths": {
       "~/*": ["./*"],
-      "@/shared/*": ["./shared/*"]
+      "@/*": ["./*"],
+      "@/shared/*": ["./shared/*"],
+      "#i18n": ["./.wxt/i18n/index.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", "wxt.config.ts", "scripts/**/*.ts", ".wxt/wxt.d.ts"]

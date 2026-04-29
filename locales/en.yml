@@ -1,0 +1,15 @@
+extension_name:
+  message: 'Web2Chat'
+
+extension_description:
+  message: 'One-click clip-and-send to your favorite IM or AI agent chat.'
+
+action_default_title:
+  message: 'Web2Chat — clip current page'
+
+popup_hello:
+  message: 'Hello, world (×$COUNT$)'
+  placeholders:
+    count:
+      content: '$1'
+      example: '5'
