@@ -1,10 +1,11 @@
 ---
 phase: 2
 slug: capture
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-04-30
+reviewed_at: 2026-04-30
 ---
 
 # Phase 2 — UI Design Contract: 抓取流水线 (Capture Pipeline)
@@ -76,14 +77,14 @@ Exceptions: none. 32 / 48 / 64 are **deliberately absent** — the popup is too 
 | Role | Size (px) | Weight | Line Height | Tailwind utility | Usage |
 |------|-----------|--------|-------------|------------------|-------|
 | Body | 14 | 400 (regular) | 1.5 | `text-sm leading-normal font-normal` | textarea content, read-only field values, error / empty body copy |
-| Label | 12 | 500 (medium) | 1.4 | `text-xs leading-snug font-medium` | field labels above each textarea, read-only field labels |
+| Label | 12 | 400 (regular) | 1.4 | `text-xs leading-snug font-normal` | field labels above each textarea, read-only field labels — distinguished from body purely by size + muted color |
 | Heading | 16 | 600 (semibold) | 1.3 | `text-base leading-snug font-semibold` | empty state heading, error state heading |
 
 **Font family:** `font-sans` (Tailwind v4 default `ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji"`). Stack covers en + zh_CN (Noto Sans + system Chinese fallback) without bundling a webfont.
 
 **Why 14px body (not 16):** popup is a confined surface; 14px is the de-facto Chrome extension popup body convention (Discord settings, 1Password, Bitwarden, GitHub Notifier). 16px would force ~30% fewer characters per textarea line and break the 360–400px width contract. Heading is one step up at 16px to maintain a visible hierarchy. Phase 1 used `text-base` (16px) for heading — Phase 2 narrows the type scale to 3 ladder steps and demotes body to 14px.
 
-**Why 2 weights (not 3):** regular for prose, medium for labels (subtly heavier so they read as metadata), semibold for state headings. No bold tier — popup never has display-class type.
+**Why 2 weights (not 3):** regular (400) for both body prose and field labels — labels are distinguished from body purely by smaller size (`text-xs`) and muted color (`text-slate-500 dark:text-slate-400`), no weight escalation needed. Semibold (600) is reserved for state headings only. No bold tier — popup never has display-class type.
 
 ---
 
@@ -104,7 +105,7 @@ Slate-based palette (already set by Phase 1 popup chrome). Both light and dark m
 1. textarea focus ring (`focus-visible:ring-2 focus-visible:ring-sky-600 dark:focus-visible:ring-sky-400 focus-visible:ring-offset-2`)
 2. textarea focus border replacing the resting `border-slate-200 dark:border-slate-700`
 3. empty state icon (info / restricted-page glyph)
-4. inline highlighted keyword inside the empty / error body copy when referencing the action icon (e.g. "请再次点击工具栏图标" — the words 工具栏图标 are wrapped `<span class="text-sky-600 dark:text-sky-400 font-medium">`)
+4. inline highlighted keyword inside the empty / error body copy when referencing the action icon (e.g. "请再次点击工具栏图标" — the words 工具栏图标 are wrapped `<span class="text-sky-600 dark:text-sky-400">`; emphasis comes from accent color alone, no weight escalation, keeping the 2-weight contract intact)
 
 **Accent NOT used for:** any background, any text body, any read-only field, any label, any structural element. The popup is monochrome slate everywhere except the four accent affordances above.
 
@@ -167,7 +168,7 @@ State transitions are **one-shot**: once a non-loading state is reached, the pop
 - Tab order: title → description → content (read-only `<output>` is **not** in tab order; achieved via `<output>` being a non-focusable element by default and not adding `tabIndex`)
 - Focus styling: every textarea on `:focus-visible` shows `ring-2 ring-sky-600 dark:ring-sky-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-900` + replaces resting `border-slate-200 dark:border-slate-700` with `border-sky-600 dark:border-sky-400`
 - Resting textarea border: `border border-slate-200 dark:border-slate-700 rounded-md`
-- Textarea padding: `px-2.5 py-2` (10px / 8px — both 4-multiples)
+- Textarea padding: `px-3 py-2` (12px / 8px — both 4-multiples)
 - Textarea typography: inherits body 14/400/1.5
 
 ### EMPTY (variants: `restricted`, `noContent`)
@@ -176,7 +177,7 @@ State transitions are **one-shot**: once a non-loading state is reached, the pop
 - Visual: vertically centered stack inside the same `<main class="p-4">` container
   - Icon (24×24px inline SVG, `text-slate-500 dark:text-slate-400`) — info-circle glyph for `noContent`, lock-closed glyph for `restricted`
   - Heading: 16/600/1.3, color body-text — `t('capture.empty.{variant}.heading')`
-  - Body: 14/400/1.5, color muted — `t('capture.empty.{variant}.body')`. Body copy contains an inline `<span class="text-sky-600 dark:text-sky-400 font-medium">` wrapping the noun phrase referring to the action icon (the only inline-accent-text use in the popup).
+  - Body: 14/400/1.5, color muted — `t('capture.empty.{variant}.body')`. Body copy contains an inline `<span class="text-sky-600 dark:text-sky-400">` wrapping the noun phrase referring to the action icon (the only inline-accent-text use in the popup); see Copywriting Contract for the three-key split (`.before` / `.icon` / `.after`).
 - Layout: `gap-2` (8px) between icon → heading; `gap-1` (4px) heading → body; outer `<section class="flex flex-col items-center text-center py-8 gap-2">`
 - a11y: `role="status" aria-live="polite"`; icon is decorative (`aria-hidden="true"`)
 
@@ -219,11 +220,22 @@ All keys live under the `capture.*` namespace in `locales/en.yml` + `locales/zh_
 | `capture.field.createAt` | `Captured at` | `抓取时间` | read-only field label |
 | `capture.field.content` | `Content` | `正文` | textarea label |
 | `capture.empty.restricted.heading` | `Can't capture this page` | `无法抓取此页面` | for chrome:// / file:// / etc. |
-| `capture.empty.restricted.body` | `Web2Chat doesn't run on browser-internal pages. Open a regular website, then click the toolbar icon again.` | `Web2Chat 不能在浏览器内置页面上工作。请打开一个普通网页，然后再次点击工具栏图标。` | "the toolbar icon" / "工具栏图标" wraps in accent span |
+| `capture.empty.restricted.body` | `Web2Chat doesn't run on browser-internal pages. Open a regular website, then click the toolbar icon again.` | `Web2Chat 不能在浏览器内置页面上工作。请打开一个普通网页，然后再次点击工具栏图标。` | logical key — table row preserves the full sentence for translator review; **physical implementation splits into the three `.before` / `.icon` / `.after` sub-keys below** |
+| `capture.empty.restricted.body.before` | `Web2Chat doesn't run on browser-internal pages. Open a regular website, then click ` | `Web2Chat 不能在浏览器内置页面上工作。请打开一个普通网页，然后再次点击` | text segment before the inline accent span (note trailing space in en) |
+| `capture.empty.restricted.body.icon` | `the toolbar icon` | `工具栏图标` | wrapped in `<span class="text-sky-600 dark:text-sky-400">` at render time |
+| `capture.empty.restricted.body.after` | ` again.` | `。` | text segment after the inline accent span (note leading space in en) |
 | `capture.empty.noContent.heading` | `Nothing to extract` | `没有可抓取的内容` | Readability returned empty |
-| `capture.empty.noContent.body` | `This page doesn't have a recognizable article body. Try a different page, then click the toolbar icon again.` | `此页面没有可识别的文章正文。换一个页面，再次点击工具栏图标。` | accent span on "the toolbar icon" / "工具栏图标" |
+| `capture.empty.noContent.body` | `This page doesn't have a recognizable article body. Try a different page, then click the toolbar icon again.` | `此页面没有可识别的文章正文。换一个页面，再次点击工具栏图标。` | logical key — see three sub-keys below |
+| `capture.empty.noContent.body.before` | `This page doesn't have a recognizable article body. Try a different page, then click ` | `此页面没有可识别的文章正文。换一个页面，再次点击` | text segment before the inline accent span |
+| `capture.empty.noContent.body.icon` | `the toolbar icon` | `工具栏图标` | wrapped in `<span class="text-sky-600 dark:text-sky-400">` at render time |
+| `capture.empty.noContent.body.after` | ` again.` | `。` | text segment after the inline accent span |
 | `capture.error.scriptFailed.heading` | `Capture failed` | `抓取失败` | retriable error |
-| `capture.error.scriptFailed.body` | `Something went wrong while reading this page. Click the toolbar icon to try again.` | `读取此页面时出错。请点击工具栏图标重试。` | accent span on "the toolbar icon" / "工具栏图标" |
+| `capture.error.scriptFailed.body` | `Something went wrong while reading this page. Click the toolbar icon to try again.` | `读取此页面时出错。请点击工具栏图标重试。` | logical key — see three sub-keys below |
+| `capture.error.scriptFailed.body.before` | `Something went wrong while reading this page. Click ` | `读取此页面时出错。请点击` | text segment before the inline accent span |
+| `capture.error.scriptFailed.body.icon` | `the toolbar icon` | `工具栏图标` | wrapped in `<span class="text-sky-600 dark:text-sky-400">` at render time |
+| `capture.error.scriptFailed.body.after` | ` to try again.` | `重试。` | text segment after the inline accent span |
+
+**Implementation note:** the `.body` rows above are **logical** keys preserved in the table for translator readability (full-sentence review). The **physical** `_locales/en/messages.json` + `_locales/zh_CN/messages.json` files contain only the `.before` / `.icon` / `.after` sub-keys for each variant — never the unsplit logical key. JSX composes the visible string at render time, so the `<span>` element lives in code and the i18n YAML never carries any HTML. All sub-keys count toward the 100% en+zh_CN coverage CI gate.
 
 ### Copywriting principles applied
 
@@ -282,7 +294,7 @@ These are **non-design** notes the executor needs to implement the contract corr
 
 1. **Auto-grow textareas** — use Tailwind v4 native `field-sizing-content` utility. Falls back gracefully on Chrome <129; Phase 1 verify-manifest already locks Chrome MV3 baseline so this is safe. If `field-sizing-content` rendering glitches in dev, plan a 1-line `onInput` height-sync as escape hatch — but try the native utility first.
 2. **Date formatting** — `Intl.DateTimeFormat(navigator.language, { dateStyle: 'medium', timeStyle: 'short' })` reads the SW-generated ISO-8601 string and formats per locale. No date-fns / dayjs library — pure native Intl.
-3. **Inline accent spans** — emit as JSX `<span class="text-sky-600 dark:text-sky-400 font-medium">{noun}</span>`, **not** via i18n template substitution with HTML. The substitution mechanism here is JSX composition: `t('capture.empty.restricted.body.before') + <span>{t('capture.empty.restricted.body.icon')}</span> + t('capture.empty.restricted.body.after')` — three keys per body string. **Reject** putting raw HTML inside a single i18n key (XSS surface; PITFALLS §11). Implementation note for planner: when authoring zh_CN/en messages, split the sentence into three parts (`before`, `icon`, `after`) keyed under each empty/error variant — so the JSX `<span>` lives in code, the text segments live in YAML.
+3. **Inline accent spans** — emit as JSX `<span class="text-sky-600 dark:text-sky-400">{noun}</span>`, **not** via i18n template substitution with HTML. The substitution mechanism here is JSX composition: `t('capture.empty.restricted.body.before') + <span>{t('capture.empty.restricted.body.icon')}</span> + t('capture.empty.restricted.body.after')` — three keys per body string (see Copywriting Contract for the explicit `.before` / `.icon` / `.after` sub-key table). **Reject** putting raw HTML inside a single i18n key (XSS surface; PITFALLS §11). Implementation note for planner: when authoring zh_CN/en messages, split the sentence into three parts (`before`, `icon`, `after`) keyed under each empty/error variant — so the JSX `<span>` lives in code, the text segments live in YAML.
 4. **Skeleton dimensions** — must approximate the success layout to prevent layout shift. Recommended: `[h-4 w-1/3]` for label, `[h-9 w-full]` for title row, `[h-9 w-full]` for url row, `[h-4 w-1/4]` for createAt label, `[h-9 w-full]` for createAt row, `[h-24 w-full]` for content row. Rounding: `rounded` (4px) consistently.
 5. **No `innerHTML`** — PITFALLS §安全错误 #1. Every text rendering goes through Preact text nodes. The captured `content` Markdown is rendered as **raw text inside the textarea** (`textarea.value = content`), not as parsed Markdown. Phase 2 has no Markdown preview; if a future phase wants one, that's a separate UI contract.
 6. **Read-only fields use `<output>`** — semantically correct (it's a calculation result), is non-focusable by default, and is announced by AT as "output". Do not use disabled `<input>` — that announces as "disabled, edit text" which is wrong.
@@ -304,7 +316,7 @@ Phase 2 introduces **zero** third-party UI components. Every primitive is a nati
 - [ ] Dimension 1 Copywriting: PASS — all keys present in en+zh_CN, plain language, imperative + actionable, no technical terms, retry guidance explicit
 - [ ] Dimension 2 Visuals: PASS — 4 states defined; native HTML primitives only; SVG icons inline (no library)
 - [ ] Dimension 3 Color: PASS — slate dominant/secondary, sky accent reserved-for list explicit, red destructive reserved-for list explicit, contrast ratios documented
-- [ ] Dimension 4 Typography: PASS — 3 sizes (12/14/16), 2 weights (400/500/600 — three weights but only 2 are typographic tiers since 500 is sub-pixel-different from 400 in system fonts; planner should treat 500 as "label tier"), line heights 1.3/1.4/1.5 explicit
+- [ ] Dimension 4 Typography: PASS — 3 sizes (12/14/16), 2 weights only (400 regular for body + labels, 600 semibold for headings; labels distinguished from body by size + muted color, not by weight), line heights 1.3/1.4/1.5 explicit
 - [ ] Dimension 5 Spacing: PASS — 5 tokens (4/8/12/16/24), all multiples of 4, exceptions documented as "none"
 - [ ] Dimension 6 Registry Safety: PASS — no third-party registries
 
