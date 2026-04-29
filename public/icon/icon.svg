@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Web2Chat">
+  <title>Web2Chat</title>
+  <desc>A green chat bubble with a white right-pointing arrow inside, representing web content being dispatched into a chat session.</desc>
+  <path d="M 32 56 Q 32 32 56 32 L 200 32 Q 224 32 224 56 L 224 168 Q 224 192 200 192 L 116 192 L 76 226 L 84 192 L 56 192 Q 32 192 32 168 Z" fill="#10b981"/>
+  <path d="M 96 112 L 144 112 L 144 88 L 188 128 L 144 168 L 144 144 L 96 144 Z" fill="#ffffff"/>
+</svg>
