@@ -44,69 +44,61 @@ export const test = base.extend<{
     await use(async () => {
       const initial = context.serviceWorkers();
       if (initial.length === 0) throw new Error('[e2e] no service worker to reload');
-      const oldSw = initial[0]!;
 
-      // chrome.runtime.reload() restarts the entire extension; equivalent to
-      // chrome://serviceworker-internals/ → Stop+restart for our purposes.
-      // The evaluate() may itself throw because the SW we're calling is
-      // about to be destroyed — swallow that, the reload still happens.
-      try {
-        await oldSw.evaluate(() => chrome.runtime.reload());
-      } catch {
-        // expected — old SW killed mid-evaluate
-      }
-
-      // STEP 1: wait for the old SW to actually be torn down.
-      // Probe by evaluating in oldSw — once it throws, the old context is gone.
-      const teardownStart = Date.now();
-      while (Date.now() - teardownStart < 5_000) {
-        try {
-          await oldSw.evaluate(() => true);
-        } catch {
-          break; // old SW destroyed
-        }
-        await new Promise((r) => setTimeout(r, 100));
-      }
-
-      // STEP 2: actively trigger the new SW to spin up.
+      // Why we don't use chrome.runtime.reload() here:
+      // In Playwright `launchPersistentContext` + `--load-extension`, the
+      // chrome.runtime.reload() call unloads the extension but does NOT
+      // automatically re-register it (that happens for *packed* extensions
+      // only). Extension URLs respond with `net::ERR_BLOCKED_BY_CLIENT`
+      // for at least 5+ seconds afterwards, and polling for a new SW just
+      // times out because nothing wakes it back up.
       //
-      // Empirically (HUMAN-UAT #4 third re-run): Chromium does NOT eagerly
-      // re-create the SW after chrome.runtime.reload() — the new SW is
-      // lazy-start and stays dormant until something hits the extension.
-      // Polling `context.serviceWorkers()` therefore times out at 5s with
-      // no new SW. We must navigate to an extension URL ourselves to wake
-      // it up.
+      // The right primitive is `ServiceWorker.stopWorker` over Chrome
+      // DevTools Protocol — which is exactly what
+      // chrome://serviceworker-internals/ → "Stop" does at the bottom:
+      // it kills the SW process without touching the extension lifecycle.
+      // The next extension event (e.g. our test's `page.goto(popup.html)`
+      // → sendMessage → onMessage handler) wakes the SW back up, which
+      // re-runs entrypoints/background.ts at module top-level. That's
+      // exactly the FND-02 + ROADMAP #4 contract we want to prove.
       //
-      // The brief window between "old extension torn down" and "new
-      // extension ready to serve URLs" produces transient
-      // `net::ERR_BLOCKED_BY_CLIENT`, so we retry with backoff. We probe
-      // `manifest.json` (a static JSON resource) instead of `popup.html`
-      // to avoid mounting the popup and firing an extra sendMessage call
-      // — keeps the helloCount semantics clean for the spec.
-      const probeUrl = `chrome-extension://${extensionId}/manifest.json`;
-      const probe = await context.newPage();
+      // Playwright's BrowserContext.newCDPSession only accepts Page (not
+      // ServiceWorker) — so we open a throw-away helper page, create a
+      // page-level CDP session, and use the ServiceWorker domain through
+      // that channel (the domain is browser-scoped and accessible from
+      // any CDP session in the context).
+      const helper = await context.newPage();
       try {
-        let lastErr: unknown = null;
-        for (let attempt = 0; attempt < 20; attempt++) {
-          try {
-            await probe.goto(probeUrl, { timeout: 2_000 });
-            lastErr = null;
-            break;
-          } catch (err) {
-            lastErr = err;
-            await new Promise((r) => setTimeout(r, 250));
+        const cdp = await context.newCDPSession(helper);
+        let versionId: string | undefined;
+        cdp.on('ServiceWorker.workerVersionUpdated', ({ versions }) => {
+          for (const v of versions) {
+            if (
+              v.scriptURL?.includes(extensionId) &&
+              (v.runningStatus === 'running' || v.runningStatus === 'starting')
+            ) {
+              versionId = v.versionId;
+            }
           }
+        });
+        await cdp.send('ServiceWorker.enable');
+
+        const eventStart = Date.now();
+        while (!versionId && Date.now() - eventStart < 2_000) {
+          await new Promise((r) => setTimeout(r, 50));
         }
-        if (lastErr) {
-          throw new Error(`[e2e] extension never came back up after reload: ${String(lastErr)}`);
-        }
+        if (!versionId) throw new Error('[e2e] could not resolve SW versionId via CDP');
+
+        await cdp.send('ServiceWorker.stopWorker', { versionId });
+        await cdp.detach().catch(() => {});
       } finally {
-        await probe.close().catch(() => {});
+        await helper.close().catch(() => {});
       }
 
-      // At this point the extension is reachable AND the new SW has been
-      // triggered to start (the probe goto woke it up). The next test step
-      // (`page2.goto(popup.html)`) will RPC against the new SW.
+      // The SW is now terminated. The extension stays enabled — the next
+      // page.goto(chrome-extension://.../popup.html) → sendMessage will
+      // wake a fresh SW, re-executing entrypoints/background.ts top-level
+      // and re-registering listeners.
     });
   },
 });
