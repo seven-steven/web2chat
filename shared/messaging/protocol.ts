@@ -3,6 +3,18 @@ import { z } from 'zod';
 import type { MetaSchema } from '@/shared/storage';
 import type { Result } from './result';
 
+// ─── Phase 2: ArticleSnapshot ────────────────────────────────────────────────
+
+export const ArticleSnapshotSchema = z.object({
+  title:       z.string(),
+  url:         z.string().url(),
+  description: z.string(),
+  create_at:   z.string().datetime(),
+  content:     z.string(),
+});
+
+export type ArticleSnapshot = z.infer<typeof ArticleSnapshotSchema>;
+
 /**
  * RPC ProtocolMap (D-07).
  *
@@ -12,6 +24,7 @@ import type { Result } from './result';
  */
 export interface ProtocolMap {
   'meta.bumpHello'(): Promise<Result<MetaSchema>>;
+  'capture.run'():    Promise<Result<ArticleSnapshot>>;
 }
 
 /**
@@ -26,6 +39,10 @@ export const schemas = {
       schemaVersion: z.literal(1),
       helloCount: z.number().int().nonnegative(),
     }),
+  },
+  'capture.run': {
+    input: z.void(),
+    output: ArticleSnapshotSchema,
   },
 } as const;
 
