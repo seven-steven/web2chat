@@ -1,3 +1,17 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: in_progress
+last_updated: "2026-04-30T08:10:00.000Z"
+progress:
+  total_phases: 7
+  completed_phases: 1
+  total_plans: 11
+  completed_plans: 7
+  percent: 64
+---
+
 # 项目状态
 
 ## 项目引用
@@ -9,31 +23,32 @@
 
 ## 当前位置
 
-- Phase：2 / 7（抓取流水线 — 7 plans 已创建，待执行）
-- Plan：上一 phase（Phase 1）4 / 4 全部完成；Phase 2 plans：7（6 waves）
-- 状态：Phase 2 plans 已通过 plan-checker 验证；下一步 `/gsd-execute-phase 2`
-- 最近活动：2026-04-30 — Phase 2 planning 完成：7 个 PLAN.md 落地（Wave 1 并行 02-01+02-02 → Wave 2 02-03 → Wave 3 02-04 → Wave 4 02-05 → Wave 5 02-06 → Wave 6 02-07），全覆盖 CAP-01..05，含 ASVS L1 threat_model + jsdom env fix + E2E restricted 三态覆盖
+- Phase：2 / 7（抓取流水线 — Wave 1 + Wave 2 完成；3/7 plans done）
+- Plan：Phase 2 — 02-01 ✓ 02-02 ✓ 02-03 ✓；下一步 Wave 3 = 02-04（单元测试）
+- 状态：Wave 2 落地；extractor.content.ts 实现完毕，build 产物 .output/chrome-mv3/content-scripts/extractor.js (73 KB) 存在
+- 最近活动：2026-04-30 — Plan 02-03 closure：extractor content script 创建，commit 0f7bcae 在前次会话已落地，本次会话补 SUMMARY 与 state 更新；pnpm build/typecheck/test 全绿；ROADMAP Wave 1+2 复选框打勾
 
-进度：[██████████] 100%（Phase 1）→ Phase 2 plans 就绪，待执行
+进度：[██████████] 100%（Phase 1）→ Phase 2 [████░░░] 3/7
 
 ## 性能指标
 
 **速度：**
 
-- 已完成 plan 总数：4
-- 平均时长：7.5m
-- 累计执行时长：约 0.5 小时
+- 已完成 plan 总数：7
+- 平均时长：~7m
+- 累计执行时长：约 0.8 小时
 
 **按 Phase：**
 
 | Phase | Plans | Total | Avg/Plan |
 | ----- | ----- | ----- | -------- |
 | 1     | 4     | 42m   | 10.5m    |
+| 2     | 3     | ~25m  | ~8m      |
 
 **近期趋势：**
 
-- 最近 5 个 plan：01-1 (11m), 01-2 (6m), 01-3 (5m), 01-4 (~20m)
-- 趋势：Plan 01-4 含 Playwright chromium 后台下载等待，去除环境耗时后核心实现仍约 8m
+- 最近 5 个 plan：01-4 (~20m), 02-01 (5m), 02-02 (15m), 02-03 (5m)
+- 趋势：Phase 2 plan 平均时长低于 Phase 1（Wave 1 deps + 协议扩展属轻量级；Wave 2 extractor 主要靠现成库组合）
 
 _每完成一个 plan 后更新_
 
@@ -69,6 +84,8 @@ _每完成一个 plan 后更新_
 - 2026-04-29（Plan 01-4 执行）— Playwright 1.59.1 + chromium-1217 在受限网络下下载耗时较长；`pnpm test:e2e` discovery + fixture / spec / config 三件套已 coherent 且 Phase 1 端到端语义完整（3 specs 含 SW-restart）。开发者本机首次跑前应先 `pnpm exec playwright install chromium`；CI 不需此步（D-11，留 Phase 4）。
 - 2026-04-29（Phase 1 closure）— 人工 UAT 重测暴露 popup loading 状态与 RPC 失败渲染同形（×0），同时是 Playwright locator race 与真用户 FOUC 来源；fix 为 loading 时不挂 `[data-testid="popup-hello"]` 的空 `<main aria-busy>`。后续任何 popup 化的 entrypoint（settings / dispatch confirm 等）都应保持这一 loading-vs-data 的明确分离，不要靠 `count ?? 0` fallback 让 loading 与 0 视觉同形。
 - 2026-04-29（Phase 1 closure）— Playwright `chrome.runtime.reload()` **不要**用来模拟 SW restart。在 `launchPersistentContext + --load-extension`（unpacked dev mode）下它卸载扩展但不自动重新启用——extension URL 在 5+ 秒内 `ERR_BLOCKED_BY_CLIENT`，新 SW 永远不上线。正确 API 是 CDP `ServiceWorker.stopWorker`（chrome://serviceworker-internals/ Stop 按钮的底层调用），仅杀 SW 进程不卸载扩展，下次 message 自然唤醒新 SW；fixture 通过 throwaway helper page 创建 page-level CDP session（newCDPSession 不接受 Worker，但 ServiceWorker domain 可经任意 page session 访问）。Phase 4 / 5 的 dispatch e2e fixture 共用这一约定。
+- 2026-04-30（Plan 02-03 执行）— WXT runtime-only content script 通过 `defineContentScript({ registration: 'runtime', main() })` 落地：extractor 不进 manifest `content_scripts`（构建产物 manifest 中 `content_scripts: []`），仅 bundle 到 `content-scripts/extractor.js`（73 KB），由 SW `chrome.scripting.executeScript({ files })` 程序化注入；main() return value 经 structuredClone 通道回 SW（仅 string 字段，序列化安全）。这是 Phase 2-5 所有"按需注入"类 content script 的共用模式。
+- 2026-04-30（Plan 02-03 执行）— description fallback 在 extractor 内部以三段顺序 try 实现：`meta[name="description"]` → `meta[property="og:description"]` → `Readability.excerpt`。helper `getDescription(doc, article)` 命名导出（与 default export 并存），供 Wave 3（02-04）单元测试三分支 fixture 直接 import 验证。helper 查询的是**原始 document**而非 cloneNode（防御 Readability 内部 DOM mutation 的细节假设依赖）。
 
 ### 待办
 
@@ -88,6 +105,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-30（Phase 2 plan — 7 plans 验证通过，commit pending）
-- 停在哪里：Phase 2 plans 已就绪；下一步 `/gsd-execute-phase 2`
-- Resume 文件：`.planning/phases/02-capture/02-01-PLAN.md`（Wave 1 起点）
+- 上次会话：2026-04-30（Plan 02-03 — extractor content script 完成 + SUMMARY/state 闭环）
+- 停在哪里：Phase 2 Wave 2 完成；下一步 Wave 3 = 执行 `02-04-PLAN.md`（extractor 单元测试 + capture pipeline 单元测试）
+- Resume 文件：`.planning/phases/02-capture/02-04-PLAN.md`
