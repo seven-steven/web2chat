@@ -3,47 +3,46 @@ status: partial
 phase: 02-capture
 source: [02-VERIFICATION.md]
 started: 2026-04-30T17:35:00Z
-updated: 2026-04-30T18:10:00Z
+updated: 2026-04-30T18:25:00Z
 ---
 
 ## Current Test
 
-[awaiting human testing]
+[awaiting human visual UAT — items 4 + 5]
 
 ## Tests
 
 ### 1. tests/e2e/capture.spec.ts — Test 1: fixture article page fills 5 fields within 2s
 expected: popup waits for [data-testid=capture-success] within 2_000ms；5 字段（title/description/content textarea + url/createAt output）均非空；title length > 0；url 含 'localhost'
-result: [pending — re-test after G-1 fix]
-issue (resolved 2026-04-30 commit 32ab18a): 扩展无法在 chrome://extensions 加载（先于 E2E 触发）。错误：`Name of a key "capture.empty.nocontent.body.after" is invalid. Only ASCII [a-z], [A-Z], [0-9] and "_" are allowed.` Chrome MV3 拒绝点号 key。已通过把 18 个 capture i18n key 扁平下划线化修复（locales × 2 + App.tsx t() ×18）。
-command: `pnpm build && pnpm test:e2e -- capture.spec.ts -g 'fills 5 fields within 2s'`
+result: passed (2026-04-30T18:23:00Z, 1.0s)
+command: `pnpm test:e2e -- capture.spec.ts -g 'fills 5 fields within 2s'`
 
 ### 2. tests/e2e/capture.spec.ts — Test 2: textarea fields are editable after capture
 expected: capture-success 出现后，`locator('[data-testid=capture-field-title]').fill('Edited Title')` 更新 textarea；description 同方式 fill 也更新
-result: [pending]
-command: `pnpm build && pnpm test:e2e -- capture.spec.ts -g 'editable after capture'`
+result: passed (2026-04-30T18:23:00Z, 954ms)
+command: `pnpm test:e2e -- capture.spec.ts -g 'editable after capture'`
 
 ### 3. tests/e2e/capture.spec.ts — Test 3: chrome-extension:// active tab → empty state visible (ROADMAP #5)
 expected: 打开 popup 无 article tab → SW URL scheme 预检拒绝 chrome-extension:// → [data-testid=capture-empty] 在 2_000ms 内可见
-result: [pending]
-command: `pnpm build && pnpm test:e2e -- capture.spec.ts -g 'empty state visible'`
+result: passed (2026-04-30T18:23:00Z, 792ms)
+command: `pnpm test:e2e -- capture.spec.ts -g 'empty state visible'`
 
 ### 4. Visual UAT — 在真实 Wikipedia / blog 文章上打开扩展 popup
 expected: loading skeleton ≤200ms 后渲染 5 字段；title/description/content textarea 接受键盘输入；布局符合 UI-SPEC.md（min-w 360px、gap-3、textarea focus rings）
-result: [pending]
+result: [pending — needs human eyes]
 why_human: 视觉保真、layout shift、dark-mode 外观、Readability 实际抽取质量无法编程断言
 
 ### 5. Manual: WR-01 fix validation — currentWindow:true vs lastFocusedWindow
 expected: 用户在 article tab 上点击 toolbar 图标，runCapturePipeline 正确把 article tab 视为 active（非 popup / 别窗）；任何 Chrome 120+ 版本不应在 article 上误报 RESTRICTED_URL
-result: [pending]
-why_human: REVIEW-FIX.md WR-01 明确：'real-Chrome popup 验证 out of scope for this fix iteration'。无 toolbar click 无法编程证伪。
+result: [pending — needs human toolbar click in real Chrome]
+why_human: 无 toolbar click 无法编程证伪。代码层面 G-2 已用 `chrome.windows.getLastFocused({windowTypes:['normal']})` 替换 `currentWindow:true`，并在 E2E Test 1 中证明 SW 看到正确的 article URL（间接验证）。
 
 ## Summary
 
 total: 5
-passed: 0
+passed: 3
 issues: 0
-pending: 5
+pending: 2
 skipped: 0
 blocked: 0
 
@@ -56,26 +55,33 @@ blocked: 0
 **resolved_at:** 2026-04-30T18:10:00Z
 **resolution_commit:** 32ab18a — fix(02-G-1): flatten capture i18n keys to ASCII underscore form
 **status:** resolved
-**root_cause:** 02-05 把 capture i18n key 用嵌套 YAML 结构（`capture.empty.noContent.body.after` 形态）写入 `locales/{en,zh_CN}.yml`。WXT 0.20.x + @wxt-dev/i18n 0.2.5 的 build 把嵌套 YAML 路径用 **dot 分隔** 拼成扁平 key 写入 `.output/chrome-mv3/_locales/<lang>/messages.json`。Chrome MV3 manifest validator 在加载扩展时严格要求 `_locales/*/messages.json` 的 key 匹配 `[a-zA-Z0-9_]+`，遇到点号即拒绝整个扩展加载。
 
-**impact:** 扩展完全无法在 Chrome 上加载（无论 dev unpacked 还是 store 安装）。所有依赖扩展加载的 UAT（E2E ×3、visual UAT、WR-01 真实 Chrome 验证）都被阻断。
+**root_cause:** Phase 2 的 18 个 capture i18n key 用 `capture.field.title` 这种点号格式写入 `locales/{en,zh_CN}.yml`，WXT 把它们 verbatim 输出到 `_locales/<lang>/messages.json`。Chrome MV3 严格要求 i18n key 匹配 `[a-zA-Z0-9_]+`，含点号即拒绝整个扩展加载。
 
-**fix scope:**
-- `locales/en.yml` — 18 个 `capture.*` key 从嵌套结构改为扁平下划线 key（`capture_loading_label`, `capture_field_title`, ..., `capture_empty_noContent_body_after`, `capture_error_scriptFailed_body_after`）
-- `locales/zh_CN.yml` — 同上，保持 100% 同构
-- `entrypoints/popup/App.tsx` — 全部 `t('capture.*')` 调用 rename（约 18 处）
-- `background/capture-pipeline.ts` — 检查是否使用 `t()`（应该没有，SW 不渲染文案；如有需 rename）
-- `pnpm build` 后 grep `_locales/en/messages.json` 确认无点号 key
-- `pnpm test` 全绿、`pnpm typecheck` 全绿
+**fix:** 18 个 key 全部改扁平下划线（`capture_field_title` 等），3 个文件改动（locales × 2 + App.tsx t() × 18）。
 
-**evidence:**
-```
-$ grep -E '"capture[._]' .output/chrome-mv3/_locales/en/messages.json | head
-  "capture.loading.label": { ... }
-  "capture.field.title": { ... }
-  "capture.empty.noContent.body.after": { ... }
-```
-Chrome 报错原文：`Name of a key "capture.empty.nocontent.body.after" is invalid. Only ASCII [a-z], [A-Z], [0-9] and "_" are allowed.`
+### G-2: E2E Playwright 无法触发 activeTab grant（RESOLVED 2026-04-30）
 
-**precedent:** Phase 1 已用 `popup_hello` 这种扁平下划线 key（messages.json 的 `popup_hello` 通过 Chrome 校验）；本 gap 只是把 Phase 2 拉回 Phase 1 已验证的 key 形态。
+**source_uat:** UAT 1/2/3 (all 3 E2E tests blocked)
+**reported_at:** 2026-04-30T18:10:00Z
+**resolved_at:** 2026-04-30T18:23:00Z
+**resolution_commit:** c78f207 — fix(02-G-2): make E2E capture tests work without real toolbar click
+**status:** resolved
 
+**root_cause:** Chrome `activeTab` 权限只在用户**真实点击 toolbar 图标 / 触发命令快捷键 / 选 context menu** 时授予；Playwright `page.goto(popupUrl)` 模拟不出这一手势 → SW `chrome.tabs.query` 返回的 tab 没有 `url` 字段 → pipeline 报 INTERNAL "No active tab found" → popup 渲染 capture-error。同时 `executeScript` 也因没有 host_permission 注入 localhost fixture 失败。次生：02-WR-01 的 `currentWindow:true` 在 SW context 因没有 current window 概念而返回空。
+
+**fix:**
+1. **`background/capture-pipeline.ts`** — 用 `chrome.windows.getLastFocused({windowTypes:['normal']})` + `tabs.query({active:true, windowId})` 替换 `currentWindow:true`。`windowTypes:['normal']` 仍排除扩展自己的 popup window（保留 WR-01 的初衷）。
+2. **`wxt.config.ts`** — 改造为 `manifest: ({mode}) => ...`，在 `mode === 'development'` 时追加 `tabs` permission + `<all_urls>` host_permission；生产模式 (`pnpm build`) 仍锁定 `activeTab/scripting/storage` + `https://discord.com/*`。`pnpm verify:manifest` 通过。
+3. **`tests/e2e/fixtures.ts`** — extensionPath 指向 `.output/chrome-mv3-dev`。
+4. **`package.json`** — `test:e2e` 脚本前置 `wxt build --mode development`。
+5. **`tests/unit/messaging/capture.spec.ts`** — `ChromeStub` interface 加 `windows.getLastFocused`，5 个 stubChrome 调用站补充 `windows: okWindow()`；direct test 全绿。
+
+**verification:**
+- `pnpm test:e2e` — 3/3 pass（1.0s + 954ms + 792ms）
+- `pnpm typecheck` exit 0
+- `pnpm test` 42/42 pass
+- `pnpm lint` 0 errors
+- `pnpm verify:manifest` OK — 生产 manifest 不受影响
+
+**impact preserved:** 项目 CLAUDE.md 锁定的"manifest 仅 activeTab + scripting + storage + 静态 https://discord.com/*"约定在生产构建中保持。dev 模式的 `tabs` + `<all_urls>` 仅出现在 `.output/chrome-mv3-dev/`，不会被 `pnpm zip` 打包到上架产物。

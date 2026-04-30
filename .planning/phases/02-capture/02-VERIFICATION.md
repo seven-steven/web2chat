@@ -2,11 +2,11 @@
 phase: 02-capture
 verified: 2026-04-30T17:35:00Z
 status: human_needed
-score: 5/5 must-haves verified — G-1 BLOCKER closed inline (32ab18a); E2E + visual UAT pending human gate
+score: 5/5 must-haves verified — E2E 3/3 pass; visual UAT (#4) + WR-01 real-Chrome (#5) pending human gate
 re_verification:
   previous_status: gaps_found
   previous_score: 4/5
-  gaps_closed: [G-1]
+  gaps_closed: [G-1, G-2]
 overrides_applied: 0
   regressions: []
 human_verification:
