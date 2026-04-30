@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-04-30T08:19:36Z"
+last_updated: "2026-04-30T08:29:28Z"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 11
-  completed_plans: 8
-  percent: 73
+  completed_plans: 9
+  percent: 82
 ---
 
 # 项目状态
@@ -19,36 +19,36 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 2 — 抓取流水线（Wave 1+2+3 完成；4/7 plans done）
+**当前焦点：** Phase 2 — 抓取流水线（Wave 1+2+3+4 完成；5/7 plans done）
 
 ## 当前位置
 
-- Phase：2 / 7（抓取流水线 — Wave 1+2+3 完成；4/7 plans done）
-- Plan：Phase 2 — 02-01 ✓ 02-02 ✓ 02-03 ✓ 02-04 ✓；下一步 Wave 4 = 02-05（SW capture-pipeline 实现）
-- 状态：Wave 3 落地；4 个单元测试文件就位（17 新 + 19 既有 = 36 tests passed）；mirror 函数 capturePipelineCore 为 Wave 4 提供红灯参考
-- 最近活动：2026-04-30 — Plan 02-04 closure：4 个 unit test 文件创建（commits 3471b4d + b940689），pnpm test 36/36 全绿，pnpm typecheck exit 0，markdown-roundtrip helper 显式 atx + fenced options 修正 plan 默认 turndown options 与断言不符的 RED
+- Phase：2 / 7（抓取流水线 — Wave 1+2+3+4 完成；5/7 plans done）
+- Plan：Phase 2 — 02-01 ✓ 02-02 ✓ 02-03 ✓ 02-04 ✓ 02-05 ✓；下一步 Wave 5 = 02-06（Popup 4-state capture UI）
+- 状态：Wave 4 落地；SW capture pipeline + capture.run 顶层路由 + 18 个 capture.* locale 子键（en/zh_CN 同构）就位；CAP-01 / CAP-02 / CAP-03 / CAP-04 全部 Done
+- 最近活动：2026-04-30 — Plan 02-05 closure：background/capture-pipeline.ts 创建（commit fd87257）+ background.ts 顶层注册 capture.run + locale 键补齐（commit f18929e），pnpm test 36/36 全绿，pnpm typecheck/build/lint 全绿，build 产物 background.js 86.5 kB 含 capture.run 路由
 
-进度：[██████████] 100%（Phase 1）→ Phase 2 [█████░░] 4/7
+进度：[██████████] 100%（Phase 1）→ Phase 2 [███████░] 5/7
 
 ## 性能指标
 
 **速度：**
 
-- 已完成 plan 总数：8
-- 平均时长：~7m
-- 累计执行时长：约 0.85 小时
+- 已完成 plan 总数：9
+- 平均时长：~6.7m
+- 累计执行时长：约 0.92 小时
 
 **按 Phase：**
 
 | Phase | Plans | Total | Avg/Plan |
 | ----- | ----- | ----- | -------- |
 | 1     | 4     | 42m   | 10.5m    |
-| 2     | 4     | ~29m  | ~7m      |
+| 2     | 5     | ~33m  | ~6.6m    |
 
 **近期趋势：**
 
-- 最近 5 个 plan：02-01 (5m), 02-02 (15m), 02-03 (5m), 02-04 (4m)
-- 趋势：Phase 2 plan 平均时长稳定低于 Phase 1（轻量级单元测试 + mirror 函数模式让 02-04 4m 一次过）
+- 最近 5 个 plan：02-02 (15m), 02-03 (5m), 02-04 (4m), 02-05 (4m)
+- 趋势：Phase 2 plan 平均时长稳定低于 Phase 1；02-05 一次过、0 deviation，与 02-04 mirror 函数提供的红灯参考契合（mirror → 真实 pipeline 的同形分支让实现按 plan 一次到位）
 
 _每完成一个 plan 后更新_
 
@@ -88,10 +88,13 @@ _每完成一个 plan 后更新_
 - 2026-04-30（Plan 02-03 执行）— description fallback 在 extractor 内部以三段顺序 try 实现：`meta[name="description"]` → `meta[property="og:description"]` → `Readability.excerpt`。helper `getDescription(doc, article)` 命名导出（与 default export 并存），供 Wave 3（02-04）单元测试三分支 fixture 直接 import 验证。helper 查询的是**原始 document**而非 cloneNode（防御 Readability 内部 DOM mutation 的细节假设依赖）。
 - 2026-04-30（Plan 02-04 执行）— Turndown 0.7.x 默认 `headingStyle: 'setext'`（`==`/`--` 下划线）+ `codeBlockStyle: 'indented'`（4 空格）；GFM plugin 不改变这些默认。要让 extractor 输出 atx heading（`# `）+ fenced code block（```` ``` ````），必须在 `new TurndownService()` 时显式 `{ headingStyle: 'atx', codeBlockStyle: 'fenced' }`。markdown-roundtrip 测试 helper 已固化此配置；Wave 4（02-05 SW pipeline）实现 extractor 实际产物若也想要 atx + fenced 形态，需回到 02-03 升级 extractor.content.ts 的 TurndownService 构造（当前 extractor 走默认）。这是 Phase 2 success criteria #2"标题/代码块/链接保留"的具体形态约束。
 - 2026-04-30（Plan 02-04 执行）— mirror-function 测试模式从 bumpHello.spec.ts 推广到 capture.spec.ts：`capturePipelineCore` 在 spec 内复刻 SW pipeline 的分支逻辑（URL scheme check → executeScript inject → empty check → assemble snapshot），通过 `MockDeps` interface 注入所有外部依赖（tabUrl / executeScriptResult / executeScriptShouldThrow / nowIso）。这让 Wave 4 真实 runCapturePipeline 实现前就能锁定 4 条业务路径的预期。**同步责任**：Phase 3+ 修改真实 pipeline 时必须同步更新本 mirror 函数；02-04-SUMMARY.md 在 "Mirror 函数同步责任" 节有显式提示。
+- 2026-04-30（Plan 02-05 执行）— SW capture pipeline 编排核心抽到 `background/capture-pipeline.ts`，listener 注册留在 `entrypoints/background.ts` 顶层 `defineBackground` 闭包；ExtractorPartial 类型在 SW 模块本地复刻而非 import 自 `entrypoints/extractor.content.ts`，防止 73 KB 的 content-script bundle（Readability + DOMPurify + Turndown）被 bundler 拉入 SW bundle。这是 SW ↔ content-script 边界的普适模式：当 content-script bundle 体积可观时复刻类型代价远小于错误的 cross-bundle import。
+- 2026-04-30（Plan 02-05 执行）— ArticleSnapshotSchema.safeParse 在 step 7 显式走 Result 通道（safeParse 失败 → `Err('INTERNAL', 'Invalid snapshot:...', false)`），而非依赖 wrapHandler 的 generic catch。原因：(a) 错误码可溯源（snapshot 组装失败 vs 其他 INTERNAL）；(b) retriable=false（snapshot 字段错误重试无意义）；(c) `@webext-core/messaging` 通过 `schemas.output` 在 RPC 边界再做一次校验，本层 + RPC 层形成 defense-in-depth。Phase 3+ 的 dispatch / history pipeline 涉及 zod 校验时沿用同一模式：业务流水线内显式 safeParse + Err 通道，RPC 边界 schemas.output 兜底。
+- 2026-04-30（Plan 02-05 执行）— popup 三态 i18n 文案拆 `.before` / `.icon` / `.after` 三个子键（每个三态 4 子键 = heading + before + icon + after），让 popup 用 `<>{t('...before')}{IconElement}{t('...icon')}{t('...after')}</>` 自然组装内嵌 toolbar icon 引用，不必硬编码字符串切片或走 `chrome.i18n` placeholder substitution。en + zh_CN 各 18 个 `capture.*` 子键 100% 同构（`grep '^capture\.'` 均为 18）。后续任何在文本中内嵌可点击 / 可指代元素的 i18n 文案都沿用此拆分模式。
 
 ### 待办
 
-暂无（Phase 1 全部 closure，HUMAN-UAT.md 已 resolved；Phase 2 Wave 4 待执行 = 02-05 SW capture-pipeline 实现）。
+暂无（Phase 1 全部 closure，HUMAN-UAT.md 已 resolved；Phase 2 Wave 5 待执行 = 02-06 popup 4-state capture UI）。
 
 ### 阻塞 / 关注点
 
@@ -107,6 +110,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-30（Plan 02-04 — 4 个抓取流水线单元测试 + SUMMARY/state 闭环）
-- 停在哪里：Phase 2 Wave 3 完成；下一步 Wave 4 = 执行 `02-05-PLAN.md`（SW capture-pipeline + background.ts 注册 + locale 键补齐）
-- Resume 文件：`.planning/phases/02-capture/02-05-PLAN.md`
+- 上次会话：2026-04-30（Plan 02-05 — SW capture-pipeline + capture.run 顶层注册 + locale 键补齐 + SUMMARY/state 闭环）
+- 停在哪里：Phase 2 Wave 4 完成；下一步 Wave 5 = 执行 `02-06-PLAN.md`（Popup App.tsx 4-state capture UI，CAP-05）
+- Resume 文件：`.planning/phases/02-capture/02-06-PLAN.md`
