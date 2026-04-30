@@ -26,11 +26,15 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@mozilla/readability": "^0.6.0",
     "@preact/signals": "^2.0.0",
     "@webext-core/messaging": "^2.0.0",
     "@wxt-dev/browser": "^0.1.40",
     "@wxt-dev/i18n": "^0.2.5",
+    "dompurify": "^3.4.1",
     "preact": "^10.29.1",
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2",
     "wxt": "^0.20.25",
     "zod": "^3.24.0"
   },
@@ -40,6 +44,7 @@
     "@preact/preset-vite": "^2.0.0",
     "@tailwindcss/vite": "^4.0.0",
     "@types/chrome": "^0.1.40",
+    "@types/turndown": "^5.0.6",
     "eslint": "^9.20.0",
     "eslint-config-prettier": "^10.0.0",
     "happy-dom": "^15.0.0",
