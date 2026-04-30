@@ -1,9 +1,9 @@
 ---
-status: failed
+status: partial
 phase: 02-capture
 source: [02-VERIFICATION.md]
 started: 2026-04-30T17:35:00Z
-updated: 2026-04-30T17:50:00Z
+updated: 2026-04-30T18:10:00Z
 ---
 
 ## Current Test
@@ -14,8 +14,8 @@ updated: 2026-04-30T17:50:00Z
 
 ### 1. tests/e2e/capture.spec.ts — Test 1: fixture article page fills 5 fields within 2s
 expected: popup waits for [data-testid=capture-success] within 2_000ms；5 字段（title/description/content textarea + url/createAt output）均非空；title length > 0；url 含 'localhost'
-result: failed (2026-04-30)
-issue: 扩展无法在 chrome://extensions 加载（先于 E2E 触发）。错误：`Name of a key "capture.empty.nocontent.body.after" is invalid. Only ASCII [a-z], [A-Z], [0-9] and "_" are allowed.` Chrome MV3 拒绝点号 key；02-05 引入的 `capture.*` 嵌套 YAML 在 build 后生成 `_locales/<lang>/messages.json` 含点号 key。
+result: [pending — re-test after G-1 fix]
+issue (resolved 2026-04-30 commit 32ab18a): 扩展无法在 chrome://extensions 加载（先于 E2E 触发）。错误：`Name of a key "capture.empty.nocontent.body.after" is invalid. Only ASCII [a-z], [A-Z], [0-9] and "_" are allowed.` Chrome MV3 拒绝点号 key。已通过把 18 个 capture i18n key 扁平下划线化修复（locales × 2 + App.tsx t() ×18）。
 command: `pnpm build && pnpm test:e2e -- capture.spec.ts -g 'fills 5 fields within 2s'`
 
 ### 2. tests/e2e/capture.spec.ts — Test 2: textarea fields are editable after capture
@@ -42,18 +42,20 @@ why_human: REVIEW-FIX.md WR-01 明确：'real-Chrome popup 验证 out of scope f
 
 total: 5
 passed: 0
-issues: 1
-pending: 4
+issues: 0
+pending: 5
 skipped: 0
-blocked: 4
+blocked: 0
 
 ## Gaps
 
-### G-1: Chrome 拒绝加载扩展 — locale messages.json 含非法点号 key（BLOCKER）
+### G-1: Chrome 拒绝加载扩展 — locale messages.json 含非法点号 key（RESOLVED 2026-04-30）
 
 **source_uat:** UAT 1 (E2E happy path)
-**reported_at:** 2026-04-30
-**status:** failed
+**reported_at:** 2026-04-30T17:50:00Z
+**resolved_at:** 2026-04-30T18:10:00Z
+**resolution_commit:** 32ab18a — fix(02-G-1): flatten capture i18n keys to ASCII underscore form
+**status:** resolved
 **root_cause:** 02-05 把 capture i18n key 用嵌套 YAML 结构（`capture.empty.noContent.body.after` 形态）写入 `locales/{en,zh_CN}.yml`。WXT 0.20.x + @wxt-dev/i18n 0.2.5 的 build 把嵌套 YAML 路径用 **dot 分隔** 拼成扁平 key 写入 `.output/chrome-mv3/_locales/<lang>/messages.json`。Chrome MV3 manifest validator 在加载扩展时严格要求 `_locales/*/messages.json` 的 key 匹配 `[a-zA-Z0-9_]+`，遇到点号即拒绝整个扩展加载。
 
 **impact:** 扩展完全无法在 Chrome 上加载（无论 dev unpacked 还是 store 安装）。所有依赖扩展加载的 UAT（E2E ×3、visual UAT、WR-01 真实 Chrome 验证）都被阻断。

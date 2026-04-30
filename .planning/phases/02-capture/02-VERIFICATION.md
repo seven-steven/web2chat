@@ -1,14 +1,13 @@
 ---
 phase: 02-capture
 verified: 2026-04-30T17:35:00Z
-status: gaps_found
-score: 4/5 must-haves verified (1 BLOCKER discovered during UAT — Chrome rejects extension load)
-overrides_applied: 0
+status: human_needed
+score: 5/5 must-haves verified — G-1 BLOCKER closed inline (32ab18a); E2E + visual UAT pending human gate
 re_verification:
-  previous_status: null
-  previous_score: null
-  gaps_closed: []
-  gaps_remaining: []
+  previous_status: gaps_found
+  previous_score: 4/5
+  gaps_closed: [G-1]
+overrides_applied: 0
   regressions: []
 human_verification:
   - test: "tests/e2e/capture.spec.ts — Test 1: fixture article page fills 5 fields within 2s"
