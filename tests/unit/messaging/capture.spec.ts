@@ -1,15 +1,13 @@
 /**
  * Unit tests for the capture pipeline business core (CAP-01, CAP-04, D-15..D-17).
  *
- * Uses the mirror-function pattern from bumpHello.spec.ts — the actual SW handler
- * in entrypoints/background.ts is not imported; instead, a capturePipelineCore
- * function mirrors the logic with injectable mock dependencies.
- *
- * Why mirror and not direct import:
- *   - SW entrypoint (background.ts) must keep its top-level surface minimal (FND-02)
- *   - background/capture-pipeline.ts (Wave 4) exports runCapturePipeline, but that
- *     module depends on chrome.scripting which needs careful mocking
- *   - Mirror pattern lets us test the branching logic without WXT entrypoint setup
+ * Two layers:
+ *   1. capturePipelineCore mirror — a hand-maintained replica of the pipeline
+ *      branching logic with injectable dependencies. Cheap to extend, but does
+ *      NOT exercise the real chrome.* call shape or the safeParse step.
+ *   2. runCapturePipeline direct — the real pipeline imported from
+ *      @/background/capture-pipeline, exercised against vi.stubGlobal('chrome', ...)
+ *      to cover the safeParse-failure branch and pin the mirror to reality.
  *
  * Maintainer note (mirror 函数同步责任): Phase 3+ 修改真实 capture-pipeline 时
  *   （如新增步骤、调整 ErrorCode、改时序），必须同步更新此 mirror 函数；本测试
@@ -17,11 +15,12 @@
  *
  * Environment: happy-dom (project default) — no DOMPurify involved here.
  */
-import { beforeEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { Ok, Err, type Result } from '@/shared/messaging';
 import type { ArticleSnapshot } from '@/shared/messaging';
 import type { ExtractorPartial } from '@/entrypoints/extractor.content';
+import { runCapturePipeline } from '@/background/capture-pipeline';
 
 // ─── Mirror of runCapturePipeline (PATTERNS.md §capture.spec.ts) ─────────────
 
@@ -197,6 +196,137 @@ describe('capture pipeline core (CAP-01, CAP-04, D-15..D-17)', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.data.create_at).toMatch(ISO_8601_RE);
+    }
+  });
+});
+
+// ─── Direct tests against runCapturePipeline (WR-04) ─────────────────────────
+//
+// The mirror above does not exercise step 7 (ArticleSnapshotSchema.safeParse)
+// or the extractor-result schema. These tests stub chrome.* and import the real
+// pipeline so we can pin the safeParse-failure branch and the malformed-
+// extractor branch (WR-03) at the actual implementation.
+
+interface ChromeStub {
+  tabs: { query: ReturnType<typeof vi.fn> };
+  scripting: { executeScript: ReturnType<typeof vi.fn> };
+}
+
+function stubChrome(stub: ChromeStub): void {
+  vi.stubGlobal('chrome', stub);
+}
+
+describe('runCapturePipeline (direct, WR-04)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    vi.useRealTimers();
+  });
+
+  it('returns Err(EXECUTE_SCRIPT_FAILED) when extractor returns malformed shape (WR-03)', async () => {
+    stubChrome({
+      tabs: {
+        query: vi.fn().mockResolvedValue([{ id: 1, url: 'https://example.com' }]),
+      },
+      scripting: {
+        // missing 'description' field — ExtractorPartialSchema rejects
+        executeScript: vi.fn().mockResolvedValue([{ result: { title: 'X', content: 'Y' } }]),
+      },
+    });
+    const result = await runCapturePipeline();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.code).toBe('EXECUTE_SCRIPT_FAILED');
+      expect(result.message).toMatch(/^Malformed extractor result:/);
+      expect(result.retriable).toBe(true);
+    }
+  });
+
+  it('returns Err(EXECUTE_SCRIPT_FAILED) when extractor returns no result', async () => {
+    stubChrome({
+      tabs: {
+        query: vi.fn().mockResolvedValue([{ id: 1, url: 'https://example.com' }]),
+      },
+      scripting: {
+        executeScript: vi.fn().mockResolvedValue([{}]),
+      },
+    });
+    const result = await runCapturePipeline();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.code).toBe('EXECUTE_SCRIPT_FAILED');
+      expect(result.retriable).toBe(true);
+    }
+  });
+
+  it('returns Err(INTERNAL, /^Invalid snapshot:/) when ArticleSnapshotSchema rejects assembled snapshot', async () => {
+    // The extractor returns shape-valid fields, but step 7 safeParse rejects
+    // the assembled snapshot because create_at is not a valid ISO datetime
+    // (zod's z.string().datetime() requires the canonical RFC 3339 form).
+    stubChrome({
+      tabs: {
+        query: vi.fn().mockResolvedValue([{ id: 1, url: 'https://example.com' }]),
+      },
+      scripting: {
+        executeScript: vi
+          .fn()
+          .mockResolvedValue([{ result: { title: 'T', description: 'D', content: 'C' } }]),
+      },
+    });
+    const isoSpy = vi.spyOn(Date.prototype, 'toISOString').mockReturnValue('not-an-iso-string');
+    try {
+      const result = await runCapturePipeline();
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.code).toBe('INTERNAL');
+        expect(result.message).toMatch(/^Invalid snapshot:/);
+        expect(result.retriable).toBe(false);
+      }
+    } finally {
+      isoSpy.mockRestore();
+    }
+  });
+
+  it('returns Err(EXECUTE_SCRIPT_FAILED) when chrome.scripting.executeScript rejects', async () => {
+    stubChrome({
+      tabs: {
+        query: vi.fn().mockResolvedValue([{ id: 1, url: 'https://example.com' }]),
+      },
+      scripting: {
+        executeScript: vi.fn().mockRejectedValue(new Error('cannot access page')),
+      },
+    });
+    const result = await runCapturePipeline();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.code).toBe('EXECUTE_SCRIPT_FAILED');
+      expect(result.retriable).toBe(true);
+    }
+  });
+
+  it('returns Ok(snapshot) end-to-end with stubbed chrome.*', async () => {
+    stubChrome({
+      tabs: {
+        query: vi.fn().mockResolvedValue([{ id: 42, url: 'https://example.com/article' }]),
+      },
+      scripting: {
+        executeScript: vi.fn().mockResolvedValue([
+          {
+            result: {
+              title: 'Real Title',
+              description: 'Real Description',
+              content: '# Body\n\nText.',
+            },
+          },
+        ]),
+      },
+    });
+    const result = await runCapturePipeline();
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.url).toBe('https://example.com/article');
+      expect(result.data.title).toBe('Real Title');
+      expect(result.data.content).toBe('# Body\n\nText.');
     }
   });
 });
