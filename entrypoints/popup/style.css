@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 
-/* popup-local overrides — keep minimal in Phase 1 */
+/* popup-local overrides — keep minimal */
 :root {
   color-scheme: light dark;
 }
+
+/* Phase 2: popup sizing upgraded to 360x240 — applied via Tailwind in App.tsx */
