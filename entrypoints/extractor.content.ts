@@ -20,6 +20,7 @@
  *   - popup never calls innerHTML on the returned Markdown (PITFALLS §安全错误 #1)
  */
 
+import { defineContentScript } from '#imports';
 import { Readability } from '@mozilla/readability';
 import DOMPurify from 'dompurify';
 import TurndownService from 'turndown';
@@ -40,14 +41,8 @@ export interface ExtractorPartial {
  *
  * Uses the original document (not the clone) as a defensive measure.
  */
-export function getDescription(
-  doc: Document,
-  article: ReturnType<Readability['parse']>,
-): string {
-  const metaDesc = doc
-    .querySelector('meta[name="description"]')
-    ?.getAttribute('content')
-    ?.trim();
+export function getDescription(doc: Document, article: ReturnType<Readability['parse']>): string {
+  const metaDesc = doc.querySelector('meta[name="description"]')?.getAttribute('content')?.trim();
   if (metaDesc) return metaDesc;
 
   const ogDesc = doc
