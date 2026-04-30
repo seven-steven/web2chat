@@ -7,10 +7,19 @@
  *
  * ErrorCode is a union starting with 'INTERNAL' only (Phase 1).
  * Each subsequent phase extends the union:
+ *   Phase 2 (CAP-*):   | 'RESTRICTED_URL' | 'EXTRACTION_EMPTY' | 'EXECUTE_SCRIPT_FAILED'
  *   Phase 3 (DSP-07):  | 'NOT_LOGGED_IN' | 'INPUT_NOT_FOUND' | 'TIMEOUT' | 'RATE_LIMITED'
  *   Phase 4 (ADO-05):  | 'OPENCLAW_OFFLINE' | 'OPENCLAW_PERMISSION_DENIED'
  */
-export type ErrorCode = 'INTERNAL';
+// Phase 1: 'INTERNAL'
+// Phase 2 (CAP-*): | 'RESTRICTED_URL' | 'EXTRACTION_EMPTY' | 'EXECUTE_SCRIPT_FAILED'
+// Phase 3 (DSP-07): | 'NOT_LOGGED_IN' | 'INPUT_NOT_FOUND' | 'TIMEOUT' | 'RATE_LIMITED'
+// Phase 4 (ADO-05): | 'OPENCLAW_OFFLINE' | 'OPENCLAW_PERMISSION_DENIED'
+export type ErrorCode =
+  | 'INTERNAL'
+  | 'RESTRICTED_URL'          // URL scheme ∉ {http,https}，retriable=false
+  | 'EXTRACTION_EMPTY'        // Readability 返回空，popup 渲染 empty 三态，retriable=false
+  | 'EXECUTE_SCRIPT_FAILED';  // chrome.scripting.executeScript 抛错，retriable=true
 
 export type Result<T, E extends ErrorCode = ErrorCode> =
   | { ok: true; data: T }
