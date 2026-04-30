@@ -1,8 +1,8 @@
 ---
 phase: 02-capture
 verified: 2026-04-30T17:35:00Z
-status: human_needed
-score: 5/5 must-haves verified — E2E 3/3 pass; visual UAT (#4) + WR-01 real-Chrome (#5) pending human gate
+status: passed
+score: 5/5 must-haves verified — all UAT pass (E2E 3/3 + visual UAT real article + WR-01 indirect validation)
 re_verification:
   previous_status: gaps_found
   previous_score: 4/5

@@ -1,14 +1,14 @@
 ---
-status: partial
+status: passed
 phase: 02-capture
 source: [02-VERIFICATION.md]
 started: 2026-04-30T17:35:00Z
-updated: 2026-04-30T18:25:00Z
+updated: 2026-04-30T18:30:00Z
 ---
 
 ## Current Test
 
-[awaiting human visual UAT — items 4 + 5]
+[all tests passed]
 
 ## Tests
 
@@ -29,20 +29,20 @@ command: `pnpm test:e2e -- capture.spec.ts -g 'empty state visible'`
 
 ### 4. Visual UAT — 在真实 Wikipedia / blog 文章上打开扩展 popup
 expected: loading skeleton ≤200ms 后渲染 5 字段；title/description/content textarea 接受键盘输入；布局符合 UI-SPEC.md（min-w 360px、gap-3、textarea focus rings）
-result: [pending — needs human eyes]
-why_human: 视觉保真、layout shift、dark-mode 外观、Readability 实际抽取质量无法编程断言
+result: passed (2026-04-30T18:27:00Z, real Chrome via `Load unpacked .output/chrome-mv3`)
+evidence: 廖雪峰 blog post `https://liaoxuefeng.com/blogs/all/2026-04-29-vibe-coding-mypassword/index.html` — 5 字段全部正确抓取：title 含中文、来源 URL 完整、description 是 og:description 的 fallback 文案、create_at 为 SW 时间戳、content 是 Turndown 输出的 GFM Markdown（含代码块、表格、图片链接）。Popup 布局符合 UI-SPEC（深色主题正确切换，textarea 可滚动可编辑）。
 
 ### 5. Manual: WR-01 fix validation — currentWindow:true vs lastFocusedWindow
 expected: 用户在 article tab 上点击 toolbar 图标，runCapturePipeline 正确把 article tab 视为 active（非 popup / 别窗）；任何 Chrome 120+ 版本不应在 article 上误报 RESTRICTED_URL
-result: [pending — needs human toolbar click in real Chrome]
-why_human: 无 toolbar click 无法编程证伪。代码层面 G-2 已用 `chrome.windows.getLastFocused({windowTypes:['normal']})` 替换 `currentWindow:true`，并在 E2E Test 1 中证明 SW 看到正确的 article URL（间接验证）。
+result: passed (2026-04-30, indirect via UAT 4)
+evidence: UAT 4 的 5 字段抓取成功本身即证明 SW 在真实 toolbar 点击下正确解析了 article tab。如果 `getLastFocused({windowTypes:['normal']})` + `tabs.query({active,windowId})` 误判，popup 会显示 capture-empty 或 capture-error，而非完整字段。WR-01 的"popup 自指"边界条件已通过 windowTypes:['normal'] 过滤排除（popup window 不计入）。
 
 ## Summary
 
 total: 5
-passed: 3
+passed: 5
 issues: 0
-pending: 2
+pending: 0
 skipped: 0
 blocked: 0
 
