@@ -14,56 +14,56 @@ popup_hello:
       content: '$1'
       example: '5'
 
-capture.loading.label:
+capture_loading_label:
   message: 'Capturing page…'
 
-capture.field.title:
+capture_field_title:
   message: 'Title'
 
-capture.field.url:
+capture_field_url:
   message: 'Source URL'
 
-capture.field.description:
+capture_field_description:
   message: 'Description'
 
-capture.field.createAt:
+capture_field_createAt:
   message: 'Captured at'
 
-capture.field.content:
+capture_field_content:
   message: 'Content'
 
-capture.empty.restricted.heading:
+capture_empty_restricted_heading:
   message: "Can't capture this page"
 
-capture.empty.restricted.body.before:
+capture_empty_restricted_body_before:
   message: "Web2Chat doesn't run on browser-internal pages. Open a regular website, then click "
 
-capture.empty.restricted.body.icon:
+capture_empty_restricted_body_icon:
   message: 'the toolbar icon'
 
-capture.empty.restricted.body.after:
+capture_empty_restricted_body_after:
   message: ' again.'
 
-capture.empty.noContent.heading:
+capture_empty_noContent_heading:
   message: 'Nothing to extract'
 
-capture.empty.noContent.body.before:
+capture_empty_noContent_body_before:
   message: "This page doesn't have a recognizable article body. Try a different page, then click "
 
-capture.empty.noContent.body.icon:
+capture_empty_noContent_body_icon:
   message: 'the toolbar icon'
 
-capture.empty.noContent.body.after:
+capture_empty_noContent_body_after:
   message: ' again.'
 
-capture.error.scriptFailed.heading:
+capture_error_scriptFailed_heading:
   message: 'Capture failed'
 
-capture.error.scriptFailed.body.before:
+capture_error_scriptFailed_body_before:
   message: 'Something went wrong while reading this page. Click '
 
-capture.error.scriptFailed.body.icon:
+capture_error_scriptFailed_body_icon:
   message: 'the toolbar icon'
 
-capture.error.scriptFailed.body.after:
+capture_error_scriptFailed_body_after:
   message: ' to try again.'

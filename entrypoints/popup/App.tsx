@@ -92,7 +92,7 @@ function LoadingSkeleton() {
       aria-live="polite"
       data-testid="capture-loading"
     >
-      <span class="sr-only">{t('capture.loading.label')}</span>
+      <span class="sr-only">{t('capture_loading_label')}</span>
       {/* 5 skeleton rows approximate the success layout to prevent layout shift */}
       <div class="flex flex-col gap-1">
         <div class="h-4 w-1/3 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
@@ -132,7 +132,7 @@ function SuccessView({ snapshot }: { snapshot: ArticleSnapshot }) {
       data-testid="capture-success"
     >
       {/* Title — editable textarea */}
-      <FieldLabel id="field-title" label={t('capture.field.title')} />
+      <FieldLabel id="field-title" label={t('capture_field_title')} />
       <textarea
         id="field-title"
         class={textareaClass}
@@ -148,7 +148,7 @@ function SuccessView({ snapshot }: { snapshot: ArticleSnapshot }) {
       {/* URL — read-only output */}
       <div class="flex flex-col gap-1">
         <span class="text-xs leading-snug font-normal text-slate-500 dark:text-slate-400">
-          {t('capture.field.url')}
+          {t('capture_field_url')}
         </span>
         <output
           class="text-xs leading-snug font-mono text-slate-500 dark:text-slate-400 break-all"
@@ -159,7 +159,7 @@ function SuccessView({ snapshot }: { snapshot: ArticleSnapshot }) {
       </div>
 
       {/* Description — editable textarea */}
-      <FieldLabel id="field-description" label={t('capture.field.description')} />
+      <FieldLabel id="field-description" label={t('capture_field_description')} />
       <textarea
         id="field-description"
         class={textareaClass}
@@ -175,7 +175,7 @@ function SuccessView({ snapshot }: { snapshot: ArticleSnapshot }) {
       {/* Captured at — read-only output */}
       <div class="flex flex-col gap-1">
         <span class="text-xs leading-snug font-normal text-slate-500 dark:text-slate-400">
-          {t('capture.field.createAt')}
+          {t('capture_field_createAt')}
         </span>
         <output
           class="text-sm leading-normal font-normal text-slate-500 dark:text-slate-400"
@@ -186,7 +186,7 @@ function SuccessView({ snapshot }: { snapshot: ArticleSnapshot }) {
       </div>
 
       {/* Content — editable textarea (tallest) */}
-      <FieldLabel id="field-content" label={t('capture.field.content')} />
+      <FieldLabel id="field-content" label={t('capture_field_content')} />
       <textarea
         id="field-content"
         class={textareaClass}
@@ -208,23 +208,23 @@ function EmptyView({ code }: { code: 'RESTRICTED_URL' | 'EXTRACTION_EMPTY' }) {
   const variant = code === 'RESTRICTED_URL' ? 'restricted' : 'noContent';
   const heading =
     variant === 'restricted'
-      ? t('capture.empty.restricted.heading')
-      : t('capture.empty.noContent.heading');
+      ? t('capture_empty_restricted_heading')
+      : t('capture_empty_noContent_heading');
 
   // Inline accent span pattern (UI-SPEC.md §Copywriting Contract)
   // Three i18n keys per body string: .before / .icon (wrapped) / .after
   const before =
     variant === 'restricted'
-      ? t('capture.empty.restricted.body.before')
-      : t('capture.empty.noContent.body.before');
+      ? t('capture_empty_restricted_body_before')
+      : t('capture_empty_noContent_body_before');
   const icon =
     variant === 'restricted'
-      ? t('capture.empty.restricted.body.icon')
-      : t('capture.empty.noContent.body.icon');
+      ? t('capture_empty_restricted_body_icon')
+      : t('capture_empty_noContent_body_icon');
   const after =
     variant === 'restricted'
-      ? t('capture.empty.restricted.body.after')
-      : t('capture.empty.noContent.body.after');
+      ? t('capture_empty_restricted_body_after')
+      : t('capture_empty_noContent_body_after');
 
   return (
     <main
@@ -258,14 +258,14 @@ function ErrorView() {
     >
       <AlertIcon />
       <h2 class="m-0 text-base leading-snug font-semibold text-red-600 dark:text-red-400">
-        {t('capture.error.scriptFailed.heading')}
+        {t('capture_error_scriptFailed_heading')}
       </h2>
       <p class="m-0 text-sm leading-normal font-normal text-slate-500 dark:text-slate-400">
-        {t('capture.error.scriptFailed.body.before')}
+        {t('capture_error_scriptFailed_body_before')}
         <span class="text-sky-600 dark:text-sky-400">
-          {t('capture.error.scriptFailed.body.icon')}
+          {t('capture_error_scriptFailed_body_icon')}
         </span>
-        {t('capture.error.scriptFailed.body.after')}
+        {t('capture_error_scriptFailed_body_after')}
       </p>
     </main>
   );

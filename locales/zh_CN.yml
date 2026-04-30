@@ -14,56 +14,56 @@ popup_hello:
       content: '$1'
       example: '5'
 
-capture.loading.label:
+capture_loading_label:
   message: '正在抓取页面…'
 
-capture.field.title:
+capture_field_title:
   message: '标题'
 
-capture.field.url:
+capture_field_url:
   message: '来源链接'
 
-capture.field.description:
+capture_field_description:
   message: '摘要'
 
-capture.field.createAt:
+capture_field_createAt:
   message: '抓取时间'
 
-capture.field.content:
+capture_field_content:
   message: '正文'
 
-capture.empty.restricted.heading:
+capture_empty_restricted_heading:
   message: '无法抓取此页面'
 
-capture.empty.restricted.body.before:
+capture_empty_restricted_body_before:
   message: 'Web2Chat 不能在浏览器内置页面上工作。请打开一个普通网页，然后再次点击'
 
-capture.empty.restricted.body.icon:
+capture_empty_restricted_body_icon:
   message: '工具栏图标'
 
-capture.empty.restricted.body.after:
+capture_empty_restricted_body_after:
   message: '。'
 
-capture.empty.noContent.heading:
+capture_empty_noContent_heading:
   message: '没有可抓取的内容'
 
-capture.empty.noContent.body.before:
+capture_empty_noContent_body_before:
   message: '此页面没有可识别的文章正文。换一个页面，再次点击'
 
-capture.empty.noContent.body.icon:
+capture_empty_noContent_body_icon:
   message: '工具栏图标'
 
-capture.empty.noContent.body.after:
+capture_empty_noContent_body_after:
   message: '。'
 
-capture.error.scriptFailed.heading:
+capture_error_scriptFailed_heading:
   message: '抓取失败'
 
-capture.error.scriptFailed.body.before:
+capture_error_scriptFailed_body_before:
   message: '读取此页面时出错。请点击'
 
-capture.error.scriptFailed.body.icon:
+capture_error_scriptFailed_body_icon:
   message: '工具栏图标'
 
-capture.error.scriptFailed.body.after:
+capture_error_scriptFailed_body_after:
   message: '重试。'
