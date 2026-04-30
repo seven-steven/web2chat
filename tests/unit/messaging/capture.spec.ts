@@ -208,6 +208,7 @@ describe('capture pipeline core (CAP-01, CAP-04, D-15..D-17)', () => {
 // extractor branch (WR-03) at the actual implementation.
 
 interface ChromeStub {
+  windows: { getLastFocused: ReturnType<typeof vi.fn> };
   tabs: { query: ReturnType<typeof vi.fn> };
   scripting: { executeScript: ReturnType<typeof vi.fn> };
 }
@@ -215,6 +216,10 @@ interface ChromeStub {
 function stubChrome(stub: ChromeStub): void {
   vi.stubGlobal('chrome', stub);
 }
+
+const okWindow = () => ({
+  getLastFocused: vi.fn().mockResolvedValue({ id: 7 }),
+});
 
 describe('runCapturePipeline (direct, WR-04)', () => {
   afterEach(() => {
@@ -225,6 +230,7 @@ describe('runCapturePipeline (direct, WR-04)', () => {
 
   it('returns Err(EXECUTE_SCRIPT_FAILED) when extractor returns malformed shape (WR-03)', async () => {
     stubChrome({
+      windows: okWindow(),
       tabs: {
         query: vi.fn().mockResolvedValue([{ id: 1, url: 'https://example.com' }]),
       },
@@ -244,6 +250,7 @@ describe('runCapturePipeline (direct, WR-04)', () => {
 
   it('returns Err(EXECUTE_SCRIPT_FAILED) when extractor returns no result', async () => {
     stubChrome({
+      windows: okWindow(),
       tabs: {
         query: vi.fn().mockResolvedValue([{ id: 1, url: 'https://example.com' }]),
       },
@@ -264,6 +271,7 @@ describe('runCapturePipeline (direct, WR-04)', () => {
     // the assembled snapshot because create_at is not a valid ISO datetime
     // (zod's z.string().datetime() requires the canonical RFC 3339 form).
     stubChrome({
+      windows: okWindow(),
       tabs: {
         query: vi.fn().mockResolvedValue([{ id: 1, url: 'https://example.com' }]),
       },
@@ -289,6 +297,7 @@ describe('runCapturePipeline (direct, WR-04)', () => {
 
   it('returns Err(EXECUTE_SCRIPT_FAILED) when chrome.scripting.executeScript rejects', async () => {
     stubChrome({
+      windows: okWindow(),
       tabs: {
         query: vi.fn().mockResolvedValue([{ id: 1, url: 'https://example.com' }]),
       },
@@ -306,6 +315,7 @@ describe('runCapturePipeline (direct, WR-04)', () => {
 
   it('returns Ok(snapshot) end-to-end with stubbed chrome.*', async () => {
     stubChrome({
+      windows: okWindow(),
       tabs: {
         query: vi.fn().mockResolvedValue([{ id: 42, url: 'https://example.com/article' }]),
       },

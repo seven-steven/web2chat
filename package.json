@@ -20,7 +20,7 @@
     "format": "prettier --write .",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "wxt build --mode development && playwright test",
     "verify:manifest": "wxt build && tsx scripts/verify-manifest.ts",
     "postinstall": "wxt prepare && husky",
     "prepare": "husky"

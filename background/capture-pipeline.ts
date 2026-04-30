@@ -38,12 +38,16 @@ const ExtractorPartialSchema = z.object({
 });
 
 export async function runCapturePipeline(): Promise<Result<ArticleSnapshot>> {
-  // Step 1: Get the currently active tab
-  // currentWindow:true is the MV3-canonical primitive for "the window the
-  // user was looking at when invoking the popup". lastFocusedWindow can
-  // (on some Chrome versions) resolve to the popup's own hosting window
-  // and trigger a spurious RESTRICTED_URL on the popup tab.
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  // Step 1: Get the currently active tab in the user's most recent NORMAL
+  // browser window. windowTypes:['normal'] excludes Chrome's internal popup
+  // window (the one hosting the action popup), addressing the WR-01 concern.
+  // SW has no associated window, so currentWindow:true returns empty here —
+  // we must explicitly resolve a window first.
+  const win = await chrome.windows.getLastFocused({ windowTypes: ['normal'] });
+  if (win.id === undefined) {
+    return Err('INTERNAL', 'No focused normal window', false);
+  }
+  const [tab] = await chrome.tabs.query({ active: true, windowId: win.id });
   if (!tab?.id || !tab.url) {
     return Err('INTERNAL', 'No active tab found', false);
   }

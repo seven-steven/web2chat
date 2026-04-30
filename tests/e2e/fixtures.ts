@@ -21,7 +21,12 @@ export const test = base.extend<{
 }>({
   // eslint-disable-next-line no-empty-pattern
   context: async ({}, use) => {
-    const extensionPath = resolve(process.cwd(), '.output/chrome-mv3');
+    // E2E loads the dev-mode build (chrome-mv3-dev). Dev mode includes the
+    // `tabs` permission (wxt.config.ts), which Playwright needs to read
+    // tab.url without a real toolbar click — activeTab is only granted on
+    // user gesture, which Playwright cannot simulate for action popups.
+    // Production builds at chrome-mv3/ keep the locked permission scope.
+    const extensionPath = resolve(process.cwd(), '.output/chrome-mv3-dev');
     const userDataDir = mkdtempSync(join(tmpdir(), 'web2chat-e2e-'));
     const context = await chromium.launchPersistentContext(userDataDir, {
       headless: false,
