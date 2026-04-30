@@ -1,5 +1,5 @@
 import { defineBackground } from '#imports';
-import { onMessage, schemas, Ok, Err } from '@/shared/messaging';
+import { onMessage, schemas, Ok, Err, type Result } from '@/shared/messaging';
 import { metaItem } from '@/shared/storage';
 import { runCapturePipeline } from '@/background/capture-pipeline';
 
@@ -29,17 +29,18 @@ import { runCapturePipeline } from '@/background/capture-pipeline';
 /**
  * Wraps a handler so any thrown error becomes an Err('INTERNAL', ...).
  *
- * Generic over the Result<T> the handler resolves to. Phase 1's single route
- * resolves to Result<MetaSchema>; future phases follow the same pattern.
+ * Constrained to Result<T> (not arbitrary R) so the catch branch can
+ * return Err without an unsafe cast — every wrapped handler is forced
+ * to honour the Result contract at the type level.
  */
-function wrapHandler<R>(fn: () => Promise<R>): () => Promise<R> {
+function wrapHandler<T>(fn: () => Promise<Result<T>>): () => Promise<Result<T>> {
   return async () => {
     try {
       return await fn();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('[bg] handler threw — converting to Err(INTERNAL):', err);
-      return Err('INTERNAL', message, false) as R;
+      return Err('INTERNAL', message, false);
     }
   };
 }
