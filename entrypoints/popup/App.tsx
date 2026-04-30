@@ -44,15 +44,24 @@ export function App() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const result = await sendMessage('capture.run'); // D-15: auto-trigger on mount
-      if (cancelled) return;
-      if (result.ok) {
-        snapshotSig.value = result.data;
-        titleSig.value = result.data.title;
-        descriptionSig.value = result.data.description;
-        contentSig.value = result.data.content;
-      } else {
-        errorSig.value = { code: result.code, message: result.message };
+      try {
+        const result = await sendMessage('capture.run'); // D-15: auto-trigger on mount
+        if (cancelled) return;
+        if (result.ok) {
+          snapshotSig.value = result.data;
+          titleSig.value = result.data.title;
+          descriptionSig.value = result.data.description;
+          contentSig.value = result.data.content;
+        } else {
+          errorSig.value = { code: result.code, message: result.message };
+        }
+      } catch (err) {
+        // sendMessage rejects when SW is unreachable / suspended without a wake reason
+        // / returns an unrecognised payload. Without this catch the loading skeleton
+        // would render forever, breaking the loading→error transition contract.
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : String(err);
+        errorSig.value = { code: 'INTERNAL', message };
       }
     })();
     return () => {
