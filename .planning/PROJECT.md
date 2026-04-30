@@ -17,12 +17,12 @@
 - [x] Chrome MV3 扩展骨架：manifest、popup、background service worker、content script — Validated in Phase 1（FND-01..06、STG-01/02）
 - [x] i18n 国际化：至少支持 zh_CN / en — Validated in Phase 1（FND-06、@wxt-dev/i18n + en/zh_CN locale 100% 同构）
 - [x] 全部配置本地存储于 `chrome.storage.local` — Validated in Phase 1（STG-01/02、`metaItem` typed repo + 版本化 schema + migration 框架）
+- [x] 点击扩展图标弹出 popup，抓取并展示当前页面 `title` / `url` / `description` / `create_at` / `content` — Validated in Phase 2（CAP-01..05、Readability + DOMPurify + Turndown 抽取流水线、4-state popup UI、E2E 3/3 + 真实文章 visual UAT 通过）
 
 ### 进行中 (Active)
 
 <!-- v1 假设。当前在朝这些目标推进。 -->
 
-- [ ] 点击扩展图标弹出 popup，抓取并展示当前页面 `title` / `url` / `description` / `create_at` / `content`
 - [ ] popup 提供 `send_to`（IM channel）输入：下拉历史记录、根据填写内容识别 IM 平台并展示对应 icon
 - [ ] popup 提供 `prompt` 输入：自动按历史记录提示，与 `send_to` 绑定，切换 `send_to` 时自动切换 prompt
 - [ ] 用户点击"确认"后：新开 tab / 唤起本地应用，导航到目标会话并把格式化信息 + prompt 发送到该会话
@@ -98,4 +98,4 @@
 
 ---
 
-_最近更新：2026-04-29，Phase 1 (Foundation) ✓ Complete — 扩展骨架 + 类型化消息 + 版本化存储 + i18n 全部 ship 上 main_
+_最近更新：2026-04-30，Phase 2 (抓取流水线) ✓ Complete — Readability + DOMPurify + Turndown 抽取 + 4-state popup UI（loading/success/empty/error）+ SW capture-pipeline 顶层注册 + 18 个 capture i18n key 100% 同构 + E2E 3/3 通过 + 真实文章 visual UAT 通过。CAP-01..05 全部 Validated。_
