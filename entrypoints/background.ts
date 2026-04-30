@@ -1,6 +1,7 @@
 import { defineBackground } from '#imports';
 import { onMessage, schemas, Ok, Err } from '@/shared/messaging';
 import { metaItem } from '@/shared/storage';
+import { runCapturePipeline } from '@/background/capture-pipeline';
 
 /**
  * Service Worker entrypoint.
@@ -64,6 +65,10 @@ export default defineBackground(() => {
       return Ok(validated);
     }),
   );
+
+  // Phase 2 (CAP-01..CAP-04, D-15..D-17): SW-side capture orchestration.
+  // Listener registered synchronously at module top level — no await before this.
+  onMessage('capture.run', wrapHandler(runCapturePipeline));
 
   // Future phases register additional listeners here at top level
   // (chrome.runtime.onInstalled, chrome.tabs.onUpdated, chrome.alarms.onAlarm, etc.).
