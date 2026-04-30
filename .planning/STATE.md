@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-04-30T08:47:29Z"
+last_updated: "2026-04-30T08:59:55Z"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 11
-  completed_plans: 10
-  percent: 91
+  completed_plans: 11
+  percent: 100
 ---
 
 # 项目状态
@@ -19,36 +19,36 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 2 — 抓取流水线（Wave 1+2+3+4+5 完成；6/7 plans done）
+**当前焦点：** Phase 2 — 抓取流水线（Wave 1+2+3+4+5+6 完成；7/7 plans done；Phase 2 业务功能 + 单元 + E2E spec 闭环；E2E pending human verification）
 
 ## 当前位置
 
-- Phase：2 / 7（抓取流水线 — Wave 1+2+3+4+5 完成；6/7 plans done）
-- Plan：Phase 2 — 02-01 ✓ 02-02 ✓ 02-03 ✓ 02-04 ✓ 02-05 ✓ 02-06 ✓；下一步 Wave 6 = 02-07（E2E fixture + capture.spec.ts + playwright webServer）
-- 状态：Wave 5 落地；popup 4-state capture UI 就位（loading skeleton / success 5-field / empty restricted+noContent / error scriptFailed），mount 自动派发 capture.run，3 个 always-on textarea + 2 个 read-only output，Intl.DateTimeFormat 本地化 create_at，min-w-[360px]，全部文案 t('capture.*')；CAP-01..CAP-05 全部 Done（Phase 2 业务功能闭环完成，仅剩 e2e 验证）
-- 最近活动：2026-04-30 — Plan 02-06 closure：entrypoints/popup/App.tsx 完整替换 hello-world 演化为 4-state UI（commit 9540aac）+ style.css sizing 注释；pnpm typecheck/test 36/9/build 284.78 kB/lint 0 errors 全绿；popup chunk 100.51 kB；Phase 1 meta.bumpHello SW 路由保留不动
+- Phase：2 / 7（抓取流水线 — Wave 1..6 完成；7/7 plans done；E2E spec 已就位待人工 gate）
+- Plan：Phase 2 — 02-01 ✓ 02-02 ✓ 02-03 ✓ 02-04 ✓ 02-05 ✓ 02-06 ✓ 02-07 ✓；下一步 Phase 2 closure（E2E human verification）→ Phase 3 discuss/plan
+- 状态：Wave 6 落地；tests/e2e/fixtures/article.html + tests/e2e/capture.spec.ts (3 个 E2E test：5 字段 2s 填满 + textarea 可编辑 + chrome-extension:// active tab → empty 状态) + playwright.config.ts webServer port 4321 + use.baseURL；CAP-01..CAP-05 5 条全部 Done；ROADMAP Phase 2 成功标准 #1 + #5 的 E2E 已写入仓库待 human gate；typecheck 0 / unit test 9 files 36 tests / build 284.78 kB / lint 0 errors 全绿
+- 最近活动：2026-04-30 — Plan 02-07 closure：tests/e2e/fixtures/article.html (96 行 prettier 化静态 article 含 meta description + h1 + 多段 p + pre+code + a href) + tests/e2e/capture.spec.ts (134 行 3 个 E2E test) + playwright.config.ts webServer + baseURL；commits 5b82349 (chore 配置) + e62616b (test spec)；E2E 命令文档化在 02-07-SUMMARY.md ## Pending Human Verification（按用户内存 headed-browser 需 human gate + D-11 当前不进 CI）
 
-进度：[██████████] 100%（Phase 1）→ Phase 2 [█████████░] 6/7
+进度：[██████████] 100%（Phase 1）→ Phase 2 [██████████] 7/7（E2E pending human verification）
 
 ## 性能指标
 
 **速度：**
 
-- 已完成 plan 总数：10
-- 平均时长：~6.4m
-- 累计执行时长：约 1.0 小时
+- 已完成 plan 总数：11
+- 平均时长：~6.1m
+- 累计执行时长：约 1.1 小时
 
 **按 Phase：**
 
 | Phase | Plans | Total | Avg/Plan |
 | ----- | ----- | ----- | -------- |
 | 1     | 4     | 42m   | 10.5m    |
-| 2     | 6     | ~37m  | ~6.2m    |
+| 2     | 7     | ~40m  | ~5.7m    |
 
 **近期趋势：**
 
-- 最近 5 个 plan：02-02 (15m), 02-03 (5m), 02-04 (4m), 02-05 (4m), 02-06 (4m)
-- 趋势：Phase 2 plan 平均时长稳定 ≤6m；02-06 一次过、0 deviation，UI plan 实现复杂度（8 子组件 + 5 signal + 4 状态分支）通过 plan `<action>` 完整代码 + UI-SPEC.md 视觉合同前置压低到 ~4m
+- 最近 5 个 plan：02-03 (5m), 02-04 (4m), 02-05 (4m), 02-06 (4m), 02-07 (3m31s)
+- 趋势：Phase 2 plan 平均时长稳定 ≤6m；02-07 一次过、1 deviation（Rule 3 spec 注释 grep 冲突，同义改写解决），E2E 不在 executor 自动跑（human gate）让 plan 在 ~3m 落地
 
 _每完成一个 plan 后更新_
 
@@ -76,7 +76,7 @@ _每完成一个 plan 后更新_
 - 2026-04-29（Plan 01-2 执行）— 项目 tsconfig.json 的自定义 `paths` 会完全覆盖 WXT `.wxt/tsconfig.json` 的 `paths`（TypeScript 不合并 paths）。必须在项目 tsconfig 中显式声明 `#i18n` 和 `@/*` 等 WXT 需要的路径别名。
 - 2026-04-29（Plan 01-2 执行）— WXT 0.20.25 内部依赖 Vite 8（rolldown），Vitest 3.2 依赖 Vite 7（rollup）。`exactOptionalPropertyTypes: true` 下 WxtVitest plugin 类型不兼容，需 `as any` 绕过。运行时无影响。
 - 2026-04-29（Plan 01-3 执行）— `defineBackground` 在 WXT 0.20.x 通过 `#imports` 虚拟模块自动暴露（实现位于 `wxt/utils/define-background`）；旧的 `wxt/sandbox` 路径在 0.20.25 已废弃，build 会失败。本 plan 选择显式 `import { defineBackground } from '#imports'` 而非依赖纯 auto-import，便于 grep 验证导入路径。
-- 2026-04-29（Plan 01-3 执行）— `wrapHandler` 不按 ProtocolMap 路由名做映射类型，而是以业务返回类型 R 为单一类参（`<R>(fn: () => Promise<R>) => () => Promise<R>`）。原因：`Promise<ReturnType<ProtocolMap[K]>>` 在 K 为泛型时 TS 5.6 视为 `Promise<Promise<R>>`，触发 TS2322。Phase 1 仅一条路由，简化签名等价且 lint+typecheck 双绿。Phase 3 路由扩张时若需要按路由分派，再考虑用 `K extends keyof ProtocolMap` 重构。
+- 2026-04-29（Plan 01-3 执行）— `wrapHandler` 不按 ProtocolMap 路由名做映射类型，而是以业务返回类型 R 为单一类参（`<R>(fn: () => Promise<R>) => () => Promise<R>`）。原因：`Promise<ReturnType<ProtocolMap[K]>>` 在 K 为泛型时 TS 5.6 视为 `Promise<Promise<R>>`，触发 TS2322。Phase 1 仅一条路由,简化签名等价且 lint+typecheck 双绿。Phase 3 路由扩张时若需要按路由分派，再考虑用 `K extends keyof ProtocolMap` 重构。
 - 2026-04-29（Plan 01-3 执行）— `bumpHello` 业务核心保留在 `entrypoints/background.ts` 内的 `onMessage` 闭包中、不导出；测试侧在 `tests/unit/messaging/bumpHello.spec.ts` 中复刻 mirror 函数 `bumpHelloCore` 用于 fakeBrowser 验证。第三方 caller 出现时再考虑提取到 `shared/messaging/handlers/`。
 - 2026-04-29（Plan 01-4 执行）— WXT 0.20.x 把 popup HTML `<title>` 写入 `manifest.action.default_title`，覆盖 `wxt.config.ts` 中的字段。要让 manifest 保留 `__MSG_action_default_title__` 占位符，HTML `<title>` 也必须写成 `__MSG_action_default_title__`。verify-manifest 第一次跑出 FAIL 后由此一行修正得到 OK；后续所有引入新 popup-like entrypoint 的 phase 都要遵守这条。
 - 2026-04-29（Plan 01-4 执行）— Preact JSX 在严格 `tsc --noEmit` 下需要 tsconfig 显式 `jsx: "react-jsx"` + `jsxImportSource: "preact"` + `react`/`react-dom`/`react/jsx-runtime` → preact compat 的 path aliases。`@preact/preset-vite` 仅处理运行时编译，不替代 TS 类型解析。Phase 6 引入运行时 locale 切换 + Phase 3 引入 SendForm 时不要回退这些设置。
@@ -95,14 +95,17 @@ _每完成一个 plan 后更新_
 - 2026-04-30（Plan 02-06 执行）— inline accent span 在 JSX 中拼接（`{before}<span class="text-sky-600">{icon}</span>{after}`）而非通过 i18n placeholder 注入 HTML，是 Phase 2 落地 PITFALLS §11 + threat T-02-06-02 的核心 mitigation：YAML locale 文件永远不嵌入 HTML，DOMPurify 不需要在文案路径上介入，hardcoded-string ESLint 规则未来在 Phase 6 加固时不会误报。Phase 3 dispatch 文案中可能再次出现"send to [send_to chip]"等内嵌引用，沿用同一三段式拆键模式。
 - 2026-04-30（Plan 02-06 执行）— Preact JSX 中 `<label for={id}>`（不是 React 的 `htmlFor`）、SVG 用 `stroke-width` / `stroke-linecap` 原生 HTML 属性名而非 React camelCase 别名（`strokeWidth` / `strokeLinecap`）。这是 Preact 与 React 在属性命名上的核心差异——Preact 使用原生 HTML 属性；项目所有 JSX 都遵循此约定，未来 Phase 3 SendForm / Phase 6 settings UI 不要回退到 React 兼容别名。
 - 2026-04-30（Plan 02-06 执行）— popup ErrorView 不渲染 `result.message`（即底层 chrome.scripting 抛错原文），仅渲染 `t('capture.error.scriptFailed.*')` 三键。这是 threat T-02-06-03（Information Disclosure）的 mitigation：底层错误信息只去 console，不暴露给用户，避免泄露内部实现细节（如 "Cannot access contents of url chrome://newtab/" 等）。Phase 3+ 任何 ErrorView 设计都遵循同样原则——业务文案走 i18n，底层 message 仅供开发者 debug。
+- 2026-04-30（Plan 02-07 执行）— Playwright webServer + use.baseURL + 相对 URL 模式让 fixture 端口策略只在 playwright.config.ts 一处声明（`port: 4321`），spec.ts 用 `'/article.html'` 相对路径自动拼接 baseURL。`reuseExistingServer: !process.env.CI` 让本地 watch 模式不重复起 serve 进程；CI 始终启新进程（D-11 当前不进 CI，但配置按未来 CI 形态准备）。webServer command 用 `npx --yes serve tests/e2e/fixtures --listen 4321 --no-clipboard`，无需新增 dev dependency。Phase 3 dispatch / Phase 4-5 adapter e2e 沿用此模式：新增 fixture 文件放 `tests/e2e/fixtures/` 自动 serve。
+- 2026-04-30（Plan 02-07 执行）— 多 tab E2E 用 newPage 焦点窃取的修法：`context.newPage()` 默认把新 page 拉到前台，导致 newPage(popup) 后 article 失焦，SW `tabs.query({active, lastFocusedWindow})` 拿到 popup 而非 article。修法：先 newPage(article).goto → newPage(popup blank) → bringToFront(article) → popup.goto(popupUrl)；page.goto 在已存在 page 上不窃焦，article 保持 active。这是 Phase 3 dispatch e2e（涉及多 tab：article 源 + dispatch 目标）将沿用的模式。
+- 2026-04-30（Plan 02-07 执行）— Empty 路径 E2E 用 chrome-extension:// active tab 自然触发，不 mock SW：直接 `newPage(popupUrl)` 单独打开 popup，popup 自身就是 active tab，URL scheme=chrome-extension 被 SW 预检拒绝（D-16），popup 渲染 capture-empty。这是 RESEARCH.md Open Question #2 的最终方案，比 mock SW 更真实地证明 Phase 2 ROADMAP 成功标准 #5 empty 路径。Phase 3+ 任何"受限 active tab"路径的 E2E 都可沿用此自然触发模式。
 
 ### 待办
 
-暂无（Phase 1 全部 closure，HUMAN-UAT.md 已 resolved；Phase 2 Wave 6 待执行 = 02-07 e2e fixture + capture.spec.ts + playwright webServer）。
+- Phase 2 closure 待人工 E2E 验证：`pnpm build && pnpm test:e2e -- capture.spec.ts`，三个 test 全绿后 Phase 2 才正式打钩 ROADMAP 成功标准 #1 + #5（具体命令见 02-07-SUMMARY.md ## Pending Human Verification）。
 
 ### 阻塞 / 关注点
 
-暂无。
+暂无；E2E 待 human gate 不阻塞 Phase 3 启动（Phase 3 依赖 Phase 1 而非 Phase 2 E2E 通过；功能 + 单元 + spec 已就位即可推进）。
 
 ## 延后事项
 
@@ -114,6 +117,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-30（Plan 02-06 — popup App.tsx 完整替换为 4-state capture UI + style.css 注释 + REQ/ROADMAP/STATE/SUMMARY 闭环）
-- 停在哪里：Phase 2 Wave 5 完成；下一步 Wave 6 = 执行 `02-07-PLAN.md`（E2E fixture + capture.spec.ts + playwright webServer，CAP-01 / CAP-05）
-- Resume 文件：`.planning/phases/02-capture/02-07-PLAN.md`
+- 上次会话：2026-04-30（Plan 02-07 — tests/e2e/fixtures/article.html + tests/e2e/capture.spec.ts + playwright.config.ts webServer + REQ/ROADMAP/STATE/SUMMARY 闭环；E2E 待 human gate）
+- 停在哪里：Phase 2 Wave 6 完成；Phase 2 plan-level 全部交付（7/7），phase-level closure 等待 E2E 人工验证后即可启动 Phase 3 discuss/plan
+- Resume 文件：Phase 2 E2E 验证：`pnpm build && pnpm test:e2e -- capture.spec.ts`；Phase 3 启动：`/gsd-discuss-phase 3`
