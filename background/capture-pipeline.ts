@@ -78,8 +78,11 @@ export async function runCapturePipeline(): Promise<Result<ArticleSnapshot>> {
   }
 
   // Step 6: Empty content check (D-17)
-  // Both title AND content empty → page has no recognisable article body
-  if (!partial.content && !partial.title) {
+  // An article with no body is not deliverable, regardless of whether
+  // <title> happens to be set — extractor.content.ts falls back to
+  // document.title unconditionally, so a non-empty title alone does not
+  // imply Readability found a recognisable article.
+  if (!partial.content) {
     return Err('EXTRACTION_EMPTY', 'Readability returned empty content', false);
   }
 

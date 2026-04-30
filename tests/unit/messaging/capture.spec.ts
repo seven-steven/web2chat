@@ -69,7 +69,10 @@ async function capturePipelineCore(
   }
 
   // Step 5: empty content check (D-17)
-  if (!partial.content && !partial.title) {
+  // An article with no body is not deliverable, regardless of whether title
+  // is set — extractor.content.ts falls back to document.title unconditionally
+  // so a non-empty title alone does not imply Readability found content.
+  if (!partial.content) {
     return Err('EXTRACTION_EMPTY', 'Readability returned empty', false);
   }
 
@@ -126,6 +129,22 @@ describe('capture pipeline core (CAP-01, CAP-04, D-15..D-17)', () => {
       tabUrl: 'https://example.com',
       tabId: 1,
       executeScriptResult: { title: '', description: '', content: '' },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.code).toBe('EXTRACTION_EMPTY');
+      expect(result.retriable).toBe(false);
+    }
+  });
+
+  it('returns EXTRACTION_EMPTY when content is empty but title is present (D-17)', async () => {
+    // Regression for CR-02: extractor.content.ts falls back to document.title
+    // unconditionally, so Readability failing to find a body must surface as
+    // EXTRACTION_EMPTY even when <title> happens to be set.
+    const result = await capturePipelineCore({
+      tabUrl: 'https://example.com',
+      tabId: 1,
+      executeScriptResult: { title: 'Login Wall', description: '', content: '' },
     });
     expect(result.ok).toBe(false);
     if (!result.ok) {
