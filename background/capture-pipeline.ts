@@ -21,19 +21,21 @@
  * boundary, so this is defense-in-depth, not redundant.
  */
 
+import { z } from 'zod';
 import { Ok, Err, type Result, ArticleSnapshotSchema } from '@/shared/messaging';
 import type { ArticleSnapshot } from '@/shared/messaging';
 
 /**
- * Fields returned by entrypoints/extractor.content.ts main() via executeScript.
- * Defined here (not imported from extractor.content.ts) so the content-script
- * bundle is not accidentally pulled into the SW bundle by the bundler.
+ * Schema for the extractor's main() return value (entrypoints/extractor.content.ts).
+ * Validated at the SW boundary so a malformed extractor result surfaces as
+ * EXECUTE_SCRIPT_FAILED (its semantic channel) rather than leaking through
+ * to wrapHandler's INTERNAL catch.
  */
-interface ExtractorPartial {
-  title: string;
-  description: string;
-  content: string;
-}
+const ExtractorPartialSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  content: z.string(),
+});
 
 export async function runCapturePipeline(): Promise<Result<ArticleSnapshot>> {
   // Step 1: Get the currently active tab
@@ -75,11 +77,20 @@ export async function runCapturePipeline(): Promise<Result<ArticleSnapshot>> {
     return Err('EXECUTE_SCRIPT_FAILED', String(err), true);
   }
 
-  // Step 5: Unwrap return value from extractor's main()
-  const partial = results[0]?.result as ExtractorPartial | undefined;
-  if (!partial) {
-    return Err('EXECUTE_SCRIPT_FAILED', 'Extractor returned no result', true);
+  // Step 5: Unwrap and validate return value from extractor's main().
+  // A schema check here (rather than an `as ExtractorPartial` cast) routes
+  // malformed extractor results to EXECUTE_SCRIPT_FAILED — their semantic
+  // channel — instead of leaking through to a confusing 'Invalid snapshot'
+  // INTERNAL error in step 7.
+  const partialParse = ExtractorPartialSchema.safeParse(results[0]?.result);
+  if (!partialParse.success) {
+    return Err(
+      'EXECUTE_SCRIPT_FAILED',
+      `Malformed extractor result: ${partialParse.error.message}`,
+      true,
+    );
   }
+  const partial = partialParse.data;
 
   // Step 6: Empty content check (D-17)
   // An article with no body is not deliverable, regardless of whether
