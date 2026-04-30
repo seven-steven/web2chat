@@ -54,26 +54,39 @@ inline-SVG icon convention, three-segment i18n split for inline accent spans.
 
 ## Spacing Scale
 
-8-point scale; popup chrome uses tight steps (xs/sm/md), options page uses standard steps (md/lg/xl).
-All values are Tailwind v4 native scale stops (Tailwind's spacing unit = 0.25rem = 4px).
+Strict subset of the standard 8-point scale {4, 8, 16, 24, 32, 48, 64}. All Phase 3 NEW component
+spacing draws from this set only. All values are Tailwind v4 native scale stops (Tailwind's spacing
+unit = 0.25rem = 4px).
 
 | Token | Value | Tailwind | Usage |
 |-------|-------|----------|-------|
 | xs | 4px | `gap-1`, `p-1` | Icon-to-text gap inside combobox option, badge text padding |
-| sm | 8px | `gap-2`, `p-2` | Combobox listbox option vertical padding, dialog button gap |
-| md | 12px | `gap-3`, `p-3`, `px-3 py-2` | Default field stack gap (matches Phase 2 popup `flex-col gap-3`) |
-| lg | 16px | `gap-4`, `p-4` | Popup outer padding (matches Phase 2 `p-4`); options page section gap |
-| xl | 24px | `gap-6`, `p-6` | Options page section padding |
-| 2xl | 32px | `gap-8`, `p-8` | Options page top-level page padding (desktop) |
-| 3xl | 48px | — | Reserved (not used in Phase 3) |
+| sm | 8px | `gap-2`, `p-2` | Combobox listbox option vertical padding, ConfirmDialog button row gap, popup chrome title-to-gear gap |
+| md | 16px | `gap-4`, `p-4` | Default field stack gap in Phase 3 NEW components (SendForm, InProgressView), popup outer padding (matches Phase 2 `p-4`), error banner padding, options page section gap |
+| lg | 24px | `gap-6`, `p-6` | Options page section card padding |
+| xl | 32px | `gap-8`, `p-8` | Options page top-level page padding (desktop) |
+| 2xl | 48px | — | Reserved (not used in Phase 3) |
+| 3xl | 64px | — | Reserved (not used in Phase 3) |
 
-**Exceptions:**
-- Combobox listbox option **min-height 36px** (8px×4 + 4px line-height adjustment) for keyboard hit target — declared as `min-h-9` (Tailwind 9 = 36px), exceeds Tailwind's default token but stays on the 4-multiple grid
-- Settings gear icon **24×24** clickable area inside popup chrome (`size-6` = 24px) for adequate touch target without crowding 360px width
+**Exceptions (justified non-grid values):**
+- Combobox listbox option **min-height 36px** for keyboard hit target — declared as `min-h-9`
+  (Tailwind 9 = 36px). 36px is a 4-multiple but not in the 8-point set; justified because option rows
+  must clear the WCAG 2.1 minimum target height while staying compact enough to fit 8 history options
+  inside a 360×240 popup without forcing scroll.
+- Settings gear icon **24×24** clickable area inside popup chrome (`size-6` = 24px) — 24 is in the
+  set, listed for completeness.
 
-**Popup vertical density rationale:** Phase 2 already ships at `gap-3 p-4` (12px stack, 16px outer); Phase 3 must
-fit send_to + prompt + Confirm above the existing 5 capture fields without exceeding ~480px scroll height. Tighter
-stack steps (gap-3) preserve the established cadence.
+**Phase 2 inherited spacing (NOT Phase 3 contract — pre-existing legacy):** the Phase 2 capture preview
+already ships with `gap-3` (12px) field stacks and `px-3 py-2` textarea inner padding inside the
+existing `textareaClass` constant in `popup/App.tsx`. These are Phase 2 surface; Phase 3 must NOT
+modify them (per CLAUDE.md "Surgical Changes" — touch only what you must). Phase 3 NEW components
+(SendForm wrapper, Combobox, InProgressView, error banner, options page, ConfirmDialog) use the
+strict {4, 8, 16, 24, 32, 48, 64} set above.
+
+**Popup vertical density rationale:** Phase 3 NEW field stacks use `gap-4` (16px) for the SendForm
+top region (error banner + send_to + prompt + binding hint + Confirm), then the legacy Phase 2
+`gap-3` capture preview region renders below as a self-contained scroll area. Two cadences coexist
+because they live on opposite sides of a visual boundary (the divider above the capture preview).
 
 ---
 
@@ -140,6 +153,24 @@ on confirm per CONTEXT.md "Claude's Discretion").
 
 ---
 
+## Visual Hierarchy
+
+**Primary visual anchor (SendForm screen):** the **Send button at bottom-right** — the only filled
+sky-600 button on screen, `font-semibold`, right-aligned, with the largest contrast ratio against the
+white/slate-900 dominant background. Every other interactive element on the SendForm uses muted
+neutrals (slate borders, slate-500 labels) or accent colors confined to focus-visible / active states.
+This single high-contrast filled button concentrates the user's attention on the terminal action.
+
+**Primary visual anchor (InProgress screen):** the **24×24 sky-600 spinner + "Sending…" heading**,
+center-aligned, font-semibold. The destructive red-600 outline Cancel button is the secondary
+affordance, not the anchor.
+
+**Primary visual anchor (Options page):** the page heading + the section card containing the destructive
+red-600 "Reset all history" button. Reserved (Phase 4 / Phase 6) cards are visually muted (no actions
+yet) and do not compete with the active section.
+
+---
+
 ## Copywriting Contract
 
 Pre-populated from REQUIREMENTS.md DSP-01..10 + STG-03 + ROADMAP.md Phase 3 success criteria.
@@ -150,6 +181,20 @@ underscore-separated keys; Phase 3 continues that style: `dispatch_*`, `error_co
 **Inline accent span pattern (Phase 2 PITFALLS §11 mitigation, MUST be reused):** any string that wraps
 an icon or user-supplied URL splits into three keys (`_before` / `_icon` / `_after`); JSX composes
 `<>{before}<span class="text-sky-600">{icon}</span>{after}</>`. Never embed HTML in YAML.
+
+**Single-word CTA exception (intentional):** `Send`, `Cancel`, and `Retry` appear as single-word verbs
+without an explicit object noun. This is an **accepted exception** because screen context makes the
+target unambiguous in every case:
+- `Send` (Confirm button) sits below the `Send to` and `Prompt` fields and inherits their object —
+  the user has just typed the destination URL into a labeled `Send to` field one line above the
+  button. The implicit object is the just-composed message to that destination.
+- `Cancel` (in-progress view) appears under the heading `Sending…` with the active dispatchId on
+  screen. The object is the visible in-flight dispatch.
+- `Retry` (error banner) appears inside the error banner immediately after a labeled error heading
+  (e.g. `Timed out` → `Retry`). The object is the failed action just described one line above.
+The zh_CN translations (`投递` / `取消` / `重试`) are directionally clear in Mandarin without an
+object noun. If Phase 6 i18n polish surfaces ambiguity from translator review, these labels can be
+expanded to `Send to platform` / `Cancel dispatch` / `Retry send` at that point.
 
 ### Primary CTAs
 
@@ -266,6 +311,11 @@ re-specify these; the empty view triggers BEFORE the SendForm renders.
 └───────────────────────────────────────────────────────────┘
 ```
 
+**SendForm region (Phase 3 NEW) spacing:** outer `p-4` (16px); SendForm vertical stack `flex flex-col
+gap-4` (16px between error banner / send_to combobox / prompt combobox / soft-overwrite hint / divider
+/ Confirm). Capture preview region below the divider keeps its Phase 2 inherited `gap-3` cadence
+unchanged (surgical-changes principle).
+
 **Vertical scroll:** popup may scroll vertically when content exceeds 480px (Chrome popup max).
 Capture preview area is the scrollable region; SendForm header (error banner, send_to, prompt,
 Confirm) and chrome (title + gear) are sticky-positioned via flex layout.
@@ -343,7 +393,7 @@ remains the right shape. Sidebar would be premature abstraction; checker should 
 Implementation: Preact functional component `<ConfirmDialog title body cancelLabel confirmLabel
 variant="destructive" onCancel onConfirm />` rendered as fixed-position overlay (`fixed inset-0
 bg-slate-900/40 dark:bg-slate-900/60`) with centered card. ESC closes (calls `onCancel`); focus is
-trapped within dialog while open.
+trapped within dialog while open. Card padding `p-6` (24px); button row gap `gap-2` (8px).
 
 ---
 
@@ -377,6 +427,7 @@ ARIA 1.2 editable combobox with list autocomplete (RESEARCH.md Pattern 5). DOM f
 - Text: `text-sm leading-snug font-normal`, truncates with ellipsis at right, `title={fullValue}` for hover-tooltip
 - Delete button (✕): 16×16 inline SVG, `text-slate-400 hover:text-red-600`, `aria-label="Remove from history"`,
   visible only on row hover or when option has keyboard focus
+- Option vertical padding: `py-2` (8px); horizontal padding: `px-2` (8px); icon-to-text gap: `gap-2` (8px)
 
 **Keyboard contract:**
 - `↑` / `↓`: cycle activeIdx through filtered options (-1 → 0 → 1 → … → length−1 → -1)
@@ -395,7 +446,7 @@ ARIA 1.2 editable combobox with list autocomplete (RESEARCH.md Pattern 5). DOM f
 
 | State | Treatment |
 |-------|-----------|
-| Enabled (URL matches a registered adapter) | `bg-sky-600 text-white hover:bg-sky-700 active:bg-sky-800` light; `bg-sky-500 hover:bg-sky-400` dark; padding `px-4 py-2`; font `text-sm font-semibold`; rounded `rounded-md` |
+| Enabled (URL matches a registered adapter) | `bg-sky-600 text-white hover:bg-sky-700 active:bg-sky-800` light; `bg-sky-500 hover:bg-sky-400` dark; padding `px-4 py-2` (16px / 8px); font `text-sm font-semibold`; rounded `rounded-md` |
 | Disabled (URL empty or unsupported) | `bg-slate-200 text-slate-400 cursor-not-allowed` light; `bg-slate-700 text-slate-500` dark; tooltip surfaces `Enter a Discord or OpenClaw URL to enable Send.` |
 | Loading (RPC in flight, ~50ms before popup closes) | Same as enabled but `aria-busy="true"`; spinner replaces label |
 
@@ -403,23 +454,24 @@ ARIA 1.2 editable combobox with list autocomplete (RESEARCH.md Pattern 5). DOM f
 
 | State | Treatment |
 |-------|-----------|
-| Visible | Container: `bg-red-50 dark:bg-red-950/40` `border-l-4 border-red-600` `p-3 rounded-r-md`; heading: `text-sm font-semibold text-red-700 dark:text-red-300`; body: `text-sm text-slate-700 dark:text-slate-300`; retry button: `text-sm font-semibold text-red-600 hover:text-red-700 underline-offset-2 hover:underline`; dismiss (✕): top-right, 16×16, `text-slate-400 hover:text-slate-700` |
+| Visible | Container: `bg-red-50 dark:bg-red-950/40` `border-l-4 border-red-600` `p-4` (16px) `rounded-r-md`; heading: `text-sm font-semibold text-red-700 dark:text-red-300`; body: `text-sm text-slate-700 dark:text-slate-300`; retry button: `text-sm font-semibold text-red-600 hover:text-red-700 underline-offset-2 hover:underline`; dismiss (✕): top-right, 16×16, `text-slate-400 hover:text-slate-700` |
 | Hidden | not rendered |
 
 ### Loading skeleton (Phase 2 inherited; unchanged)
 
 `bg-slate-100 dark:bg-slate-800 rounded animate-pulse` rows mimicking Success view's 5-field layout.
+Phase 2 inherited spacing (`gap-3`, `p-4`) preserved as-is.
 
 ### In-progress placeholder
 
 | Element | Treatment |
 |---------|-----------|
-| Container | `flex flex-col items-center text-center p-4 py-8 gap-3 min-w-[360px] min-h-[240px]` (mirrors Phase 2 EmptyView) |
+| Container | `flex flex-col items-center text-center p-4 py-8 gap-4 min-w-[360px] min-h-[240px]` (16px gaps; mirrors Phase 2 EmptyView outer padding `p-4` and 32px vertical rhythm via `py-8`) |
 | Spinner | inline SVG, 24×24, `text-sky-600 animate-spin`, `aria-hidden="true"` |
 | Heading | `text-base leading-snug font-semibold text-slate-900 dark:text-slate-100` |
 | Body (with inline Cancel reference) | `text-sm leading-normal text-slate-500 dark:text-slate-400`; `<span class="text-sky-600">Cancel</span>` for inline accent (three-segment i18n key) |
 | Cancel button | `border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 px-4 py-2 rounded-md text-sm font-semibold` (outline destructive) |
-| dispatchId footer | `text-xs leading-snug font-mono text-slate-400 dark:text-slate-500`, click-to-copy with toast `Copied dispatch ID.` (debug aid; dev-only? no — keep visible so users can attach to bug reports) |
+| dispatchId footer | `text-xs leading-snug font-mono text-slate-400 dark:text-slate-500`, click-to-copy with toast `Copied dispatch ID.` (debug aid kept visible so users can attach it to bug reports) |
 
 ---
 
@@ -473,7 +525,12 @@ No third-party registries declared. No shadcn blocks. No registry vetting gate t
 3. **No `font-medium` / `font-bold`:** Two weights total (`font-normal` + `font-semibold`). Reject any
    third weight introduced in Phase 3 components.
 
-4. **Badge color values are hardcoded hex** in `chrome.action.setBadgeBackgroundColor()` calls (the API
+4. **Spacing scale enforcement:** Phase 3 NEW components use only {4, 8, 16, 24, 32, 48, 64} +
+   the documented 36px exception (combobox option `min-h-9`). No `gap-3` / `p-3` / `px-3 py-2` /
+   `gap-5` / `p-5` in any new file. Phase 2 inherited code keeps its `gap-3` and `px-3 py-2` (in
+   `textareaClass`); do not touch them.
+
+5. **Badge color values are hardcoded hex** in `chrome.action.setBadgeBackgroundColor()` calls (the API
    accepts hex strings, not Tailwind class names). Keep them in a single `BADGE_COLORS` constant in
    `background/dispatch-pipeline.ts`:
 
@@ -485,7 +542,7 @@ No third-party registries declared. No shadcn blocks. No registry vetting gate t
    } as const;
    ```
 
-5. **Popup mount logic order** (replaces Phase 2's single capture.run dispatch):
+6. **Popup mount logic order** (replaces Phase 2's single capture.run dispatch):
 
    1. Read `chrome.storage.session.get('dispatch:active')` → if record exists with state ∉ {done, error, cancelled},
       render `InProgressView` (do NOT trigger capture.run)
@@ -494,7 +551,7 @@ No third-party registries declared. No shadcn blocks. No registry vetting gate t
       above SendForm; popup mount also clears `chrome.action.setBadgeText({text:''})` per D-34
    4. Render SendForm + capture preview
 
-6. **i18n key namespace conventions:**
+7. **i18n key namespace conventions:**
    - `dispatch_*` — all dispatch-flow copy (in-progress, confirm button, cancel)
    - `error_code_*` — five new ErrorCodes; subkeys `_heading` / `_body` / `_retry` (where applicable)
    - `history_*` — combobox listbox copy (empty state, View all, delete tooltip)
@@ -503,10 +560,10 @@ No third-party registries declared. No shadcn blocks. No registry vetting gate t
    - `options_*` — options page copy (heading, reset section, confirmation dialog, toast)
    - `popup_chrome_*` — popup title + settings gear tooltip
 
-7. **Conditional rendering:** SendForm and InProgressView are mutually exclusive. Error banner is always
+8. **Conditional rendering:** SendForm and InProgressView are mutually exclusive. Error banner is always
    rendered conditionally above SendForm; never above InProgressView.
 
-8. **Empty / Error / Loading views from Phase 2:** kept as-is for the capture flow. Phase 3 adds
+9. **Empty / Error / Loading views from Phase 2:** kept as-is for the capture flow. Phase 3 adds
    InProgressView + Error banner only; does NOT modify the existing 4 capture states.
 
 ---
@@ -531,7 +588,7 @@ No third-party registries declared. No shadcn blocks. No registry vetting gate t
 | CONTEXT.md (D-23..D-38) | 16 — all dispatch UX decisions: stub adapter (D-23), platform detector (D-24), Confirm disable + tooltip (D-25), soft-overwrite + dirty (D-27), combobox ARIA (D-30), badge colors LOCKED (D-34), settings gear → openOptionsPage (D-37), Ctrl+Shift+S (D-38) — none re-asked |
 | RESEARCH.md (Pattern 5 ARIA combobox + RESEARCH.md A3 alarms 30s deviation) | combobox keyboard model + badge ok auto-clear timing |
 | REQUIREMENTS.md (DSP-01..10 + STG-03) | error code copy mapping, Reset confirmation flow |
-| Phase 2 `entrypoints/popup/App.tsx` | typography scale, color palette, spacing cadence, FieldLabel + textareaClass primitives, three-segment i18n inline accent pattern |
+| Phase 2 `entrypoints/popup/App.tsx` | typography scale, color palette, FieldLabel + textareaClass primitives, three-segment i18n inline accent pattern; Phase 2 inherited `gap-3` cadence preserved unchanged in capture preview region |
 | Phase 2 `locales/en.yml` + `zh_CN.yml` | i18n key naming convention (flat underscore-separated) |
 | Phase 1 D-10 + RESEARCH.md §Standard Stack | no shadcn / no component library — Tailwind v4 utility-first |
 | Phase 1 `entrypoints/popup/style.css` | `@import "tailwindcss";` baseline |
@@ -539,4 +596,4 @@ No third-party registries declared. No shadcn blocks. No registry vetting gate t
 
 ---
 
-*Phase 3 UI design contract — generated 2026-05-01.*
+*Phase 3 UI design contract — generated 2026-05-01; revised 2026-05-01 (spacing scale tightened to strict {4,8,16,24,32,48,64} subset; visual hierarchy + single-word CTA exception documented).*
