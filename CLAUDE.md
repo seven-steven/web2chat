@@ -135,3 +135,10 @@ ASCII 图、完整目录布局、以及类型化 `IMAdapter` 接口详见 `.plan
 **Learning:** `self-directed` (MEDIUM) — 精准回答，不填充未被要求的背景上下文。
 
 <!-- GSD:profile-end -->
+
+## 用户约束 (User Constraints)
+
+> 以下约束由用户手动添加，优先级高于 GSD 模板默认行为。
+
+- [CRITICAL] 始终使用用户指定的语言沟通和编写文档；默认跟随用户语言，仅在明确要求时切换。
+- [CRITICAL] 主动执行所有可自行运行的测试（单元测试、类型检查、lint、构建）；当且仅当真正无法自行执行时（如需要物理显示器的 headed E2E），才请求用户操作。
