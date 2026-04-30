@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-04-30T08:29:28Z"
+last_updated: "2026-04-30T08:47:29Z"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 11
-  completed_plans: 9
-  percent: 82
+  completed_plans: 10
+  percent: 91
 ---
 
 # 项目状态
@@ -19,36 +19,36 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 2 — 抓取流水线（Wave 1+2+3+4 完成；5/7 plans done）
+**当前焦点：** Phase 2 — 抓取流水线（Wave 1+2+3+4+5 完成；6/7 plans done）
 
 ## 当前位置
 
-- Phase：2 / 7（抓取流水线 — Wave 1+2+3+4 完成；5/7 plans done）
-- Plan：Phase 2 — 02-01 ✓ 02-02 ✓ 02-03 ✓ 02-04 ✓ 02-05 ✓；下一步 Wave 5 = 02-06（Popup 4-state capture UI）
-- 状态：Wave 4 落地；SW capture pipeline + capture.run 顶层路由 + 18 个 capture.* locale 子键（en/zh_CN 同构）就位；CAP-01 / CAP-02 / CAP-03 / CAP-04 全部 Done
-- 最近活动：2026-04-30 — Plan 02-05 closure：background/capture-pipeline.ts 创建（commit fd87257）+ background.ts 顶层注册 capture.run + locale 键补齐（commit f18929e），pnpm test 36/36 全绿，pnpm typecheck/build/lint 全绿，build 产物 background.js 86.5 kB 含 capture.run 路由
+- Phase：2 / 7（抓取流水线 — Wave 1+2+3+4+5 完成；6/7 plans done）
+- Plan：Phase 2 — 02-01 ✓ 02-02 ✓ 02-03 ✓ 02-04 ✓ 02-05 ✓ 02-06 ✓；下一步 Wave 6 = 02-07（E2E fixture + capture.spec.ts + playwright webServer）
+- 状态：Wave 5 落地；popup 4-state capture UI 就位（loading skeleton / success 5-field / empty restricted+noContent / error scriptFailed），mount 自动派发 capture.run，3 个 always-on textarea + 2 个 read-only output，Intl.DateTimeFormat 本地化 create_at，min-w-[360px]，全部文案 t('capture.*')；CAP-01..CAP-05 全部 Done（Phase 2 业务功能闭环完成，仅剩 e2e 验证）
+- 最近活动：2026-04-30 — Plan 02-06 closure：entrypoints/popup/App.tsx 完整替换 hello-world 演化为 4-state UI（commit 9540aac）+ style.css sizing 注释；pnpm typecheck/test 36/9/build 284.78 kB/lint 0 errors 全绿；popup chunk 100.51 kB；Phase 1 meta.bumpHello SW 路由保留不动
 
-进度：[██████████] 100%（Phase 1）→ Phase 2 [███████░] 5/7
+进度：[██████████] 100%（Phase 1）→ Phase 2 [█████████░] 6/7
 
 ## 性能指标
 
 **速度：**
 
-- 已完成 plan 总数：9
-- 平均时长：~6.7m
-- 累计执行时长：约 0.92 小时
+- 已完成 plan 总数：10
+- 平均时长：~6.4m
+- 累计执行时长：约 1.0 小时
 
 **按 Phase：**
 
 | Phase | Plans | Total | Avg/Plan |
 | ----- | ----- | ----- | -------- |
 | 1     | 4     | 42m   | 10.5m    |
-| 2     | 5     | ~33m  | ~6.6m    |
+| 2     | 6     | ~37m  | ~6.2m    |
 
 **近期趋势：**
 
-- 最近 5 个 plan：02-02 (15m), 02-03 (5m), 02-04 (4m), 02-05 (4m)
-- 趋势：Phase 2 plan 平均时长稳定低于 Phase 1；02-05 一次过、0 deviation，与 02-04 mirror 函数提供的红灯参考契合（mirror → 真实 pipeline 的同形分支让实现按 plan 一次到位）
+- 最近 5 个 plan：02-02 (15m), 02-03 (5m), 02-04 (4m), 02-05 (4m), 02-06 (4m)
+- 趋势：Phase 2 plan 平均时长稳定 ≤6m；02-06 一次过、0 deviation，UI plan 实现复杂度（8 子组件 + 5 signal + 4 状态分支）通过 plan `<action>` 完整代码 + UI-SPEC.md 视觉合同前置压低到 ~4m
 
 _每完成一个 plan 后更新_
 
@@ -91,10 +91,14 @@ _每完成一个 plan 后更新_
 - 2026-04-30（Plan 02-05 执行）— SW capture pipeline 编排核心抽到 `background/capture-pipeline.ts`，listener 注册留在 `entrypoints/background.ts` 顶层 `defineBackground` 闭包；ExtractorPartial 类型在 SW 模块本地复刻而非 import 自 `entrypoints/extractor.content.ts`，防止 73 KB 的 content-script bundle（Readability + DOMPurify + Turndown）被 bundler 拉入 SW bundle。这是 SW ↔ content-script 边界的普适模式：当 content-script bundle 体积可观时复刻类型代价远小于错误的 cross-bundle import。
 - 2026-04-30（Plan 02-05 执行）— ArticleSnapshotSchema.safeParse 在 step 7 显式走 Result 通道（safeParse 失败 → `Err('INTERNAL', 'Invalid snapshot:...', false)`），而非依赖 wrapHandler 的 generic catch。原因：(a) 错误码可溯源（snapshot 组装失败 vs 其他 INTERNAL）；(b) retriable=false（snapshot 字段错误重试无意义）；(c) `@webext-core/messaging` 通过 `schemas.output` 在 RPC 边界再做一次校验，本层 + RPC 层形成 defense-in-depth。Phase 3+ 的 dispatch / history pipeline 涉及 zod 校验时沿用同一模式：业务流水线内显式 safeParse + Err 通道，RPC 边界 schemas.output 兜底。
 - 2026-04-30（Plan 02-05 执行）— popup 三态 i18n 文案拆 `.before` / `.icon` / `.after` 三个子键（每个三态 4 子键 = heading + before + icon + after），让 popup 用 `<>{t('...before')}{IconElement}{t('...icon')}{t('...after')}</>` 自然组装内嵌 toolbar icon 引用，不必硬编码字符串切片或走 `chrome.i18n` placeholder substitution。en + zh_CN 各 18 个 `capture.*` 子键 100% 同构（`grep '^capture\.'` 均为 18）。后续任何在文本中内嵌可点击 / 可指代元素的 i18n 文案都沿用此拆分模式。
+- 2026-04-30（Plan 02-06 执行）— popup 多状态渲染采取 module-level `signal` + 早返回到子组件的纯函数式模式：`snapshotSig` / `errorSig` 决定四态分支；`titleSig` / `descriptionSig` / `contentSig` 持有可编辑字段值。这依赖 Chrome extension popup 每次打开都是全新 HTML 加载（模块状态自动 GC）的隔离行为。`<deferred_notes>` 记录：未来若把 popup App.tsx 复用到 sidepanel / devtools panel，模块级 signal 会跨实例泄漏，需迁移到 useState 或 Preact Context；当前 MVP 不受影响。
+- 2026-04-30（Plan 02-06 执行）— inline accent span 在 JSX 中拼接（`{before}<span class="text-sky-600">{icon}</span>{after}`）而非通过 i18n placeholder 注入 HTML，是 Phase 2 落地 PITFALLS §11 + threat T-02-06-02 的核心 mitigation：YAML locale 文件永远不嵌入 HTML，DOMPurify 不需要在文案路径上介入，hardcoded-string ESLint 规则未来在 Phase 6 加固时不会误报。Phase 3 dispatch 文案中可能再次出现"send to [send_to chip]"等内嵌引用，沿用同一三段式拆键模式。
+- 2026-04-30（Plan 02-06 执行）— Preact JSX 中 `<label for={id}>`（不是 React 的 `htmlFor`）、SVG 用 `stroke-width` / `stroke-linecap` 原生 HTML 属性名而非 React camelCase 别名（`strokeWidth` / `strokeLinecap`）。这是 Preact 与 React 在属性命名上的核心差异——Preact 使用原生 HTML 属性；项目所有 JSX 都遵循此约定，未来 Phase 3 SendForm / Phase 6 settings UI 不要回退到 React 兼容别名。
+- 2026-04-30（Plan 02-06 执行）— popup ErrorView 不渲染 `result.message`（即底层 chrome.scripting 抛错原文），仅渲染 `t('capture.error.scriptFailed.*')` 三键。这是 threat T-02-06-03（Information Disclosure）的 mitigation：底层错误信息只去 console，不暴露给用户，避免泄露内部实现细节（如 "Cannot access contents of url chrome://newtab/" 等）。Phase 3+ 任何 ErrorView 设计都遵循同样原则——业务文案走 i18n，底层 message 仅供开发者 debug。
 
 ### 待办
 
-暂无（Phase 1 全部 closure，HUMAN-UAT.md 已 resolved；Phase 2 Wave 5 待执行 = 02-06 popup 4-state capture UI）。
+暂无（Phase 1 全部 closure，HUMAN-UAT.md 已 resolved；Phase 2 Wave 6 待执行 = 02-07 e2e fixture + capture.spec.ts + playwright webServer）。
 
 ### 阻塞 / 关注点
 
@@ -110,6 +114,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-30（Plan 02-05 — SW capture-pipeline + capture.run 顶层注册 + locale 键补齐 + SUMMARY/state 闭环）
-- 停在哪里：Phase 2 Wave 4 完成；下一步 Wave 5 = 执行 `02-06-PLAN.md`（Popup App.tsx 4-state capture UI，CAP-05）
-- Resume 文件：`.planning/phases/02-capture/02-06-PLAN.md`
+- 上次会话：2026-04-30（Plan 02-06 — popup App.tsx 完整替换为 4-state capture UI + style.css 注释 + REQ/ROADMAP/STATE/SUMMARY 闭环）
+- 停在哪里：Phase 2 Wave 5 完成；下一步 Wave 6 = 执行 `02-07-PLAN.md`（E2E fixture + capture.spec.ts + playwright webServer，CAP-01 / CAP-05）
+- Resume 文件：`.planning/phases/02-capture/02-07-PLAN.md`
