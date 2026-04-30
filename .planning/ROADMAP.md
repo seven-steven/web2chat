@@ -74,7 +74,7 @@ Plans:
 4. `create_at` 由 SW 在点击时生成，为 ISO-8601 时间戳（不是从页面派生）— 通过对冻结的 `Date.now()` mock 做 snapshot 测试断言。
 5. popup 显式渲染 `loading`、`empty`（提取器未返回主要内容）、`error`（executeScript 抛错）状态；用户可以编辑 `title` / `description` / `content`，编辑后的值会出现在下一次投递的 payload 中（由 Playwright 证明）。
 
-**Plans**：7 plans（5 waves）
+**Plans**：7 plans（6 waves）
 
 Plans:
 
@@ -82,17 +82,19 @@ Plans:
 - [ ] 02-01-PLAN.md — 安装 4 个运行时库 + @types/turndown（CAP-02）
 - [ ] 02-02-PLAN.md — 扩展 ErrorCode 联合 + ArticleSnapshotSchema + capture.run 路由（CAP-01 / CAP-03 / CAP-04）
 
-**Wave 2** *(blocked on Wave 1 completion, 并行)*
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 02-03-PLAN.md — extractor content script（registration:runtime + Readability + DOMPurify + Turndown，CAP-02 / CAP-03）
-- [ ] 02-04-PLAN.md — 单元测试：extractor 三文件（jsdom）+ capture pipeline 四路径（CAP-01 / CAP-02 / CAP-03 / CAP-04）
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 02-05-PLAN.md — SW capture-pipeline + background.ts 注册 + locale 键补齐（CAP-01 / CAP-02 / CAP-03 / CAP-04）
+- [ ] 02-04-PLAN.md — 单元测试：extractor 三文件（jsdom）+ capture pipeline 四路径（CAP-01 / CAP-02 / CAP-03 / CAP-04）
 
 **Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 02-05-PLAN.md — SW capture-pipeline + background.ts 注册 + locale 键补齐（CAP-01 / CAP-02 / CAP-03 / CAP-04）
+
+**Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 02-06-PLAN.md — Popup App.tsx 4-state capture UI（CAP-05）
 
-**Wave 5** *(blocked on Wave 3+4 completion)*
+**Wave 6** *(blocked on Wave 5 completion)*
 - [ ] 02-07-PLAN.md — E2E fixture + capture.spec.ts + playwright webServer（CAP-01 / CAP-05）
 
 **UI hint**：yes
