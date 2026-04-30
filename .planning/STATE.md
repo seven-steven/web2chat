@@ -9,12 +9,12 @@
 
 ## 当前位置
 
-- Phase：2 / 7（抓取流水线 — context + UI-SPEC 完成，待 `/gsd-plan-phase 2`）
-- Plan：上一 phase（Phase 1）4 / 4 全部完成；Phase 2 plans 数 TBD
-- 状态：Phase 2 02-UI-SPEC.md 已 approved（6/6 dimensions PASS）；下一步进入 plan
-- 最近活动：2026-04-30 — Phase 2 UI-SPEC closure：02-UI-SPEC.md 落地（commit f9ecb79 初稿 → revision commit 9f92f85），锁定 popup 4-state 视觉契约（loading skeleton / success 5-field always-on textarea / empty restricted+noContent / error scriptFailed）、slate + sky-600 调色板、`capture.*` i18n 键集（含 `.before/.icon/.after` 拆解）、2 weight × 3 size 字号阶梯
+- Phase：2 / 7（抓取流水线 — 7 plans 已创建，待执行）
+- Plan：上一 phase（Phase 1）4 / 4 全部完成；Phase 2 plans：7（6 waves）
+- 状态：Phase 2 plans 已通过 plan-checker 验证；下一步 `/gsd-execute-phase 2`
+- 最近活动：2026-04-30 — Phase 2 planning 完成：7 个 PLAN.md 落地（Wave 1 并行 02-01+02-02 → Wave 2 02-03 → Wave 3 02-04 → Wave 4 02-05 → Wave 5 02-06 → Wave 6 02-07），全覆盖 CAP-01..05，含 ASVS L1 threat_model + jsdom env fix + E2E restricted 三态覆盖
 
-进度：[██████████] 100%（Phase 1）→ Phase 2 待启动
+进度：[██████████] 100%（Phase 1）→ Phase 2 plans 就绪，待执行
 
 ## 性能指标
 
@@ -88,6 +88,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-30（Phase 2 UI-SPEC — 6/6 dimensions PASS，UI-SPEC.md ship commit 9f92f85）
-- 停在哪里：Phase 2 UI-SPEC ready；下一步 `/gsd-plan-phase 2`
-- Resume 文件：`.planning/phases/02-capture/02-UI-SPEC.md`
+- 上次会话：2026-04-30（Phase 2 plan — 7 plans 验证通过，commit pending）
+- 停在哪里：Phase 2 plans 已就绪；下一步 `/gsd-execute-phase 2`
+- Resume 文件：`.planning/phases/02-capture/02-01-PLAN.md`（Wave 1 起点）
