@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to plan
-last_updated: "2026-04-30T10:31:31.956Z"
+last_updated: "2026-04-30T22:50:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 2
@@ -19,14 +19,14 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 2 — 抓取流水线（Wave 1+2+3+4+5+6 完成；7/7 plans done；Phase 2 业务功能 + 单元 + E2E spec 闭环；E2E pending human verification）
+**当前焦点：** Phase 3 — 投递核心 + Popup UI（CONTEXT.md 已落地，16 个决策 D-23..D-38 覆盖 4 个 area；Ready to plan）
 
 ## 当前位置
 
-- Phase：2 / 7（抓取流水线 — Wave 1..6 完成；7/7 plans done；E2E spec 已就位待人工 gate）
-- Plan：Phase 2 — 02-01 ✓ 02-02 ✓ 02-03 ✓ 02-04 ✓ 02-05 ✓ 02-06 ✓ 02-07 ✓；下一步 Phase 2 closure（E2E human verification）→ Phase 3 discuss/plan
-- 状态：Wave 6 落地；tests/e2e/fixtures/article.html + tests/e2e/capture.spec.ts (3 个 E2E test：5 字段 2s 填满 + textarea 可编辑 + chrome-extension:// active tab → empty 状态) + playwright.config.ts webServer port 4321 + use.baseURL；CAP-01..CAP-05 5 条全部 Done；ROADMAP Phase 2 成功标准 #1 + #5 的 E2E 已写入仓库待 human gate；typecheck 0 / unit test 9 files 36 tests / build 284.78 kB / lint 0 errors 全绿
-- 最近活动：2026-04-30 — Plan 02-07 closure：tests/e2e/fixtures/article.html (96 行 prettier 化静态 article 含 meta description + h1 + 多段 p + pre+code + a href) + tests/e2e/capture.spec.ts (134 行 3 个 E2E test) + playwright.config.ts webServer + baseURL；commits 5b82349 (chore 配置) + e62616b (test spec)；E2E 命令文档化在 02-07-SUMMARY.md ## Pending Human Verification（按用户内存 headed-browser 需 human gate + D-11 当前不进 CI）
+- Phase：3 / 7（投递核心 + Popup UI — CONTEXT.md gathered，下一步 plan-phase 3）
+- Plan：Phase 2 closed (7/7 + UAT 5/5 passed)；Phase 3 plan TBD
+- 状态：Phase 3 discussion 完成（4 areas / 16 decisions / 1 重选）；adapter 契约 + send_to↔prompt 绑定 + dispatch state machine + draft 持久化全部锁定；Phase 3 stub adapter 让 e2e 端到端跑通，Phase 4 OpenClaw 替换为真实 adapter
+- 最近活动：2026-04-30 — Phase 3 CONTEXT.md (D-23..D-38 含 IMAdapter 契约、adapter-registry、popup combobox UI、dispatch state machine 7 状态、popup-generated UUID 幂等键、tabs.onUpdated:complete 顶层 listener 唤醒、单 popupDraft item、独立 options page、Ctrl+Shift+S 默认快捷键) + DISCUSSION-LOG.md (16 questions audit trail)；commit c9bfad9
 
 进度：[██████████] 100%（Phase 1）→ Phase 2 [██████████] 7/7（E2E pending human verification）
 
@@ -118,6 +118,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-04-30（Plan 02-07 — tests/e2e/fixtures/article.html + tests/e2e/capture.spec.ts + playwright.config.ts webServer + REQ/ROADMAP/STATE/SUMMARY 闭环；E2E 待 human gate）
-- 停在哪里：Phase 2 Wave 6 完成；Phase 2 plan-level 全部交付（7/7），phase-level closure 等待 E2E 人工验证后即可启动 Phase 3 discuss/plan
-- Resume 文件：Phase 2 E2E 验证：`pnpm build && pnpm test:e2e -- capture.spec.ts`；Phase 3 启动：`/gsd-discuss-phase 3`
+- 上次会话：2026-04-30（Phase 3 discuss-phase — 03-CONTEXT.md + 03-DISCUSSION-LOG.md 落地；16 个决策 D-23..D-38）
+- 停在哪里：Phase 3 CONTEXT.md gathered，所有 implementation gray areas 锁定；下一步 /gsd-plan-phase 3
+- Resume 文件：`.planning/phases/03-dispatch-popup/03-CONTEXT.md`；启动命令：`/gsd-plan-phase 3`
