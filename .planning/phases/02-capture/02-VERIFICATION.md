@@ -1,8 +1,8 @@
 ---
 phase: 02-capture
 verified: 2026-04-30T17:35:00Z
-status: human_needed
-score: 5/5 must-haves verified (E2E run pending human gate)
+status: gaps_found
+score: 4/5 must-haves verified (1 BLOCKER discovered during UAT — Chrome rejects extension load)
 overrides_applied: 0
 re_verification:
   previous_status: null
@@ -193,24 +193,42 @@ If any E2E test fails, common diagnostic axes (per 02-07-SUMMARY.md):
 
 ### Gaps Summary
 
-**No actionable gaps blocking Phase 2 closure.**
+**G-1 — BLOCKER: Chrome 拒绝加载扩展（locale messages.json 含非法点号 key）**
 
-All 5 ROADMAP success criteria are code-complete and have substantive verification:
-- SC #1 has E2E spec ready (Test 1) — gated to human run
-- SC #2 + #3 + #4 fully verified by passing unit tests (sanitize 2 + markdown-roundtrip 4 + description-fallback 4 + capture pipeline 13 = 23 tests)
-- SC #5 is split: loading/empty/error rendering + textarea editing fully landed; "edited values in next dispatch payload" deferred to Phase 3 (dispatch doesn't exist in Phase 2 by design)
+UAT 1 在 `chrome://extensions → Load unpacked` 阶段失败，错误：
 
-The 8 code-review findings (2 Critical + 6 Warning) were all fixed and the fixes are visible in the current code (verified in the artifact + key-link tables above). 4 informational findings (IN-01..04) are tracked and deferred outside Phase 2 scope by REVIEW-FIX explicit policy.
+```
+Name of a key "capture.empty.nocontent.body.after" is invalid.
+Only ASCII [a-z], [A-Z], [0-9] and "_" are allowed.
+```
 
-The phase status is **human_needed** rather than **passed** because:
-1. The phase goal explicitly references Playwright verification ("Playwright fixture 验证" in SC #1, "Playwright 证明" in SC #5 empty path)
-2. ROADMAP success criteria #1 and #5 require headed-browser E2E to fully close
-3. WR-01 fix (currentWindow:true) was explicitly marked as needing real-Chrome validation by the reviewer
-4. Per user memory rule, headed E2E + visual UAT must pass human gate before phase close
+**根因：** 02-05 把 18 个 capture i18n key 用嵌套 YAML 结构（`capture.field.title` / `capture.empty.noContent.body.after` 形态）写入 `locales/{en,zh_CN}.yml`。WXT 0.20.x + @wxt-dev/i18n 0.2.5 build 时把嵌套路径用 **dot 分隔** 拼成扁平 key 写进 `_locales/<lang>/messages.json`。Chrome MV3 manifest validator 严格要求该文件 key 匹配 `[a-zA-Z0-9_]+`，遇点号即拒绝整个扩展加载。
 
-Once the developer runs `pnpm build && pnpm test:e2e -- capture.spec.ts` and all 3 tests pass + the visual UAT confirms popup looks correct on a real Wikipedia/blog page, Phase 2 is fully closed.
+**证据：**
+```
+$ grep -E '"capture[._]' .output/chrome-mv3/_locales/en/messages.json
+  "capture.loading.label": { ... }
+  "capture.field.title": { ... }
+  "capture.empty.noContent.body.after": { ... }
+  ... (18 lines, all dotted)
+```
+
+**Impact：** 扩展完全无法在 Chrome 上加载（dev unpacked 与 store 安装均拒绝）。所有 5 项 human verification 全部被阻断（4 项 blocked、1 项 failed）。
+
+**Fix scope（gap closure plan 应覆盖）：**
+- `locales/en.yml` — 18 个 capture key 改扁平下划线（`capture_loading_label` / `capture_field_title` / `capture_empty_noContent_body_after` / `capture_error_scriptFailed_body_after` 等）
+- `locales/zh_CN.yml` — 同形改写，保持 100% 同构
+- `entrypoints/popup/App.tsx` — 全部 `t('capture.*')` 调用 rename（约 18 处）
+- `background/capture-pipeline.ts` — 检查并 rename 任何 `t()` 调用（SW 通常不渲染文案，预计 0 处）
+- 自动化验收：`pnpm build && grep -E '\.' .output/chrome-mv3/_locales/en/messages.json` 应仅返回 `{` 行而无 `"foo.bar":` 形式
+- 人工再验：UAT 1 重跑 `pnpm test:e2e -- capture.spec.ts -g 'fills 5 fields within 2s'`，加载扩展应成功
+
+**Precedent：** Phase 1 的 `popup_hello`、`extension_name` 均用扁平下划线 key，Chrome 校验通过；本 gap 把 Phase 2 拉回 Phase 1 已验证的 key 形态。
+
+**Block other UAT items:** 在 G-1 修复前，UAT 2/3/4/5 全部 blocked。
 
 ---
 
 _Verified: 2026-04-30T17:35:00Z_
 _Verifier: Claude (gsd-verifier)_
+_Updated: 2026-04-30T17:55:00Z — added G-1 from UAT 1 failure_

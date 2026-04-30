@@ -1,9 +1,9 @@
 ---
-status: partial
+status: failed
 phase: 02-capture
 source: [02-VERIFICATION.md]
 started: 2026-04-30T17:35:00Z
-updated: 2026-04-30T17:35:00Z
+updated: 2026-04-30T17:50:00Z
 ---
 
 ## Current Test
@@ -14,7 +14,8 @@ updated: 2026-04-30T17:35:00Z
 
 ### 1. tests/e2e/capture.spec.ts — Test 1: fixture article page fills 5 fields within 2s
 expected: popup waits for [data-testid=capture-success] within 2_000ms；5 字段（title/description/content textarea + url/createAt output）均非空；title length > 0；url 含 'localhost'
-result: [pending]
+result: failed (2026-04-30)
+issue: 扩展无法在 chrome://extensions 加载（先于 E2E 触发）。错误：`Name of a key "capture.empty.nocontent.body.after" is invalid. Only ASCII [a-z], [A-Z], [0-9] and "_" are allowed.` Chrome MV3 拒绝点号 key；02-05 引入的 `capture.*` 嵌套 YAML 在 build 后生成 `_locales/<lang>/messages.json` 含点号 key。
 command: `pnpm build && pnpm test:e2e -- capture.spec.ts -g 'fills 5 fields within 2s'`
 
 ### 2. tests/e2e/capture.spec.ts — Test 2: textarea fields are editable after capture
@@ -41,9 +42,38 @@ why_human: REVIEW-FIX.md WR-01 明确：'real-Chrome popup 验证 out of scope f
 
 total: 5
 passed: 0
-issues: 0
-pending: 5
+issues: 1
+pending: 4
 skipped: 0
-blocked: 0
+blocked: 4
 
 ## Gaps
+
+### G-1: Chrome 拒绝加载扩展 — locale messages.json 含非法点号 key（BLOCKER）
+
+**source_uat:** UAT 1 (E2E happy path)
+**reported_at:** 2026-04-30
+**status:** failed
+**root_cause:** 02-05 把 capture i18n key 用嵌套 YAML 结构（`capture.empty.noContent.body.after` 形态）写入 `locales/{en,zh_CN}.yml`。WXT 0.20.x + @wxt-dev/i18n 0.2.5 的 build 把嵌套 YAML 路径用 **dot 分隔** 拼成扁平 key 写入 `.output/chrome-mv3/_locales/<lang>/messages.json`。Chrome MV3 manifest validator 在加载扩展时严格要求 `_locales/*/messages.json` 的 key 匹配 `[a-zA-Z0-9_]+`，遇到点号即拒绝整个扩展加载。
+
+**impact:** 扩展完全无法在 Chrome 上加载（无论 dev unpacked 还是 store 安装）。所有依赖扩展加载的 UAT（E2E ×3、visual UAT、WR-01 真实 Chrome 验证）都被阻断。
+
+**fix scope:**
+- `locales/en.yml` — 18 个 `capture.*` key 从嵌套结构改为扁平下划线 key（`capture_loading_label`, `capture_field_title`, ..., `capture_empty_noContent_body_after`, `capture_error_scriptFailed_body_after`）
+- `locales/zh_CN.yml` — 同上，保持 100% 同构
+- `entrypoints/popup/App.tsx` — 全部 `t('capture.*')` 调用 rename（约 18 处）
+- `background/capture-pipeline.ts` — 检查是否使用 `t()`（应该没有，SW 不渲染文案；如有需 rename）
+- `pnpm build` 后 grep `_locales/en/messages.json` 确认无点号 key
+- `pnpm test` 全绿、`pnpm typecheck` 全绿
+
+**evidence:**
+```
+$ grep -E '"capture[._]' .output/chrome-mv3/_locales/en/messages.json | head
+  "capture.loading.label": { ... }
+  "capture.field.title": { ... }
+  "capture.empty.noContent.body.after": { ... }
+```
+Chrome 报错原文：`Name of a key "capture.empty.nocontent.body.after" is invalid. Only ASCII [a-z], [A-Z], [0-9] and "_" are allowed.`
+
+**precedent:** Phase 1 已用 `popup_hello` 这种扁平下划线 key（messages.json 的 `popup_hello` 通过 Chrome 校验）；本 gap 只是把 Phase 2 拉回 Phase 1 已验证的 key 形态。
+
