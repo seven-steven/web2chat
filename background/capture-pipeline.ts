@@ -37,7 +37,11 @@ interface ExtractorPartial {
 
 export async function runCapturePipeline(): Promise<Result<ArticleSnapshot>> {
   // Step 1: Get the currently active tab
-  const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  // currentWindow:true is the MV3-canonical primitive for "the window the
+  // user was looking at when invoking the popup". lastFocusedWindow can
+  // (on some Chrome versions) resolve to the popup's own hosting window
+  // and trigger a spurious RESTRICTED_URL on the popup tab.
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id || !tab.url) {
     return Err('INTERNAL', 'No active tab found', false);
   }
