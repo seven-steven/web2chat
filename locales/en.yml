@@ -67,3 +67,151 @@ capture_error_scriptFailed_body_icon:
 
 capture_error_scriptFailed_body_after:
   message: ' to try again.'
+
+# ─── Phase 3 i18n keys ──────────────────────────────────────────────────────
+
+# Group A — manifest commands description
+command_open_popup:
+  message: 'Open Web2Chat popup and capture the current page'
+
+# Group B — popup chrome
+popup_chrome_title:
+  message: 'Web2Chat'
+popup_chrome_settings_tooltip:
+  message: 'Settings'
+
+# Group C — dispatch interactions
+dispatch_confirm_label:
+  message: 'Send'
+dispatch_confirm_disabled_tooltip:
+  message: 'Enter a Discord or OpenClaw URL to enable Send.'
+dispatch_in_progress_heading:
+  message: 'Sending…'
+dispatch_in_progress_body_before:
+  message: 'Web2Chat is opening the target tab. Click '
+dispatch_in_progress_body_icon:
+  message: 'Cancel'
+dispatch_in_progress_body_after:
+  message: ' to abort.'
+dispatch_in_progress_dispatchId_label:
+  message: 'dispatchId:'
+dispatch_in_progress_copy_toast:
+  message: 'Copied dispatch ID.'
+dispatch_cancel_label:
+  message: 'Cancel'
+dispatch_cancelled_toast:
+  message: 'Dispatch cancelled.'
+
+# Group D — error_code_* for ErrorBanner
+error_code_NOT_LOGGED_IN_heading:
+  message: 'Not logged in'
+error_code_NOT_LOGGED_IN_body:
+  message: 'Sign in to the target platform in your browser, then retry.'
+error_code_NOT_LOGGED_IN_retry:
+  message: 'Retry'
+error_code_INPUT_NOT_FOUND_heading:
+  message: "Couldn't find the message box"
+error_code_INPUT_NOT_FOUND_body:
+  message: 'The target page changed. Open it manually to confirm, then retry.'
+error_code_INPUT_NOT_FOUND_retry:
+  message: 'Retry'
+error_code_TIMEOUT_heading:
+  message: 'Timed out'
+error_code_TIMEOUT_body:
+  message: 'The target page took too long to respond. Check the page, then retry.'
+error_code_TIMEOUT_retry:
+  message: 'Retry'
+error_code_RATE_LIMITED_heading:
+  message: 'Slow down'
+error_code_RATE_LIMITED_body:
+  message: 'You sent to this destination very recently. Wait a few seconds, then retry.'
+error_code_RATE_LIMITED_retry:
+  message: 'Retry'
+error_code_PLATFORM_UNSUPPORTED_heading:
+  message: 'Unsupported platform'
+error_code_PLATFORM_UNSUPPORTED_body:
+  message: 'Web2Chat supports Discord and OpenClaw in v1. Other platforms come later.'
+error_code_INTERNAL_heading:
+  message: 'Something went wrong'
+error_code_INTERNAL_body:
+  message: 'An unexpected error occurred. Try again.'
+error_code_INTERNAL_retry:
+  message: 'Retry'
+error_code_RESTRICTED_URL_heading:
+  message: 'Restricted page'
+error_code_RESTRICTED_URL_body:
+  message: 'Web2Chat cannot capture this page. Browser-internal pages are restricted.'
+error_code_EXTRACTION_EMPTY_heading:
+  message: 'No content found'
+error_code_EXTRACTION_EMPTY_body:
+  message: 'This page has no readable content to capture.'
+error_code_EXECUTE_SCRIPT_FAILED_heading:
+  message: "Couldn't reach the page"
+error_code_EXECUTE_SCRIPT_FAILED_body:
+  message: 'The page could not load Web2Chat. Reload the page, then retry.'
+error_code_EXECUTE_SCRIPT_FAILED_retry:
+  message: 'Retry'
+error_code_dismiss_label:
+  message: 'Dismiss'
+
+# Group E — history
+history_empty_state:
+  message: 'No history yet — type a URL to start.'
+history_view_all:
+  message: 'View all in settings…'
+history_remove_button:
+  message: 'Remove from history'
+
+# Group F — binding (soft-overwrite link, no _icon key — user host rendered via JSX text node)
+binding_use_bound_for_before:
+  message: 'Use the prompt saved for '
+binding_use_bound_for_after:
+  message: ' instead.'
+
+# Group G — platform icon tooltips
+platform_icon_mock:
+  message: 'Mock platform (test)'
+platform_icon_openclaw:
+  message: 'OpenClaw'
+platform_icon_discord:
+  message: 'Discord'
+platform_icon_unsupported:
+  message: 'Unsupported platform'
+
+# Group H — combobox labels + placeholders
+combobox_send_to_label:
+  message: 'Send to'
+combobox_send_to_placeholder:
+  message: 'Paste a Discord channel or OpenClaw chat URL…'
+combobox_prompt_label:
+  message: 'Prompt'
+combobox_prompt_placeholder:
+  message: 'Optional instruction for the AI agent…'
+
+# Group I — options page
+options_page_title:
+  message: 'Web2Chat — Settings'
+options_page_heading:
+  message: 'Web2Chat — Settings'
+options_reset_heading:
+  message: 'Reset history'
+options_reset_explainer:
+  message: 'This permanently deletes all send_to history, prompt history, and saved bindings. Cannot be undone.'
+options_reset_button:
+  message: 'Reset all history'
+options_reset_confirm_title:
+  message: 'Reset all history?'
+options_reset_confirm_body:
+  message: 'All history and bindings will be deleted permanently.'
+options_reset_confirm_cancel:
+  message: 'Cancel'
+options_reset_confirm_action:
+  message: 'Reset'
+options_reset_post_toast:
+  message: 'History cleared.'
+options_reserved_granted_origins_label:
+  message: 'Granted origins'
+options_reserved_language_label:
+  message: 'Language'
+options_reserved_placeholder_body:
+  message: 'Coming in a later phase —'

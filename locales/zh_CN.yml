@@ -67,3 +67,151 @@ capture_error_scriptFailed_body_icon:
 
 capture_error_scriptFailed_body_after:
   message: '重试。'
+
+# ─── Phase 3 i18n keys ──────────────────────────────────────────────────────
+
+# Group A — manifest commands description
+command_open_popup:
+  message: '打开 Web2Chat 弹窗并抓取当前页面'
+
+# Group B — popup chrome
+popup_chrome_title:
+  message: 'Web2Chat'
+popup_chrome_settings_tooltip:
+  message: '设置'
+
+# Group C — dispatch interactions
+dispatch_confirm_label:
+  message: '投递'
+dispatch_confirm_disabled_tooltip:
+  message: '请输入 Discord 或 OpenClaw URL 后再投递。'
+dispatch_in_progress_heading:
+  message: '正在投递…'
+dispatch_in_progress_body_before:
+  message: 'Web2Chat 正在打开目标页面，点击'
+dispatch_in_progress_body_icon:
+  message: '取消'
+dispatch_in_progress_body_after:
+  message: '可终止。'
+dispatch_in_progress_dispatchId_label:
+  message: '投递 ID：'
+dispatch_in_progress_copy_toast:
+  message: '已复制投递 ID。'
+dispatch_cancel_label:
+  message: '取消'
+dispatch_cancelled_toast:
+  message: '投递已取消。'
+
+# Group D — error_code_* for ErrorBanner
+error_code_NOT_LOGGED_IN_heading:
+  message: '未登录'
+error_code_NOT_LOGGED_IN_body:
+  message: '请先在浏览器中登录目标平台，然后重试。'
+error_code_NOT_LOGGED_IN_retry:
+  message: '重试'
+error_code_INPUT_NOT_FOUND_heading:
+  message: '找不到输入框'
+error_code_INPUT_NOT_FOUND_body:
+  message: '目标页面已变化。请手动打开确认后重试。'
+error_code_INPUT_NOT_FOUND_retry:
+  message: '重试'
+error_code_TIMEOUT_heading:
+  message: '投递超时'
+error_code_TIMEOUT_body:
+  message: '目标页面响应超时。请检查页面后重试。'
+error_code_TIMEOUT_retry:
+  message: '重试'
+error_code_RATE_LIMITED_heading:
+  message: '请稍等'
+error_code_RATE_LIMITED_body:
+  message: '刚刚已向该目标投递过，请稍后再试。'
+error_code_RATE_LIMITED_retry:
+  message: '重试'
+error_code_PLATFORM_UNSUPPORTED_heading:
+  message: '不支持的平台'
+error_code_PLATFORM_UNSUPPORTED_body:
+  message: 'v1 仅支持 Discord 与 OpenClaw，其他平台后续版本支持。'
+error_code_INTERNAL_heading:
+  message: '出错了'
+error_code_INTERNAL_body:
+  message: '发生了未预期的错误，请重试。'
+error_code_INTERNAL_retry:
+  message: '重试'
+error_code_RESTRICTED_URL_heading:
+  message: '受限页面'
+error_code_RESTRICTED_URL_body:
+  message: 'Web2Chat 无法抓取此页面，浏览器内置页面受限。'
+error_code_EXTRACTION_EMPTY_heading:
+  message: '未发现内容'
+error_code_EXTRACTION_EMPTY_body:
+  message: '当前页面没有可抓取的可读内容。'
+error_code_EXECUTE_SCRIPT_FAILED_heading:
+  message: '无法访问页面'
+error_code_EXECUTE_SCRIPT_FAILED_body:
+  message: '页面无法加载 Web2Chat。请刷新页面后重试。'
+error_code_EXECUTE_SCRIPT_FAILED_retry:
+  message: '重试'
+error_code_dismiss_label:
+  message: '关闭'
+
+# Group E — history
+history_empty_state:
+  message: '暂无历史记录 — 输入 URL 开始使用。'
+history_view_all:
+  message: '在设置中查看全部…'
+history_remove_button:
+  message: '从历史中移除'
+
+# Group F — binding (soft-overwrite link, no _icon key — user host rendered via JSX text node)
+binding_use_bound_for_before:
+  message: '改用为 '
+binding_use_bound_for_after:
+  message: ' 保存的提示词。'
+
+# Group G — platform icon tooltips
+platform_icon_mock:
+  message: 'Mock 平台（测试）'
+platform_icon_openclaw:
+  message: 'OpenClaw'
+platform_icon_discord:
+  message: 'Discord'
+platform_icon_unsupported:
+  message: '不支持的平台'
+
+# Group H — combobox labels + placeholders
+combobox_send_to_label:
+  message: '投递到'
+combobox_send_to_placeholder:
+  message: '粘贴 Discord 频道或 OpenClaw 会话 URL…'
+combobox_prompt_label:
+  message: '提示词'
+combobox_prompt_placeholder:
+  message: '（可选）给 AI Agent 的指令…'
+
+# Group I — options page
+options_page_title:
+  message: 'Web2Chat — 设置'
+options_page_heading:
+  message: 'Web2Chat — 设置'
+options_reset_heading:
+  message: '重置历史'
+options_reset_explainer:
+  message: '此操作将永久删除所有 send_to 历史、prompt 历史以及已保存的绑定关系，无法撤销。'
+options_reset_button:
+  message: '重置全部历史'
+options_reset_confirm_title:
+  message: '确认重置全部历史？'
+options_reset_confirm_body:
+  message: '所有历史和绑定将被永久删除。'
+options_reset_confirm_cancel:
+  message: '取消'
+options_reset_confirm_action:
+  message: '确认重置'
+options_reset_post_toast:
+  message: '历史已清空。'
+options_reserved_granted_origins_label:
+  message: '已授权的 Origin'
+options_reserved_language_label:
+  message: '语言'
+options_reserved_placeholder_body:
+  message: '后续版本支持 —'
