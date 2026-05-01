@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-last_updated: "2026-05-01T02:04:44.029Z"
+status: Ready to verify
+last_updated: "2026-05-01T19:30:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 2
-  total_plans: 19
-  completed_plans: 11
-  percent: 58
+  total_plans: 27
+  completed_plans: 19
+  percent: 70
 ---
 
 # 项目状态
@@ -19,24 +19,24 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 3 — 投递核心 + Popup UI（CONTEXT.md 已落地，16 个决策 D-23..D-38 覆盖 4 个 area；Ready to plan）
+**当前焦点：** Phase 3 — 投递核心 + Popup UI（8/8 plans executed，E2E pending human verification）
 
 ## 当前位置
 
-- Phase：3 / 7（投递核心 + Popup UI — CONTEXT.md gathered，下一步 plan-phase 3）
-- Plan：Phase 2 closed (7/7 + UAT 5/5 passed)；Phase 3 plan TBD
-- 状态：Phase 3 discussion 完成（4 areas / 16 decisions / 1 重选）；adapter 契约 + send_to↔prompt 绑定 + dispatch state machine + draft 持久化全部锁定；Phase 3 stub adapter 让 e2e 端到端跑通，Phase 4 OpenClaw 替换为真实 adapter
-- 最近活动：2026-04-30 — Phase 3 CONTEXT.md (D-23..D-38 含 IMAdapter 契约、adapter-registry、popup combobox UI、dispatch state machine 7 状态、popup-generated UUID 幂等键、tabs.onUpdated:complete 顶层 listener 唤醒、单 popupDraft item、独立 options page、Ctrl+Shift+S 默认快捷键) + DISCUSSION-LOG.md (16 questions audit trail)；commit c9bfad9
+- Phase：3 / 7（投递核心 + Popup UI — 执行完毕，待验证）
+- Plan：Phase 3 全部 8 plans 执行完毕（03-01..03-08）；109 单元测试全绿 + 352KB 构建通过；8 E2E specs 待人工验证
+- 状态：Phase 3 execution complete — dispatch 7态 state machine + adapter-registry (mock stub) + popup 6态 (SendForm + Combobox + draft 持久化) + options page (ResetSection) + ~70 i18n keys (en/zh_CN 100% parity)
+- 最近活动：2026-05-01 — Phase 3 全部 8 plans 执行（22 commits），109 单元测试 + 8 E2E specs
 
-进度：[██████████] 100%（Phase 1）→ Phase 2 [██████████] 7/7（E2E pending human verification）
+进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending human verification)
 
 ## 性能指标
 
 **速度：**
 
-- 已完成 plan 总数：11
-- 平均时长：~6.1m
-- 累计执行时长：约 1.1 小时
+- 已完成 plan 总数：19
+- 平均时长：~6.3m
+- 累计执行时长：约 2.0 小时
 
 **按 Phase：**
 
@@ -44,12 +44,12 @@ progress:
 | ----- | ----- | ----- | -------- |
 | 1     | 4     | 42m   | 10.5m    |
 | 2     | 7     | ~40m  | ~5.7m    |
-| 02 | 7 | - | - |
+| 3     | 8     | ~49m  | ~6.1m    |
 
 **近期趋势：**
 
-- 最近 5 个 plan：02-03 (5m), 02-04 (4m), 02-05 (4m), 02-06 (4m), 02-07 (3m31s)
-- 趋势：Phase 2 plan 平均时长稳定 ≤6m；02-07 一次过、1 deviation（Rule 3 spec 注释 grep 冲突，同义改写解决），E2E 不在 executor 自动跑（human gate）让 plan 在 ~3m 落地
+- 最近 5 个 plan：03-06 (6m), 03-07 (5m), 03-05 (6m), 03-04 (10m), 03-03 (4m)
+- 趋势：Phase 3 plan 平均 ~6.1m；03-04 最重（SW dispatch state machine + 6 handlers + 25 测试）耗时 10m；其余 plans 均 ≤6m
 
 _每完成一个 plan 后更新_
 
@@ -102,11 +102,13 @@ _每完成一个 plan 后更新_
 
 ### 待办
 
-- Phase 2 closure 待人工 E2E 验证：`pnpm build && pnpm test:e2e -- capture.spec.ts`，三个 test 全绿后 Phase 2 才正式打钩 ROADMAP 成功标准 #1 + #5（具体命令见 02-07-SUMMARY.md ## Pending Human Verification）。
+- Phase 2 closure 待人工 E2E 验证：`pnpm build && pnpm test:e2e -- capture.spec.ts`
+- Phase 3 closure 待人工 E2E 验证：`pnpm wxt build --mode development && pnpm test:e2e`（8 specs：dispatch 5 + draft-recovery 1 + options-reset 2）
 
 ### 阻塞 / 关注点
 
-暂无；E2E 待 human gate 不阻塞 Phase 3 启动（Phase 3 依赖 Phase 1 而非 Phase 2 E2E 通过；功能 + 单元 + spec 已就位即可推进）。
+- 3 个 jsdom module resolution 错误（Phase 2 extractor 测试，非阻塞）
+- Phase 3 E2E 需要 headed browser + dev-mode build
 
 ## 延后事项
 
@@ -118,6 +120,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-05-01（Phase 3 ui-phase — 03-UI-SPEC.md 落地并 6/6 维度通过 ui-checker 验证；3 commits: `567b0b1` 初稿 → `985bd8f` 收紧 spacing scale + 加 visual hierarchy → `73c8d3b` mark approved）
-- 停在哪里：Phase 3 UI-SPEC approved，CONTEXT + RESEARCH + UI-SPEC 三件套就绪；下一步 /gsd-plan-phase 3
-- Resume 文件：`.planning/phases/03-dispatch-popup/03-UI-SPEC.md`；启动命令：`/gsd-plan-phase 3`
+- 上次会话：2026-05-01（Phase 3 execute-phase — 8/8 plans executed，22 commits，109 单元测试 + 8 E2E specs）
+- 停在哪里：Phase 3 execution complete，待 human E2E 验证 + verifier phase goal check
+- Resume 文件：`.planning/phases/03-dispatch-popup/03-08-SUMMARY.md`
