@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenClaw Stub — Phase 4 dispatch e2e</title>
+  </head>
+  <body>
+    <div data-testid="openclaw-app" class="agent-chat">
+      <div class="agent-chat__messages" data-testid="message-list"></div>
+      <div class="agent-chat__input">
+        <textarea data-testid="chat-input"></textarea>
+      </div>
+    </div>
+    <script>
+      // Simulate React-controlled textarea behavior:
+      // On Enter keydown (not Shift+Enter), create a message div and append to list.
+      const textarea = document.querySelector('textarea');
+      const messageList = document.querySelector('.agent-chat__messages');
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          const msg = document.createElement('div');
+          msg.className = 'message';
+          msg.setAttribute('data-testid', 'message-bubble');
+          msg.textContent = textarea.value;
+          messageList.appendChild(msg);
+          // Clear textarea after "send" (mimics React state update)
+          const nativeSetter = Object.getOwnPropertyDescriptor(
+            HTMLTextAreaElement.prototype,
+            'value',
+          ).set;
+          nativeSetter.call(textarea, '');
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+    </script>
+  </body>
+</html>
