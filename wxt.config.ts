@@ -34,6 +34,20 @@ export default defineConfig({
         '128': '/icon/128.png',
       },
     },
+    // Phase 3 D-38 + DSP-10: keyboard shortcut to open popup AND auto-trigger
+    // capture.run on mount (popup mount auto-fires capture.run since Phase 2 D-15;
+    // _execute_action is handled directly by Chrome — no chrome.commands.onCommand
+    // listener needed). Mac override per RESEARCH Pitfall 8: explicit Command+Shift+S
+    // is more reliable than relying on Chrome's automatic Ctrl→Command translation.
+    commands: {
+      _execute_action: {
+        suggested_key: {
+          default: 'Ctrl+Shift+S',
+          mac: 'Command+Shift+S',
+        },
+        description: '__MSG_command_open_popup__',
+      },
+    },
   }),
   modules: ['@wxt-dev/i18n/module'],
   vite: () => ({
