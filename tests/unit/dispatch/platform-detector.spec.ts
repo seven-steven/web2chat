@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { adapterRegistry, findAdapter, detectPlatformId } from '@/shared/adapters/registry';
 
 describe('shared/adapters/registry (D-24 / D-26)', () => {
-  it('Phase 3 registry contains exactly 1 entry (mock)', () => {
-    expect(adapterRegistry).toHaveLength(1);
+  it('registry contains mock and openclaw entries', () => {
+    expect(adapterRegistry).toHaveLength(2);
     expect(adapterRegistry[0]?.id).toBe('mock');
+    expect(adapterRegistry[1]?.id).toBe('openclaw');
   });
 
   it('mock entry matches the canonical localhost fixture URL', () => {
