@@ -45,7 +45,22 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     hostMatches: ['http://localhost/*'],
     iconKey: 'platform_icon_mock',
   },
-  // Phase 4 will append { id: 'openclaw', ... }
+  {
+    id: 'openclaw',
+    match: (url: string): boolean => {
+      try {
+        const u = new URL(url);
+        return (
+          (u.pathname === '/ui/chat' || u.pathname === '/chat') && u.searchParams.has('session')
+        );
+      } catch {
+        return false;
+      }
+    },
+    scriptFile: 'content-scripts/openclaw.js',
+    hostMatches: [], // dynamic permission — no static host_permissions
+    iconKey: 'platform_icon_openclaw',
+  },
   // Phase 5 will append { id: 'discord', ... }
 ] as const;
 
