@@ -1,21 +1,23 @@
 /**
- * Phase 2 popup: capture 4-state UI (CAP-05, D-15..D-22).
+ * Phase 3 popup: 6-state UI (CAP-05, D-15..D-22 + DSP-01..09, D-27..D-35).
  *
  * State machine:
- *   loading   — RPC in-flight (initial state; snapshot=null, error=null)
- *   success   — ArticleSnapshot received; 3 editable textareas + 2 read-only outputs
- *   empty     — RESTRICTED_URL or EXTRACTION_EMPTY (no content to show; not an error)
- *   error     — EXECUTE_SCRIPT_FAILED / INTERNAL (retriable; user must re-click toolbar icon)
+ *   loading       — RPC in-flight (initial state; snapshot=null, error=null)
+ *   success       — ArticleSnapshot received; SendForm with capture preview
+ *   empty         — RESTRICTED_URL or EXTRACTION_EMPTY (no content to show; not an error)
+ *   error         — EXECUTE_SCRIPT_FAILED / INTERNAL (retriable; user must re-click toolbar icon)
+ *   inProgress    — dispatch in-flight; InProgressView with cancel + dispatchId
+ *   dispatchError — last dispatch failed; ErrorBanner above SendForm
  *
  * Phase 1 contracts still honoured:
  *   - SW Phase 1 health-probe route stays registered (popup no longer calls it)
- *   - cancelled-flag async IIFE pattern (PATTERNS.md §Pattern 2)
+ *   - cancelled-flag async IIFE pattern (PATTERNS.md Pattern S4)
  *   - All user-visible copy via t() — no bare string literals (FND-06, D-12)
  *
  * Security:
  *   - popup never assigns raw HTML; content is bound only as textarea.value
  *     (plain text rendering through Preact text nodes) — see D-20
- *   - Inline accent span composed in JSX, not in i18n YAML (PITFALLS §11)
+ *   - Inline accent span composed in JSX, not in i18n YAML (PITFALLS S11)
  *
  * Preact note:
  *   - Labels use the native `for` attribute (not the React-compat alias),
@@ -27,9 +29,16 @@ import { signal } from '@preact/signals';
 import { sendMessage } from '@/shared/messaging';
 import type { ArticleSnapshot, ErrorCode } from '@/shared/messaging';
 import { t } from '@/shared/i18n';
+import * as draftRepo from '@/shared/storage/repos/popupDraft';
+import * as dispatchRepo from '@/shared/storage/repos/dispatch';
+import type { DispatchRecord } from '@/shared/storage/repos/dispatch';
+import { PopupChrome } from './components/PopupChrome';
+import { SendForm } from './components/SendForm';
+import { InProgressView } from './components/InProgressView';
 
 // ─── Module-level signals (D-22: editing values live only here; cleared on popup close) ─────
 
+// Phase 2 (preserved):
 const snapshotSig = signal<ArticleSnapshot | null>(null);
 const errorSig = signal<{ code: ErrorCode; message: string } | null>(null);
 
@@ -38,6 +47,13 @@ const titleSig = signal('');
 const descriptionSig = signal('');
 const contentSig = signal('');
 
+// Phase 3 NEW:
+const sendToSig = signal('');
+const promptSig = signal('');
+const promptDirtySig = signal(false);
+const dispatchInFlightSig = signal<DispatchRecord | null>(null);
+const dispatchErrorSig = signal<{ code: ErrorCode; message: string } | null>(null);
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function App() {
@@ -45,20 +61,60 @@ export function App() {
     let cancelled = false;
     void (async () => {
       try {
-        const result = await sendMessage('capture.run'); // D-15: auto-trigger on mount
+        // ─── Step 1: Check for in-flight dispatch FIRST (UI-SPEC S6 step 1) ─────────
+        const activeId = await dispatchRepo.getActive();
         if (cancelled) return;
-        if (result.ok) {
-          snapshotSig.value = result.data;
-          titleSig.value = result.data.title;
-          descriptionSig.value = result.data.description;
-          contentSig.value = result.data.content;
-        } else {
-          errorSig.value = { code: result.code, message: result.message };
+        if (activeId) {
+          const rec = await dispatchRepo.get(activeId);
+          if (cancelled) return;
+          if (rec && rec.state !== 'done' && rec.state !== 'error' && rec.state !== 'cancelled') {
+            // In-flight — render InProgressView, SKIP capture.run + draft + badge clear
+            dispatchInFlightSig.value = rec;
+            return;
+          }
+          if (rec && rec.state === 'error') {
+            // Render error banner above SendForm; still load capture + draft below
+            dispatchErrorSig.value = {
+              code: (rec.error?.code as ErrorCode) ?? 'INTERNAL',
+              message: rec.error?.message ?? '',
+            };
+          }
         }
+
+        // ─── Step 2: Parallel reads (UI-SPEC S6 step 2) ──────────────────────────
+        // draftRepo.get() returns null when no draft has ever been persisted
+        const [captureRes, draftRes] = await Promise.all([
+          sendMessage('capture.run').catch((err) => {
+            const message = err instanceof Error ? err.message : String(err);
+            return { ok: false as const, code: 'INTERNAL' as ErrorCode, message, retriable: false };
+          }),
+          draftRepo.get().catch(() => null),
+        ]);
+        if (cancelled) return;
+
+        // Apply capture result (Phase 2 logic preserved)
+        if (captureRes.ok) {
+          snapshotSig.value = captureRes.data;
+          // Draft has priority for editable fields if it exists (DSP-09 recovery)
+          if (draftRes) {
+            titleSig.value = draftRes.title || captureRes.data.title;
+            descriptionSig.value = draftRes.description || captureRes.data.description;
+            contentSig.value = draftRes.content || captureRes.data.content;
+            sendToSig.value = draftRes.send_to || '';
+            promptSig.value = draftRes.prompt || '';
+            promptDirtySig.value = (draftRes.prompt || '') !== '';
+          } else {
+            titleSig.value = captureRes.data.title;
+            descriptionSig.value = captureRes.data.description;
+            contentSig.value = captureRes.data.content;
+          }
+        } else {
+          errorSig.value = { code: captureRes.code, message: captureRes.message };
+        }
+
+        // ─── Step 3: Clear err badge (UI-SPEC S6 step 3 + D-34) ──────────────────
+        await chrome.action.setBadgeText({ text: '' }).catch(() => {});
       } catch (err) {
-        // sendMessage rejects when SW is unreachable / suspended without a wake reason
-        // / returns an unrecognised payload. Without this catch the loading skeleton
-        // would render forever, breaking the loading→error transition contract.
         if (cancelled) return;
         const message = err instanceof Error ? err.message : String(err);
         errorSig.value = { code: 'INTERNAL', message };
@@ -71,14 +127,94 @@ export function App() {
 
   const snapshot = snapshotSig.value;
   const error = errorSig.value;
+  const dispatchInFlight = dispatchInFlightSig.value;
 
-  // State dispatch (D-17, PITFALLS Pitfall 4: EXTRACTION_EMPTY → empty, not error)
-  if (snapshot === null && error === null) return <LoadingSkeleton />;
-  if (snapshot !== null) return <SuccessView snapshot={snapshot} />;
-  if (error?.code === 'RESTRICTED_URL' || error?.code === 'EXTRACTION_EMPTY') {
-    return <EmptyView code={error.code} />;
+  // 6-state dispatch (UI-SPEC S-Implementation Notes S8 — InProgressView is mutually exclusive)
+  if (dispatchInFlight !== null) {
+    return (
+      <>
+        <PopupChrome />
+        <InProgressView
+          dispatchId={dispatchInFlight.dispatchId}
+          onCancel={async () => {
+            try {
+              await sendMessage('dispatch.cancel', { dispatchId: dispatchInFlight.dispatchId });
+            } finally {
+              dispatchInFlightSig.value = null;
+            }
+          }}
+        />
+      </>
+    );
   }
-  return <ErrorView />;
+  if (snapshot === null && error === null) {
+    return (
+      <>
+        <PopupChrome />
+        <LoadingSkeleton />
+      </>
+    );
+  }
+  if (snapshot !== null) {
+    return (
+      <>
+        <PopupChrome />
+        <SendForm
+          snapshot={snapshot}
+          titleValue={titleSig.value}
+          onTitleChange={(v) => {
+            titleSig.value = v;
+          }}
+          descriptionValue={descriptionSig.value}
+          onDescriptionChange={(v) => {
+            descriptionSig.value = v;
+          }}
+          contentValue={contentSig.value}
+          onContentChange={(v) => {
+            contentSig.value = v;
+          }}
+          sendTo={sendToSig.value}
+          onSendToChange={(v) => {
+            sendToSig.value = v;
+          }}
+          prompt={promptSig.value}
+          onPromptChange={(v) => {
+            promptSig.value = v;
+          }}
+          promptDirty={promptDirtySig.value}
+          onPromptDirtyChange={(d) => {
+            promptDirtySig.value = d;
+          }}
+          dispatchError={dispatchErrorSig.value}
+          onDismissError={() => {
+            dispatchErrorSig.value = null;
+          }}
+          onConfirm={(_dispatchId) => {
+            // popup will close on Ok per SendForm.handleConfirm; if Err, SendForm
+            // calls onDispatchError which writes dispatchErrorSig (below).
+          }}
+          onDispatchError={(code, message) => {
+            dispatchErrorSig.value = { code, message };
+          }}
+        />
+      </>
+    );
+  }
+  // Capture-flow empty / error states (Phase 2 preserved verbatim)
+  if (error?.code === 'RESTRICTED_URL' || error?.code === 'EXTRACTION_EMPTY') {
+    return (
+      <>
+        <PopupChrome />
+        <EmptyView code={error.code} />
+      </>
+    );
+  }
+  return (
+    <>
+      <PopupChrome />
+      <ErrorView />
+    </>
+  );
 }
 
 // ─── Loading Skeleton ─────────────────────────────────────────────────────────
@@ -118,90 +254,6 @@ function LoadingSkeleton() {
   );
 }
 
-// ─── Success View ─────────────────────────────────────────────────────────────
-
-function SuccessView({ snapshot }: { snapshot: ArticleSnapshot }) {
-  const formattedDate = new Intl.DateTimeFormat(navigator.language, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(snapshot.create_at));
-
-  return (
-    <main
-      class="flex flex-col gap-3 p-4 min-w-[360px] min-h-[240px] font-sans"
-      data-testid="capture-success"
-    >
-      {/* Title — editable textarea */}
-      <FieldLabel id="field-title" label={t('capture_field_title')} />
-      <textarea
-        id="field-title"
-        class={textareaClass}
-        style="min-height:2.25rem"
-        value={titleSig.value}
-        onInput={(e) => {
-          titleSig.value = (e.target as HTMLTextAreaElement).value;
-        }}
-        spellcheck={false}
-        data-testid="capture-field-title"
-      />
-
-      {/* URL — read-only output */}
-      <div class="flex flex-col gap-1">
-        <span class="text-xs leading-snug font-normal text-slate-500 dark:text-slate-400">
-          {t('capture_field_url')}
-        </span>
-        <output
-          class="text-xs leading-snug font-mono text-slate-500 dark:text-slate-400 break-all"
-          data-testid="capture-field-url"
-        >
-          {snapshot.url}
-        </output>
-      </div>
-
-      {/* Description — editable textarea */}
-      <FieldLabel id="field-description" label={t('capture_field_description')} />
-      <textarea
-        id="field-description"
-        class={textareaClass}
-        style="min-height:4.5rem"
-        value={descriptionSig.value}
-        onInput={(e) => {
-          descriptionSig.value = (e.target as HTMLTextAreaElement).value;
-        }}
-        spellcheck={false}
-        data-testid="capture-field-description"
-      />
-
-      {/* Captured at — read-only output */}
-      <div class="flex flex-col gap-1">
-        <span class="text-xs leading-snug font-normal text-slate-500 dark:text-slate-400">
-          {t('capture_field_createAt')}
-        </span>
-        <output
-          class="text-sm leading-normal font-normal text-slate-500 dark:text-slate-400"
-          data-testid="capture-field-createAt"
-        >
-          {formattedDate}
-        </output>
-      </div>
-
-      {/* Content — editable textarea (tallest) */}
-      <FieldLabel id="field-content" label={t('capture_field_content')} />
-      <textarea
-        id="field-content"
-        class={textareaClass}
-        style="min-height:9rem"
-        value={contentSig.value}
-        onInput={(e) => {
-          contentSig.value = (e.target as HTMLTextAreaElement).value;
-        }}
-        spellcheck={false}
-        data-testid="capture-field-content"
-      />
-    </main>
-  );
-}
-
 // ─── Empty View (RESTRICTED_URL + EXTRACTION_EMPTY) ──────────────────────────
 
 function EmptyView({ code }: { code: 'RESTRICTED_URL' | 'EXTRACTION_EMPTY' }) {
@@ -211,7 +263,7 @@ function EmptyView({ code }: { code: 'RESTRICTED_URL' | 'EXTRACTION_EMPTY' }) {
       ? t('capture_empty_restricted_heading')
       : t('capture_empty_noContent_heading');
 
-  // Inline accent span pattern (UI-SPEC.md §Copywriting Contract)
+  // Inline accent span pattern (UI-SPEC.md SCopywriting Contract)
   // Three i18n keys per body string: .before / .icon (wrapped) / .after
   const before =
     variant === 'restricted'
@@ -271,32 +323,7 @@ function ErrorView() {
   );
 }
 
-// ─── Shared primitives ────────────────────────────────────────────────────────
-
-/**
- * Label component using Preact's native `for` attribute (not the React-compat alias).
- * Props: id → the id of the associated input; label → visible text.
- */
-function FieldLabel({ id, label }: { id: string; label: string }) {
-  return (
-    <label for={id} class="text-xs leading-snug font-normal text-slate-500 dark:text-slate-400">
-      {label}
-    </label>
-  );
-}
-
-const textareaClass = [
-  'w-full px-3 py-2 rounded-md',
-  'text-sm leading-normal font-normal',
-  'text-slate-900 dark:text-slate-100',
-  'bg-white dark:bg-slate-900',
-  'border border-slate-200 dark:border-slate-700',
-  'focus-visible:outline-none',
-  'focus-visible:ring-2 focus-visible:ring-sky-600 dark:focus-visible:ring-sky-400',
-  'focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900',
-  'focus-visible:border-sky-600 dark:focus-visible:border-sky-400',
-  'resize-none field-sizing-content',
-].join(' ');
+// ─── Inline SVG icons ────────────────────────────────────────────────────────
 
 /** Lock-closed glyph for empty:restricted, info-circle glyph for empty:noContent */
 function EmptyIcon({ variant }: { variant: 'restricted' | 'noContent' }) {
