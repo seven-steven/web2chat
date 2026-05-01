@@ -19,14 +19,14 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 3 — 投递核心 + Popup UI（8/8 plans executed，E2E pending human verification）
+**当前焦点：** Phase 4 — OpenClaw 适配器（context gathered，ready for planning）
 
 ## 当前位置
 
-- Phase：3 / 7（投递核心 + Popup UI — 执行完毕，待验证）
-- Plan：Phase 3 全部 8 plans 执行完毕（03-01..03-08）；109 单元测试全绿 + 352KB 构建通过；8 E2E specs 待人工验证
-- 状态：Phase 3 execution complete — dispatch 7态 state machine + adapter-registry (mock stub) + popup 6态 (SendForm + Combobox + draft 持久化) + options page (ResetSection) + ~70 i18n keys (en/zh_CN 100% parity)
-- 最近活动：2026-05-01 — Phase 3 全部 8 plans 执行（22 commits），109 单元测试 + 8 E2E specs
+- Phase：4 / 7（OpenClaw 适配器 — context gathered，待 planning）
+- Plan：Phase 3 全部 8 plans 执行完毕（03-01..03-08）；Phase 4 context captured
+- 状态：Phase 4 context gathered — 消息格式化（prompt-first Markdown）+ 权限授权 UX（Confirm 时授权 + grantedOrigins storage + options page 列表）+ DOM 注入（CSS selector + setInputValue helper + Enter keydown + MutationObserver）+ canDispatch 探针（adapter 内 DOM 检查）
+- 最近活动：2026-05-01 — Phase 4 discuss-phase 完成，15 项决策（D-39..D-53）captured
 
 进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending human verification)
 
