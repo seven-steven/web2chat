@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+
+/* options-local overrides — keep minimal */
+:root {
+  color-scheme: light dark;
+}
