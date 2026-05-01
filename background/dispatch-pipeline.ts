@@ -109,6 +109,21 @@ export async function startDispatch(
     return Err('PLATFORM_UNSUPPORTED', input.send_to, false);
   }
 
+  // Step 2.5 (Phase 4 D-44): Defensive permissions.contains check for openclaw.
+  // The popup's Confirm handler already called chrome.permissions.request (user gesture),
+  // so this should always pass. If it doesn't, the origin was revoked between popup click
+  // and SW processing — return OPENCLAW_PERMISSION_DENIED.
+  if (adapter.hostMatches.length === 0) {
+    // Adapter with no static hostMatches = dynamic permission required (openclaw)
+    const targetOrigin = new URL(input.send_to).origin;
+    const hasPermission = await chrome.permissions.contains({
+      origins: [targetOrigin + '/*'],
+    });
+    if (!hasPermission) {
+      return Err('OPENCLAW_PERMISSION_DENIED', targetOrigin, true);
+    }
+  }
+
   // Step 3: Write 'pending' record.
   const nowIso = new Date().toISOString();
   let rec: DispatchRecord = {
@@ -235,7 +250,9 @@ async function advanceToAdapterInjection(
         | 'INPUT_NOT_FOUND'
         | 'TIMEOUT'
         | 'RATE_LIMITED'
-        | 'EXECUTE_SCRIPT_FAILED',
+        | 'EXECUTE_SCRIPT_FAILED'
+        | 'OPENCLAW_OFFLINE'
+        | 'OPENCLAW_PERMISSION_DENIED',
       response.message ?? 'mock',
       response.retriable ?? false,
     );
@@ -275,7 +292,9 @@ async function failDispatch(
     | 'INPUT_NOT_FOUND'
     | 'TIMEOUT'
     | 'RATE_LIMITED'
-    | 'EXECUTE_SCRIPT_FAILED',
+    | 'EXECUTE_SCRIPT_FAILED'
+    | 'OPENCLAW_OFFLINE'
+    | 'OPENCLAW_PERMISSION_DENIED',
   message: string,
   retriable: boolean,
 ): Promise<void> {
