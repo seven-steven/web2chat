@@ -24,7 +24,9 @@ export type ErrorCode =
   | 'INPUT_NOT_FOUND' // adapter compose: DOM 未就绪 / chrome.scripting host 未授权，retriable=true (varies)
   | 'TIMEOUT' // dispatch awaiting_complete 30s alarm 兜底，retriable=true
   | 'RATE_LIMITED' // adapter send 端服务侧 throttle，retriable=true
-  | 'PLATFORM_UNSUPPORTED'; // adapter-registry.match() 全失，Confirm disabled 时仍发出此码，retriable=false
+  | 'PLATFORM_UNSUPPORTED' // adapter-registry.match() 全失，Confirm disabled 时仍发出此码，retriable=false
+  | 'OPENCLAW_OFFLINE' // adapter 检测到目标页面不是 OpenClaw UI（textarea 不存在且无特征 DOM），retriable=true
+  | 'OPENCLAW_PERMISSION_DENIED'; // chrome.permissions.request 被用户拒绝，retriable=true
 
 export type Result<T, E extends ErrorCode = ErrorCode> =
   | { ok: true; data: T }

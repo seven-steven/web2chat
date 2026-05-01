@@ -154,6 +154,20 @@ error_code_EXECUTE_SCRIPT_FAILED_retry:
 error_code_dismiss_label:
   message: 'Dismiss'
 
+# Group D-2 — Phase 4 OpenClaw error codes (ADO-05)
+error_code_OPENCLAW_OFFLINE_heading:
+  message: 'OpenClaw not running'
+error_code_OPENCLAW_OFFLINE_body:
+  message: 'OpenClaw is not running at this address. Start the service and retry.'
+error_code_OPENCLAW_OFFLINE_retry:
+  message: 'Retry'
+error_code_OPENCLAW_PERMISSION_DENIED_heading:
+  message: 'Permission required'
+error_code_OPENCLAW_PERMISSION_DENIED_body:
+  message: 'Extension needs permission to access this origin. Click to re-authorize.'
+error_code_OPENCLAW_PERMISSION_DENIED_retry:
+  message: 'Re-authorize'
+
 # Group E — history
 history_empty_state:
   message: 'No history yet — type a URL to start.'
@@ -209,8 +223,14 @@ options_reset_confirm_action:
   message: 'Reset'
 options_reset_post_toast:
   message: 'History cleared.'
-options_reserved_granted_origins_label:
+options_origins_heading:
   message: 'Granted origins'
+options_origins_explainer:
+  message: 'Origins you have authorized the extension to access for dispatching messages.'
+options_origins_remove:
+  message: 'Remove'
+options_origins_empty:
+  message: 'No origins authorized yet.'
 options_reserved_language_label:
   message: 'Language'
 options_reserved_placeholder_body:

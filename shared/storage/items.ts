@@ -111,3 +111,11 @@ export const activeDispatchPointerItem = storage.defineItem<string | null>(
     fallback: null,
   },
 );
+
+/** D-45: granted origins for dynamic host_permissions (storage.local).
+ *  Phase 4 — OpenClaw self-deployed origins authorized via chrome.permissions.request. */
+export const grantedOriginsItem = storage.defineItem<string[]>('local:grantedOrigins', {
+  fallback: [],
+  version: CURRENT_SCHEMA_VERSION,
+  migrations: { 1: (prev) => prev },
+});

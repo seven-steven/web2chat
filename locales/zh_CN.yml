@@ -154,6 +154,20 @@ error_code_EXECUTE_SCRIPT_FAILED_retry:
 error_code_dismiss_label:
   message: '关闭'
 
+# Group D-2 — Phase 4 OpenClaw error codes (ADO-05)
+error_code_OPENCLAW_OFFLINE_heading:
+  message: 'OpenClaw 未运行'
+error_code_OPENCLAW_OFFLINE_body:
+  message: 'OpenClaw 未在此地址运行。请启动服务后重试。'
+error_code_OPENCLAW_OFFLINE_retry:
+  message: '重试'
+error_code_OPENCLAW_PERMISSION_DENIED_heading:
+  message: '需要授权'
+error_code_OPENCLAW_PERMISSION_DENIED_body:
+  message: '扩展需要访问此地址的权限。点击重新授权。'
+error_code_OPENCLAW_PERMISSION_DENIED_retry:
+  message: '重新授权'
+
 # Group E — history
 history_empty_state:
   message: '暂无历史记录 — 输入 URL 开始使用。'
@@ -209,8 +223,14 @@ options_reset_confirm_action:
   message: '确认重置'
 options_reset_post_toast:
   message: '历史已清空。'
-options_reserved_granted_origins_label:
-  message: '已授权的 Origin'
+options_origins_heading:
+  message: '已授权 Origin'
+options_origins_explainer:
+  message: '您已授权扩展访问的 Origin，用于投递消息。'
+options_origins_remove:
+  message: '移除'
+options_origins_empty:
+  message: '暂无已授权的 Origin。'
 options_reserved_language_label:
   message: '语言'
 options_reserved_placeholder_body:

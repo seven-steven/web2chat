@@ -44,7 +44,7 @@ function ReservedSection({
 }) {
   const heading =
     labelKey === 'options_reserved_granted_origins'
-      ? t('options_reserved_granted_origins_label')
+      ? t('options_origins_heading')
       : t('options_reserved_language_label');
   return (
     <section

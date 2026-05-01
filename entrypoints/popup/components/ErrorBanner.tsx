@@ -34,6 +34,8 @@ const RETRIABLE_CODES: ReadonlySet<ErrorCode> = new Set<ErrorCode>([
   'RATE_LIMITED',
   'EXECUTE_SCRIPT_FAILED',
   'INTERNAL',
+  'OPENCLAW_OFFLINE',
+  'OPENCLAW_PERMISSION_DENIED',
 ]);
 
 export function ErrorBanner({ code, onRetry, onDismiss }: ErrorBannerProps) {
@@ -116,6 +118,10 @@ function errorHeading(code: ErrorCode): string {
       return t('error_code_RESTRICTED_URL_heading');
     case 'EXTRACTION_EMPTY':
       return t('error_code_EXTRACTION_EMPTY_heading');
+    case 'OPENCLAW_OFFLINE':
+      return t('error_code_OPENCLAW_OFFLINE_heading');
+    case 'OPENCLAW_PERMISSION_DENIED':
+      return t('error_code_OPENCLAW_PERMISSION_DENIED_heading');
   }
 }
 
@@ -139,6 +145,10 @@ function errorBody(code: ErrorCode): string {
       return t('error_code_RESTRICTED_URL_body');
     case 'EXTRACTION_EMPTY':
       return t('error_code_EXTRACTION_EMPTY_body');
+    case 'OPENCLAW_OFFLINE':
+      return t('error_code_OPENCLAW_OFFLINE_body');
+    case 'OPENCLAW_PERMISSION_DENIED':
+      return t('error_code_OPENCLAW_PERMISSION_DENIED_body');
   }
 }
 
@@ -156,6 +166,10 @@ function errorRetry(code: ErrorCode): string {
       return t('error_code_EXECUTE_SCRIPT_FAILED_retry');
     case 'INTERNAL':
       return t('error_code_INTERNAL_retry');
+    case 'OPENCLAW_OFFLINE':
+      return t('error_code_OPENCLAW_OFFLINE_retry');
+    case 'OPENCLAW_PERMISSION_DENIED':
+      return t('error_code_OPENCLAW_PERMISSION_DENIED_retry');
     // PLATFORM_UNSUPPORTED / RESTRICTED_URL / EXTRACTION_EMPTY have no retry
     default:
       return '';
