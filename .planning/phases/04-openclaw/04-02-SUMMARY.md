@@ -107,6 +107,25 @@ None - no external service configuration required.
 - composeMarkdown utility importable by both adapter and future plan tests
 - Plan 03 can build dispatch-pipeline integration + popup permission flow on top of this adapter
 
+## Self-Check: PASSED
+
+- All 4 created files verified on disk
+- Both task commits (27fae77, 13b3559) verified in git log
+- `pnpm typecheck` exits 0
+- All 21 new unit tests pass (openclaw-match: 10, openclaw-compose: 5, platform-detector: 6)
+- Acceptance criteria all satisfied (verified via grep)
+
+## Known Stubs
+
+None — all implementations are fully functional.
+
+## Threat Flags
+
+| Flag | File | Description |
+|------|------|-------------|
+| threat_flag:T-04-02-02 | entrypoints/openclaw.content.ts | isAdapterDispatch type guard verifies message shape before processing (mitigated) |
+| threat_flag:T-04-02-03 | entrypoints/openclaw.content.ts | MutationObserver always disconnected via timeout or success path (mitigated) |
+
 ---
 *Phase: 04-openclaw*
 *Completed: 2026-05-02*
