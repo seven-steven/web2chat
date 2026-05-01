@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mock Platform Stub — Phase 3 dispatch e2e</title>
+  </head>
+  <body>
+    <main>
+      <h1>Mock Platform</h1>
+      <p>
+        This page is the Phase 3 stub adapter target. Web2Chat dispatch pipeline navigates here, SW
+        <code>chrome.scripting.executeScript</code> injects
+        <code>entrypoints/mock-platform.content.ts</code>, which logs <code>console.log</code>
+        and responds with the dispatch Result. Failure-injection via query string:
+        <code>?fail=not-logged-in</code> / <code>?fail=input-not-found</code> /
+        <code>?fail=timeout</code> / <code>?fail=rate-limited</code>.
+      </p>
+      <div id="mock-platform-target" data-testid="mock-platform-target">Awaiting dispatch...</div>
+    </main>
+  </body>
+</html>
