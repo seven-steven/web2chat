@@ -2,40 +2,26 @@ import { defineExtensionMessaging } from '@webext-core/messaging';
 import { z } from 'zod';
 import type { MetaSchema } from '@/shared/storage';
 import type { Result } from './result';
+import type { ProtocolCapture } from './routes/capture';
+import type { ProtocolDispatch } from './routes/dispatch';
+import type { ProtocolHistory } from './routes/history';
+import type { ProtocolBinding } from './routes/binding';
+import { captureSchemas } from './routes/capture';
+import { dispatchSchemas } from './routes/dispatch';
+import { historySchemas } from './routes/history';
+import { bindingSchemas } from './routes/binding';
 
-// ─── Phase 2: ArticleSnapshot ────────────────────────────────────────────────
-
-// Caps prevent oversize pages from (a) blowing past chrome.scripting.executeScript's
-// structuredClone limits and (b) freezing the popup textareas. The pipeline returns
-// Err('INTERNAL', 'Invalid snapshot: ...') on overflow — recoverable for the user.
-export const ArticleSnapshotSchema = z.object({
-  title: z.string().max(500),
-  url: z.string().url().max(2048),
-  description: z.string().max(2000),
-  create_at: z.string().datetime(),
-  content: z.string().max(200_000), // ~200KB Markdown — room for very long articles
-});
-
-export type ArticleSnapshot = z.infer<typeof ArticleSnapshotSchema>;
-
-/**
- * RPC ProtocolMap (D-07).
- *
- * Phase 1: single route — meta.bumpHello.
- * Phase 3 will split this file into shared/messaging/routes/{capture,dispatch,history,...}.ts
- * once route count > 5; protocol.ts will re-export the union.
- */
-export interface ProtocolMap {
+interface ProtocolMeta {
   'meta.bumpHello'(): Promise<Result<MetaSchema>>;
-  'capture.run'(): Promise<Result<ArticleSnapshot>>;
 }
 
-/**
- * zod schemas for runtime validation at the SW handler boundary (FND-03).
- *  - input  validated INSIDE the handler before business logic
- *  - output validated AFTER business logic in tests / contract checks
- */
-export const schemas = {
+export type ProtocolMap = ProtocolMeta &
+  ProtocolCapture &
+  ProtocolDispatch &
+  ProtocolHistory &
+  ProtocolBinding;
+
+const metaSchemas = {
   'meta.bumpHello': {
     input: z.void(),
     output: z.object({
@@ -43,13 +29,21 @@ export const schemas = {
       helloCount: z.number().int().nonnegative(),
     }),
   },
-  'capture.run': {
-    input: z.void(),
-    output: ArticleSnapshotSchema,
-  },
+} as const;
+
+export const schemas = {
+  ...metaSchemas,
+  ...captureSchemas,
+  ...dispatchSchemas,
+  ...historySchemas,
+  ...bindingSchemas,
 } as const;
 
 export type MetaBumpHelloOutput = z.infer<(typeof schemas)['meta.bumpHello']['output']>;
+
+/** Re-export ArticleSnapshot from capture route to preserve Phase 1+2 import paths. */
+export { ArticleSnapshotSchema } from './routes/capture';
+export type { ArticleSnapshot } from './routes/capture';
 
 /**
  * Typed extension messaging (D-05). Both popup and SW import sendMessage / onMessage from here.
