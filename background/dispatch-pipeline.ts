@@ -289,7 +289,6 @@ async function failDispatch(
   await chrome.action.setBadgeText({ text: 'err' });
   await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLORS.err });
   await chrome.alarms.clear(`${ALARM_PREFIX_TIMEOUT}${failed.dispatchId}`);
-  await dispatchRepo.clearActive();
 }
 
 /**

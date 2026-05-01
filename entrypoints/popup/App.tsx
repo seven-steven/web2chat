@@ -188,6 +188,7 @@ export function App() {
           dispatchError={dispatchErrorSig.value}
           onDismissError={() => {
             dispatchErrorSig.value = null;
+            void dispatchRepo.clearActive();
           }}
           onConfirm={(_dispatchId) => {
             // popup will close on Ok per SendForm.handleConfirm; if Err, SendForm

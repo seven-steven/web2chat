@@ -31,7 +31,7 @@ export default defineConfig({
     baseURL: 'http://localhost:4321',
   },
   webServer: {
-    command: 'npx --yes serve tests/e2e/fixtures --listen 4321 --no-clipboard',
+    command: 'pnpm exec serve tests/e2e/fixtures --listen 4321 --no-clipboard',
     port: 4321,
     reuseExistingServer: !process.env.CI,
     timeout: 10_000,

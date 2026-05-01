@@ -59,6 +59,7 @@ export function SendForm(props: SendFormProps) {
   const [promptOptions, setPromptOptions] = useState<ComboboxOption[]>([]);
   const [boundPrompt, setBoundPrompt] = useState<string | null>(null);
   const [platformId, setPlatformId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Refs for debounce timers (popup is the safe context for setTimeout — see CLAUDE.md)
   const platformDetectTimer = useRef<number | null>(null);
@@ -184,6 +185,8 @@ export function SendForm(props: SendFormProps) {
     }
   }
   async function handleConfirm() {
+    if (submitting) return;
+    setSubmitting(true);
     const dispatchId = crypto.randomUUID();
     const input: DispatchStartInput = {
       dispatchId,
@@ -201,13 +204,13 @@ export function SendForm(props: SendFormProps) {
     try {
       const res = await sendMessage('dispatch.start', input);
       if (res.ok) {
-        // Per "Claude's Discretion": close popup; user follows badge
         window.close();
       } else {
-        // Bridge failure into App.tsx state — App will surface ErrorBanner via dispatchErrorSig.
+        setSubmitting(false);
         props.onDispatchError(res.code, res.message);
       }
     } catch (err) {
+      setSubmitting(false);
       const msg = err instanceof Error ? err.message : String(err);
       props.onDispatchError('INTERNAL', msg);
     }
@@ -229,7 +232,7 @@ export function SendForm(props: SendFormProps) {
   })();
 
   // ─── Confirm enable/disable ────────────────────────────────────
-  const confirmEnabled = platformId !== null && props.sendTo !== '';
+  const confirmEnabled = platformId !== null && props.sendTo !== '' && !submitting;
   const confirmTooltip = confirmEnabled ? undefined : t('error_code_PLATFORM_UNSUPPORTED_body');
 
   return (

@@ -222,7 +222,7 @@ export function Combobox(props: ComboboxProps) {
 
       {showEmptyState && (
         <div
-          class="absolute left-0 right-0 mt-1 px-2 py-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg text-xs leading-snug font-normal text-slate-400 dark:text-slate-500 z-10"
+          class="absolute left-0 right-0 mt-1 px-2 py-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg text-xs leading-snug font-normal text-slate-400 dark:text-slate-500 z-10 pointer-events-none"
           data-testid={`combobox-${props.id}-empty`}
         >
           {props.emptyStateText}

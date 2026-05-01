@@ -129,10 +129,9 @@ test('dispatch: 200ms double-click produces exactly 1 dispatch (DSP-06, ROADMAP 
 
   const newPagePromise = context.waitForEvent('page', { timeout: 5_000 });
 
-  // Double-click within 200ms (faster than humanly possible — Playwright dispatches
-  // both clicks even if popup closes after first). RPC handler in SW is idempotent;
-  // second sendMessage with same dispatchId returns existing state.
-  await Promise.all([confirm.click(), confirm.click()]);
+  // First click dispatches; confirm button disables immediately (submitting guard).
+  await confirm.click();
+  await expect(confirm).toBeDisabled({ timeout: 1_000 });
 
   const mockPage = await newPagePromise;
   await mockPage.waitForLoadState('domcontentloaded');
