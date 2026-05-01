@@ -2,6 +2,15 @@ import { defineBackground } from '#imports';
 import { onMessage, schemas, Ok, Err, type Result } from '@/shared/messaging';
 import { metaItem } from '@/shared/storage';
 import { runCapturePipeline } from '@/background/capture-pipeline';
+// ─── Phase 3 imports ──────────────────────────────────────────────────────
+import {
+  startDispatch,
+  cancelDispatch,
+  onTabComplete,
+  onAlarmFired,
+} from '@/background/dispatch-pipeline';
+import { historyList, historyDelete } from '@/background/handlers/history';
+import { bindingUpsert, bindingGet } from '@/background/handlers/binding';
 
 /**
  * Service Worker entrypoint.
@@ -29,14 +38,28 @@ import { runCapturePipeline } from '@/background/capture-pipeline';
 /**
  * Wraps a handler so any thrown error becomes an Err('INTERNAL', ...).
  *
- * Constrained to Result<T> (not arbitrary R) so the catch branch can
- * return Err without an unsafe cast — every wrapped handler is forced
- * to honour the Result contract at the type level.
+ * Two shapes supported:
+ *   wrapHandler(fn)            -> fn: () => Promise<Result<T>>          (Phase 1+2, no input)
+ *   wrapHandler(fn)            -> fn: (input: I) => Promise<Result<T>>  (Phase 3, with input)
+ *
+ * @webext-core/messaging v2.3.0 delivers a Message envelope to handlers:
+ *   onMessage<TType>(type, (message: { id, data, type, timestamp, sender }) => ...)
+ *
+ * Phase 3 registration sites use:
+ *   onMessage('dispatch.start', wrapHandler((msg: { data: I }) => myHandler(msg.data)))
+ *
+ * Verified against `node_modules/@webext-core/messaging/lib/generic-683db69b.d.ts`
+ * (see interfaces section at top of this plan).
  */
-function wrapHandler<T>(fn: () => Promise<Result<T>>): () => Promise<Result<T>> {
-  return async () => {
+function wrapHandler<T>(fn: () => Promise<Result<T>>): () => Promise<Result<T>>;
+function wrapHandler<I, T>(fn: (input: I) => Promise<Result<T>>): (input: I) => Promise<Result<T>>;
+function wrapHandler<I, T>(
+  fn: ((input: I) => Promise<Result<T>>) | (() => Promise<Result<T>>),
+): ((input: I) => Promise<Result<T>>) | (() => Promise<Result<T>>) {
+  return async (...args: [I] | []) => {
     try {
-      return await fn();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return await (fn as any)(...args);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('[bg] handler threw — converting to Err(INTERNAL):', err);
@@ -71,6 +94,41 @@ export default defineBackground(() => {
   // Listener registered synchronously at module top level — no await before this.
   onMessage('capture.run', wrapHandler(runCapturePipeline));
 
-  // Future phases register additional listeners here at top level
-  // (chrome.runtime.onInstalled, chrome.tabs.onUpdated, chrome.alarms.onAlarm, etc.).
+  // ───────── Phase 3: dispatch RPCs (DSP-05..DSP-09) ─────────
+  // @webext-core/messaging passes the message envelope { data, sender, ... } to
+  // handlers; we extract data and forward to the typed handler. (Per the v2.3.0
+  // .d.ts cited above.)
+  onMessage(
+    'dispatch.start',
+    wrapHandler((msg: { data: Parameters<typeof startDispatch>[0] }) => startDispatch(msg.data)),
+  );
+  onMessage(
+    'dispatch.cancel',
+    wrapHandler((msg: { data: Parameters<typeof cancelDispatch>[0] }) => cancelDispatch(msg.data)),
+  );
+
+  // ───────── Phase 3: history + binding RPCs (DSP-02..DSP-04, STG-03) ─────────
+  onMessage(
+    'history.list',
+    wrapHandler((msg: { data: Parameters<typeof historyList>[0] }) => historyList(msg.data)),
+  );
+  onMessage(
+    'history.delete',
+    wrapHandler((msg: { data: Parameters<typeof historyDelete>[0] }) => historyDelete(msg.data)),
+  );
+  onMessage(
+    'binding.upsert',
+    wrapHandler((msg: { data: Parameters<typeof bindingUpsert>[0] }) => bindingUpsert(msg.data)),
+  );
+  onMessage(
+    'binding.get',
+    wrapHandler((msg: { data: Parameters<typeof bindingGet>[0] }) => bindingGet(msg.data)),
+  );
+
+  // ───────── Phase 3: SW wake-up entries (D-33) ─────────
+  // Both listeners must be registered top-level. tabs.onUpdated wakes SW after
+  // navigation; alarms.onAlarm wakes for timeouts + badge clears. The handler
+  // functions read from chrome.storage.session (no module-scope state).
+  chrome.tabs.onUpdated.addListener(onTabComplete);
+  chrome.alarms.onAlarm.addListener(onAlarmFired);
 });
