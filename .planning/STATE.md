@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to verify
-last_updated: "2026-05-01T19:30:00.000Z"
+status: Ready to execute
+last_updated: "2026-05-02T00:00:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 2
-  total_plans: 27
+  total_plans: 31
   completed_plans: 19
-  percent: 70
+  percent: 61
 ---
 
 # 项目状态
@@ -19,14 +19,14 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 4 — OpenClaw 适配器（context gathered，ready for planning）
+**当前焦点：** Phase 4 — OpenClaw 适配器（4 plans in 4 waves，ready to execute）
 
 ## 当前位置
 
-- Phase：4 / 7（OpenClaw 适配器 — context gathered，待 planning）
-- Plan：Phase 3 全部 8 plans 执行完毕（03-01..03-08）；Phase 4 context captured
-- 状态：Phase 4 context gathered — 消息格式化（prompt-first Markdown）+ 权限授权 UX（Confirm 时授权 + grantedOrigins storage + options page 列表）+ DOM 注入（CSS selector + setInputValue helper + Enter keydown + MutationObserver）+ canDispatch 探针（adapter 内 DOM 检查）
-- 最近活动：2026-05-01 — Phase 4 discuss-phase 完成，15 项决策（D-39..D-53）captured
+- Phase：4 / 7（OpenClaw 适配器 — planned，4 plans in 4 waves，ready to execute）
+- Plan：Phase 3 全部 8 plans 执行完毕（03-01..03-08）；Phase 4 planned (04-01..04-04)
+- 状态：Phase 4 plan-phase 完成 — 4 plans (foundation → adapter → integration → E2E)，wave 1→2→3→4 顺序
+- 最近活动：2026-05-02 — Phase 4 plan-phase 完成，research + pattern-map + 4 plans + checker 验证通过
 
 进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending human verification)
 
