@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-last_updated: "2026-05-02T00:00:00.000Z"
+status: Executing
+last_updated: "2026-05-02T02:25:00.000Z"
 progress:
   total_phases: 7
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 31
-  completed_plans: 19
-  percent: 61
+  completed_plans: 23
+  percent: 74
 ---
 
 # 项目状态
@@ -19,16 +19,16 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 4 — OpenClaw 适配器（4 plans in 4 waves，ready to execute）
+**当前焦点：** Phase 4 complete — ready for Phase 5 (Discord adapter)
 
 ## 当前位置
 
-- Phase：4 / 7（OpenClaw 适配器 — planned，4 plans in 4 waves，ready to execute）
-- Plan：Phase 3 全部 8 plans 执行完毕（03-01..03-08）；Phase 4 planned (04-01..04-04)
-- 状态：Phase 4 plan-phase 完成 — 4 plans (foundation → adapter → integration → E2E)，wave 1→2→3→4 顺序
-- 最近活动：2026-05-02 — Phase 4 plan-phase 完成，research + pattern-map + 4 plans + checker 验证通过
+- Phase：4 / 7（OpenClaw 适配器 — executed，4/4 plans complete）
+- Plan：Phase 4 全部 4 plans 执行完毕（04-01..04-04）
+- 状态：Phase 4 execution complete — 152 单元测试全绿 + 3 E2E specs (pending human verification)
+- 最近活动：2026-05-02 — Phase 4 execute-phase 完成，4 waves 串行执行，~27 min
 
-进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending human verification)
+进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (E2E pending)
 
 ## 性能指标
 
@@ -45,11 +45,12 @@ progress:
 | 1     | 4     | 42m   | 10.5m    |
 | 2     | 7     | ~40m  | ~5.7m    |
 | 3     | 8     | ~49m  | ~6.1m    |
+| 4     | 4     | ~27m  | ~6.8m    |
 
 **近期趋势：**
 
-- 最近 5 个 plan：03-06 (6m), 03-07 (5m), 03-05 (6m), 03-04 (10m), 03-03 (4m)
-- 趋势：Phase 3 plan 平均 ~6.1m；03-04 最重（SW dispatch state machine + 6 handlers + 25 测试）耗时 10m；其余 plans 均 ≤6m
+- 最近 5 个 plan：04-04 (10m), 04-03 (4m), 04-02 (8m), 04-01 (5m), 03-08 (5m)
+- 趋势：Phase 4 plan 平均 ~6.8m；04-04 最重（E2E fixture + 3 specs + verify-manifest fix）耗时 10m
 
 _每完成一个 plan 后更新_
 
@@ -99,11 +100,17 @@ _每完成一个 plan 后更新_
 - 2026-04-30（Plan 02-07 执行）— Playwright webServer + use.baseURL + 相对 URL 模式让 fixture 端口策略只在 playwright.config.ts 一处声明（`port: 4321`），spec.ts 用 `'/article.html'` 相对路径自动拼接 baseURL。`reuseExistingServer: !process.env.CI` 让本地 watch 模式不重复起 serve 进程；CI 始终启新进程（D-11 当前不进 CI，但配置按未来 CI 形态准备）。webServer command 用 `npx --yes serve tests/e2e/fixtures --listen 4321 --no-clipboard`，无需新增 dev dependency。Phase 3 dispatch / Phase 4-5 adapter e2e 沿用此模式：新增 fixture 文件放 `tests/e2e/fixtures/` 自动 serve。
 - 2026-04-30（Plan 02-07 执行）— 多 tab E2E 用 newPage 焦点窃取的修法：`context.newPage()` 默认把新 page 拉到前台，导致 newPage(popup) 后 article 失焦，SW `tabs.query({active, lastFocusedWindow})` 拿到 popup 而非 article。修法：先 newPage(article).goto → newPage(popup blank) → bringToFront(article) → popup.goto(popupUrl)；page.goto 在已存在 page 上不窃焦，article 保持 active。这是 Phase 3 dispatch e2e（涉及多 tab：article 源 + dispatch 目标）将沿用的模式。
 - 2026-04-30（Plan 02-07 执行）— Empty 路径 E2E 用 chrome-extension:// active tab 自然触发，不 mock SW：直接 `newPage(popupUrl)` 单独打开 popup，popup 自身就是 active tab，URL scheme=chrome-extension 被 SW 预检拒绝（D-16），popup 渲染 capture-empty。这是 RESEARCH.md Open Question #2 的最终方案，比 mock SW 更真实地证明 Phase 2 ROADMAP 成功标准 #5 empty 路径。Phase 3+ 任何"受限 active tab"路径的 E2E 都可沿用此自然触发模式。
+- 2026-05-02（Plan 04-01 执行）— `setInputValue` 使用 `Object.getOwnPropertyDescriptor` + `HTMLTextAreaElement.prototype` / `HTMLInputElement.prototype` 的 property-descriptor setter 绕过 React synthetic event 系统，然后 `dispatchEvent(new Event('input', { bubbles: true }))` 让 React reconciler 接收新值。这是 CLAUDE.md DOM 注入规范的首个具体实现，Phase 5 Discord adapter 的 Slate/Lexical 注入走不同路径（ClipboardEvent paste）。
+- 2026-05-02（Plan 04-01 执行）— `grantedOrigins` storage repo 用 `local:grantedOrigins` key + `string[]` 类型，4 个 CRUD 方法（list/add/remove/has），add 内置去重。OpenClaw adapter 注册在 `adapterRegistry` 中 `hostMatches: []`（空数组表示无静态 host），SW dispatch-pipeline 根据此判断需要 `chrome.permissions.contains` 动态权限检查。
+- 2026-05-02（Plan 04-02 执行）— OpenClaw adapter content script 通过 `defineContentScript({ registration: 'runtime', main() })` 注册，仅在 dispatch 时由 SW 程序化注入。`match()` 逻辑匹配 `/ui/chat` 或 `/chat` 路径 + `session` query param，不限 host。`composeMarkdown` 抽到纯工具模块 `shared/adapters/openclaw-format.ts`，可在测试中无 WXT side-effect 地 import。
+- 2026-05-02（Plan 04-03 执行）— popup Confirm handler 在 user-gesture context 内调用 `chrome.permissions.request({ origins: [origin + '/*'] })`（仅请求 `origin/*` 而非 `*://*/*`），grant 后调 `grantedOrigins.add(origin)`，deny 显示 `OPENCLAW_PERMISSION_DENIED` ErrorBanner。SW dispatch-pipeline 在 `startDispatch` 入口增加 `chrome.permissions.contains` 防御性检查。Options 页面 `GrantedOriginsSection` 展示已授权 origins 列表 + 移除按钮（`chrome.permissions.remove` + `grantedOrigins.remove` 双重清理）。
+- 2026-05-02（Plan 04-04 执行）— `scripts/verify-manifest.ts` 的 expected permissions 集合需要同步 Phase 3 新增的 `alarms` permission，否则单元测试在读取构建产物 manifest 时 `process.exit(1)`。修复为将 `['activeTab', 'scripting', 'storage']` 更新为 `['activeTab', 'alarms', 'scripting', 'storage']`。这是跨 phase 的 manifest 断言同步问题——后续添加新 permission 时 verify-manifest 的 expected set 必须同步更新。
 
 ### 待办
 
 - Phase 2 closure 待人工 E2E 验证：`pnpm build && pnpm test:e2e -- capture.spec.ts`
 - Phase 3 closure 待人工 E2E 验证：`pnpm wxt build --mode development && pnpm test:e2e`（8 specs：dispatch 5 + draft-recovery 1 + options-reset 2）
+- Phase 4 closure 待人工 E2E 验证：`pnpm wxt build --mode development && pnpm test:e2e -- openclaw`（3 specs：dispatch + offline + permission）
 
 ### 阻塞 / 关注点
 
@@ -120,6 +127,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-05-01（Phase 3 execute-phase — 8/8 plans executed，22 commits，109 单元测试 + 8 E2E specs）
-- 停在哪里：Phase 3 execution complete，待 human E2E 验证 + verifier phase goal check
-- Resume 文件：`.planning/phases/03-dispatch-popup/03-08-SUMMARY.md`
+- 上次会话：2026-05-02（Phase 4 execute-phase — 4/4 plans executed，13 commits，152 单元测试 + 3 E2E specs）
+- 停在哪里：Phase 4 execution complete，待 human E2E 验证；可开始 Phase 5
+- Resume 文件：`.planning/phases/04-openclaw/04-04-SUMMARY.md`
