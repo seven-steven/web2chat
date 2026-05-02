@@ -3,7 +3,7 @@
  * Manifest verifier — runs after `wxt build`.
  *
  * Asserts FND-05 + ROADMAP Phase 1 success criterion #5:
- *   - permissions === ['activeTab', 'scripting', 'storage'] (set equality)
+ *   - permissions === ['activeTab', 'alarms', 'scripting', 'storage'] (set equality)
  *   - host_permissions === ['https://discord.com/*'] (NO `<all_urls>` ever)
  *   - optional_host_permissions === ['<all_urls>']
  *   - default_locale === 'en'
@@ -63,7 +63,7 @@ export function assertManifest(manifest: Manifest, errors: string[]): void {
   // ─── Phase 1 invariants ─────────────────────────────────────────────────
 
   try {
-    expectSet('permissions', manifest.permissions, ['activeTab', 'scripting', 'storage']);
+    expectSet('permissions', manifest.permissions, ['activeTab', 'alarms', 'scripting', 'storage']);
   } catch (e) {
     errors.push((e as Error).message);
   }
