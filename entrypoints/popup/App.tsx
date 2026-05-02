@@ -35,6 +35,7 @@ import type { DispatchRecord } from '@/shared/storage/repos/dispatch';
 import { PopupChrome } from './components/PopupChrome';
 import { SendForm } from './components/SendForm';
 import { InProgressView } from './components/InProgressView';
+import { ErrorBanner } from './components/ErrorBanner';
 
 // ─── Module-level signals (D-22: editing values live only here; cleared on popup close) ─────
 
@@ -64,25 +65,22 @@ export function App() {
         // ─── Step 1: Check for in-flight dispatch FIRST (UI-SPEC S6 step 1) ─────────
         const activeId = await dispatchRepo.getActive();
         if (cancelled) return;
+        let wasInFlight = false;
         if (activeId) {
           const rec = await dispatchRepo.get(activeId);
           if (cancelled) return;
-          if (rec && rec.state !== 'done' && rec.state !== 'error' && rec.state !== 'cancelled') {
-            // In-flight — render InProgressView, SKIP capture.run + draft + badge clear
-            dispatchInFlightSig.value = rec;
-            return;
-          }
           if (rec && rec.state === 'error') {
-            // Render error banner above SendForm; still load capture + draft below
+            // Last dispatch failed — show error banner above SendForm
             dispatchErrorSig.value = {
               code: (rec.error?.code as ErrorCode) ?? 'INTERNAL',
               message: rec.error?.message ?? '',
             };
+          } else if (rec && rec.state !== 'done' && rec.state !== 'cancelled') {
+            wasInFlight = true;
           }
         }
 
-        // ─── Step 2: Parallel reads (UI-SPEC S6 step 2) ──────────────────────────
-        // draftRepo.get() returns null when no draft has ever been persisted
+        // ─── Step 2: Parallel reads — always load capture (needed for SendForm render) ──
         const [captureRes, draftRes] = await Promise.all([
           sendMessage('capture.run').catch((err) => {
             const message = err instanceof Error ? err.message : String(err);
@@ -92,10 +90,8 @@ export function App() {
         ]);
         if (cancelled) return;
 
-        // Apply capture result (Phase 2 logic preserved)
         if (captureRes.ok) {
           snapshotSig.value = captureRes.data;
-          // Draft has priority for editable fields if it exists (DSP-09 recovery)
           if (draftRes) {
             titleSig.value = draftRes.title || captureRes.data.title;
             descriptionSig.value = draftRes.description || captureRes.data.description;
@@ -112,7 +108,21 @@ export function App() {
           errorSig.value = { code: captureRes.code, message: captureRes.message };
         }
 
-        // ─── Step 3: Clear err badge (UI-SPEC S6 step 3 + D-34) ──────────────────
+        // Step 3: mark InProgressView AFTER snapshot loaded (listener can transition to error)
+        if (wasInFlight && activeId) {
+          const rec = await dispatchRepo.get(activeId);
+          if (
+            !cancelled &&
+            rec &&
+            rec.state !== 'done' &&
+            rec.state !== 'error' &&
+            rec.state !== 'cancelled'
+          ) {
+            dispatchInFlightSig.value = rec;
+          }
+        }
+
+        // ─── Step 4: Clear err badge (UI-SPEC S6 step 3 + D-34) ──────────────────
         await chrome.action.setBadgeText({ text: '' }).catch(() => {});
       } catch (err) {
         if (cancelled) return;
@@ -128,6 +138,32 @@ export function App() {
   const snapshot = snapshotSig.value;
   const error = errorSig.value;
   const dispatchInFlight = dispatchInFlightSig.value;
+
+  // ─── Real-time dispatch state listener ─────────────────────────
+  // When InProgressView is shown, poll storage for dispatch state changes.
+  // Without this, the popup never updates from InProgressView → error/done.
+  const activeDispatchId = dispatchInFlightSig.value?.dispatchId;
+  useEffect(() => {
+    if (!activeDispatchId) return;
+    const key = `dispatch:${activeDispatchId}`;
+    const listener = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+      if (area !== 'session') return;
+      if (!(key in changes)) return;
+      const rec = changes[key]?.newValue as DispatchRecord | undefined;
+      if (!rec) return;
+      if (rec.state === 'error') {
+        dispatchInFlightSig.value = null;
+        dispatchErrorSig.value = {
+          code: (rec.error?.code as ErrorCode) ?? 'INTERNAL',
+          message: rec.error?.message ?? '',
+        };
+      } else if (rec.state === 'done' || rec.state === 'cancelled') {
+        dispatchInFlightSig.value = null;
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
+  }, [activeDispatchId]);
 
   // 6-state dispatch (UI-SPEC S-Implementation Notes S8 — InProgressView is mutually exclusive)
   if (dispatchInFlight !== null) {
@@ -148,10 +184,22 @@ export function App() {
     );
   }
   if (snapshot === null && error === null) {
+    const dErr = dispatchErrorSig.value;
     return (
       <>
         <PopupChrome />
-        <LoadingSkeleton />
+        <main class="flex flex-col p-4 gap-4 min-w-[360px] font-sans" data-testid="popup-loading">
+          {dErr && (
+            <ErrorBanner
+              code={dErr.code}
+              onDismiss={() => {
+                dispatchErrorSig.value = null;
+                void dispatchRepo.clearActive();
+              }}
+            />
+          )}
+          <LoadingSkeleton />
+        </main>
       </>
     );
   }

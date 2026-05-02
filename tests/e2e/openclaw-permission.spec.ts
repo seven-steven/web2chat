@@ -2,7 +2,8 @@
  * E2E test for OpenClaw permission grant path (ADO-05, ADO-07).
  *
  * In dev mode with <all_urls> host_permissions, chrome.permissions.request
- * auto-grants without dialog. This test verifies the CODE PATH executes correctly.
+ * auto-grants without dialog. This test verifies the CODE PATH executes correctly
+ * by confirming that dispatch completes successfully (no permission error).
  *
  * DEV MODE LIMITATION: Permission deny path CANNOT be tested via E2E in dev mode.
  * The deny path is verified via unit test (tests/unit/popup/permission-deny.spec.ts).
@@ -30,8 +31,6 @@ test('openclaw permission: grant succeeds → dispatch proceeds (dev mode auto-g
   context,
   extensionId,
 }) => {
-  // In dev mode with <all_urls> host_permissions, chrome.permissions.request
-  // auto-grants without dialog. This test verifies the CODE PATH executes correctly.
   const { popup } = await openArticleAndPopup(context, extensionId);
 
   const sendToInput = popup.locator('[data-testid="combobox-popup-field-sendTo"]');
@@ -50,9 +49,8 @@ test('openclaw permission: grant succeeds → dispatch proceeds (dev mode auto-g
   const messageBubble = openclawPage.locator('[data-testid="message-bubble"]');
   await expect(messageBubble.first()).toBeVisible({ timeout: 5_000 });
 
-  // No permission error banner should appear
-  const errorBanner = popup.locator('[data-testid="error-banner-OPENCLAW_PERMISSION_DENIED"]');
-  await expect(errorBanner).not.toBeVisible();
+  await openclawPage.close();
+  // popup closes itself on success (window.close() in SendForm)
 });
 
 // DEV MODE LIMITATION: In development builds, host_permissions includes <all_urls>
