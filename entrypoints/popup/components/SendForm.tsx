@@ -200,23 +200,32 @@ export function SendForm(props: SendFormProps) {
         content: props.contentValue,
       },
     };
-    // Phase 4 D-42/D-44: Permission request in user-gesture context.
-    // Only for adapters with no static hostMatches (openclaw = dynamic permission).
+
     const adapter = findAdapter(props.sendTo);
     if (adapter && adapter.hostMatches.length === 0) {
       const targetOrigin = new URL(props.sendTo).origin;
-      const alreadyGranted = await grantedOriginsRepo.has(targetOrigin);
+      const alreadyGranted = await chrome.permissions.contains({
+        origins: [targetOrigin + '/*'],
+      });
+
       if (!alreadyGranted) {
-        const granted = await chrome.permissions.request({ origins: [targetOrigin + '/*'] });
+        await draftRepo.savePendingDispatch(input);
+        const granted = await chrome.permissions.request({
+          origins: [targetOrigin + '/*'],
+        });
+
         if (!granted) {
           setSubmitting(false);
+          await draftRepo.clearPendingDispatch();
           props.onDispatchError('OPENCLAW_PERMISSION_DENIED', targetOrigin);
           return;
         }
-        await grantedOriginsRepo.add(targetOrigin);
+
+        await grantedOriginsRepo.add(targetOrigin).catch(() => {});
+        await draftRepo.clearPendingDispatch();
       }
     }
-    // Notify App so it can render InProgressView immediately
+
     props.onConfirm(dispatchId);
     try {
       const res = await sendMessage('dispatch.start', input);

@@ -32,6 +32,8 @@ import { t } from '@/shared/i18n';
 import * as draftRepo from '@/shared/storage/repos/popupDraft';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 import type { DispatchRecord } from '@/shared/storage/repos/dispatch';
+import * as grantedOriginsRepo from '@/shared/storage/repos/grantedOrigins';
+import { findAdapter } from '@/shared/adapters/registry';
 import { PopupChrome } from './components/PopupChrome';
 import { SendForm } from './components/SendForm';
 import { InProgressView } from './components/InProgressView';
@@ -62,6 +64,53 @@ export function App() {
     let cancelled = false;
     void (async () => {
       try {
+        // ─── Step 0: Check for pending dispatch intent (popup closed during permission request)
+        const pendingIntent = await draftRepo.loadPendingDispatch();
+        if (!cancelled && pendingIntent) {
+          const adapter = findAdapter(pendingIntent.send_to);
+          if (adapter && adapter.hostMatches.length === 0) {
+            const targetOrigin = new URL(pendingIntent.send_to).origin;
+            const nowGranted = await chrome.permissions.contains({
+              origins: [targetOrigin + '/*'],
+            });
+            if (nowGranted) {
+              await draftRepo.clearPendingDispatch();
+              await grantedOriginsRepo.add(targetOrigin).catch(() => {});
+
+              dispatchInFlightSig.value = {
+                schemaVersion: 1,
+                dispatchId: pendingIntent.dispatchId,
+                state: 'pending',
+                target_tab_id: null,
+                send_to: pendingIntent.send_to,
+                prompt: pendingIntent.prompt,
+                snapshot: pendingIntent.snapshot,
+                platform_id: adapter.id,
+                started_at: new Date().toISOString(),
+                last_state_at: new Date().toISOString(),
+              };
+
+              try {
+                const res = await sendMessage('dispatch.start', pendingIntent);
+                if (!res.ok) {
+                  dispatchInFlightSig.value = null;
+                  dispatchErrorSig.value = { code: res.code, message: res.message };
+                }
+              } catch (err) {
+                dispatchInFlightSig.value = null;
+                const msg = err instanceof Error ? err.message : String(err);
+                dispatchErrorSig.value = { code: 'INTERNAL', message: msg };
+              }
+            } else {
+              await draftRepo.clearPendingDispatch();
+              dispatchErrorSig.value = {
+                code: 'OPENCLAW_PERMISSION_DENIED',
+                message: targetOrigin,
+              };
+            }
+          }
+        }
+
         // ─── Step 1: Check for in-flight dispatch FIRST (UI-SPEC S6 step 1) ─────────
         const activeId = await dispatchRepo.getActive();
         if (cancelled) return;
@@ -105,7 +154,9 @@ export function App() {
             contentSig.value = captureRes.data.content;
           }
         } else {
-          errorSig.value = { code: captureRes.code, message: captureRes.message };
+          if (!dispatchErrorSig.value) {
+            errorSig.value = { code: captureRes.code, message: captureRes.message };
+          }
         }
 
         // Step 3: mark InProgressView AFTER snapshot loaded (listener can transition to error)

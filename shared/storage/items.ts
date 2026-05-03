@@ -1,5 +1,6 @@
 import { storage } from 'wxt/utils/storage';
 import { CURRENT_SCHEMA_VERSION, migrations } from './migrate';
+import type { DispatchStartInput } from '@/shared/messaging';
 
 export interface MetaSchema {
   schemaVersion: typeof CURRENT_SCHEMA_VERSION;
@@ -119,3 +120,11 @@ export const grantedOriginsItem = storage.defineItem<string[]>('local:grantedOri
   version: CURRENT_SCHEMA_VERSION,
   migrations: { 1: (prev) => prev },
 });
+
+/** Pending dispatch intent — saved before chrome.permissions.request so
+ *  popup can resume on reopen if closed by the permission dialog or new tab.
+ *  null = no pending intent. */
+export const pendingDispatchItem = storage.defineItem<DispatchStartInput | null>(
+  'local:pendingDispatch',
+  { fallback: null },
+);

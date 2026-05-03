@@ -10,7 +10,13 @@
  *   update(): Promise<PopupDraft>          — writes real updated_at, returns merged draft
  *   clear():  Promise<void>                — resets to sentinel; next get() returns null
  */
-import { popupDraftItem, POPUP_DRAFT_DEFAULT, type PopupDraft } from '@/shared/storage/items';
+import {
+  popupDraftItem,
+  POPUP_DRAFT_DEFAULT,
+  pendingDispatchItem,
+  type PopupDraft,
+} from '@/shared/storage/items';
+import type { DispatchStartInput } from '@/shared/messaging';
 
 const NEVER_WRITTEN_SENTINEL_ISO = new Date(0).toISOString();
 
@@ -38,4 +44,16 @@ export async function update(
 
 export async function clear(): Promise<void> {
   await popupDraftItem.setValue(POPUP_DRAFT_DEFAULT);
+}
+
+export async function savePendingDispatch(input: DispatchStartInput): Promise<void> {
+  await pendingDispatchItem.setValue(input);
+}
+
+export async function loadPendingDispatch(): Promise<DispatchStartInput | null> {
+  return await pendingDispatchItem.getValue();
+}
+
+export async function clearPendingDispatch(): Promise<void> {
+  await pendingDispatchItem.setValue(null);
 }

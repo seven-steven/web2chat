@@ -23,6 +23,14 @@ export async function remove(origin: string): Promise<void> {
 }
 
 export async function has(origin: string): Promise<boolean> {
+  try {
+    const chromeGranted = await chrome.permissions.contains({
+      origins: [origin + '/*'],
+    });
+    if (chromeGranted) return true;
+  } catch {
+    // chrome.permissions.contains not available (test env) — fall through to local mirror
+  }
   const current = await grantedOriginsItem.getValue();
   return current.includes(origin);
 }
