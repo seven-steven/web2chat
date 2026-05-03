@@ -14,7 +14,7 @@ Web2Chat 是一个 Chrome MV3 扩展，用于抓取结构化的页面元数据 +
 - [x] **Phase 1: 扩展骨架 (Foundation)** ✓ Complete (2026-04-29) - 基于 WXT 的 MV3 脚手架，从第一天起就接入类型化消息、存储 schema 与 i18n
 - [ ] **Phase 2: 抓取流水线** - 点击进入 popup 的元数据抓取 + Readability 内容抽取与 sanitisation
 - [x] **Phase 3: 投递核心 + Popup UI** ✓ Executed (2026-05-01) - 8/8 plans, 109 单元测试 + 8 E2E specs (pending human verification)
-- [x] **Phase 4: OpenClaw 适配器** ✓ Executed (2026-05-02) - 4/4 plans, 152 单元测试 + 3 E2E specs (pending human verification)
+- [x] **Phase 4: OpenClaw 适配器** ✓ Executed (2026-05-03) - 6/6 plans (4 original + 2 gap closure), 152 单元测试 + 3 E2E specs (pending human verification)
 - [ ] **Phase 5: Discord 适配器** - 兼容 Slate/Lexical 的粘贴注入、SPA 路由处理、ToS 感知的限流器
 - [ ] **Phase 6: i18n 加固 + 打磨** - 运行时切换语言、ESLint 禁止硬编码字符串、设置面板、错误信息人性化
 - [ ] **Phase 7: 分发上架** - Web Store 就绪的 zip、隐私政策、为 v2 预留的 optional_host_permissions、双语 README
@@ -163,10 +163,10 @@ Plans:
 - [x] 04-04-PLAN.md — E2E: Playwright specs (happy path + offline + permission) + OpenClaw stub fixture (ADO-05) ✓
 
 **Wave 4** *(gap closure — UAT Test 5/6/7/10 failures)*
-- [ ] 04-05-PLAN.md — Fix popup-close-on-permission-dialog: pendingDispatch storage + popup resume + dispatch error priority (ADO-05, ADO-06, ADO-07)
+- [x] 04-05-PLAN.md — Fix popup-close-on-permission-dialog: pendingDispatch storage + popup resume + dispatch error priority (ADO-05, ADO-06, ADO-07) ✓
 
 **Wave 5** *(gap closure — blocked on 04-05)*
-- [ ] 04-06-PLAN.md — Update E2E specs for popup-close-resilient flow (ADO-05)
+- [x] 04-06-PLAN.md — Update E2E specs for popup-close-resilient flow (ADO-05) ✓
 
 **UI hint**：no
 
