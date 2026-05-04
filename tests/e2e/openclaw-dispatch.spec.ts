@@ -5,61 +5,45 @@
  * Timing constraint: full chain completes within 60s (covers slow LAN / remote OpenClaw).
  *
  * Target: real OpenClaw at http://localhost:18789
- *
- * Phase 1 D-11: e2e is local-only; CI lift comes Phase 4.
+ * Requires: OPENCLAW_TOKEN env var for authentication.
  */
 import { test, expect } from './fixtures';
-import { openArticleAndPopup, OPENCLAW_URL } from './helpers';
+import {
+  openArticleAndPopup,
+  OPENCLAW_URL,
+  OPENCLAW_TOKEN,
+  preAuthenticateOpenClaw,
+} from './helpers';
 
-test('openclaw dispatch: happy path — Confirm → message appears in OpenClaw', async ({
-  context,
-  extensionId,
-}) => {
-  const { articlePage, popup } = await openArticleAndPopup(context, extensionId);
+test.describe('openclaw dispatch', () => {
+  test.skip(!OPENCLAW_TOKEN, 'OPENCLAW_TOKEN env var required');
 
-  const sendToInput = popup.locator('[data-testid="combobox-popup-field-sendTo"]');
-  await sendToInput.fill(OPENCLAW_URL);
-  await popup.waitForTimeout(300);
+  test.beforeEach(async ({ context }) => {
+    test.setTimeout(60_000);
+    await preAuthenticateOpenClaw(context);
+  });
 
-  const confirm = popup.locator('[data-testid="popup-confirm"]');
-  await expect(confirm).toBeEnabled({ timeout: 2_000 });
+  test('happy path — Confirm → message appears in OpenClaw', async ({ context, extensionId }) => {
+    const { articlePage, popup } = await openArticleAndPopup(context, extensionId);
 
-  const newPagePromise = context.waitForEvent('page', { timeout: 60_000 });
-  await confirm.click();
+    const sendToInput = popup.locator('[data-testid="combobox-popup-field-sendTo"]');
+    await sendToInput.fill(OPENCLAW_URL);
+    await popup.waitForTimeout(300);
 
-  const openclawPage = await newPagePromise;
-  await openclawPage.waitForLoadState('domcontentloaded');
+    const confirm = popup.locator('[data-testid="popup-confirm"]');
+    await expect(confirm).toBeEnabled({ timeout: 2_000 });
 
-  const messageList = openclawPage.locator('.chat-thread, [role="log"]');
-  await expect(messageList).toBeVisible({ timeout: 60_000 });
+    const newPagePromise = context.waitForEvent('page', { timeout: 60_000 });
+    await confirm.click();
 
-  await articlePage.close();
-  await openclawPage.close();
-  await popup.close();
-});
+    const openclawPage = await newPagePromise;
+    await openclawPage.waitForLoadState('domcontentloaded');
 
-test('openclaw dispatch: full chain completes within 10s', async ({ context, extensionId }) => {
-  const { articlePage, popup } = await openArticleAndPopup(context, extensionId);
+    const messageList = openclawPage.locator('.chat-thread, [role="log"]');
+    await expect(messageList).toBeVisible({ timeout: 60_000 });
 
-  const sendToInput = popup.locator('[data-testid="combobox-popup-field-sendTo"]');
-  await sendToInput.fill(OPENCLAW_URL);
-  await popup.waitForTimeout(300);
-
-  const confirm = popup.locator('[data-testid="popup-confirm"]');
-  await expect(confirm).toBeEnabled({ timeout: 2_000 });
-
-  const start = Date.now();
-  const newPagePromise = context.waitForEvent('page', { timeout: 60_000 });
-  await confirm.click();
-  const openclawPage = await newPagePromise;
-  await openclawPage.waitForLoadState('domcontentloaded');
-
-  const messageList = openclawPage.locator('.chat-thread, [role="log"]');
-  await expect(messageList).toBeVisible({ timeout: 60_000 });
-  const elapsed = Date.now() - start;
-  expect(elapsed).toBeLessThan(10_000);
-
-  await articlePage.close();
-  await openclawPage.close();
-  await popup.close();
+    await articlePage.close();
+    await openclawPage.close();
+    await popup.close();
+  });
 });
