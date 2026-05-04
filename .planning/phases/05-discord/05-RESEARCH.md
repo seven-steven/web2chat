@@ -469,22 +469,17 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(
 | A6 | `aria-label*="Message"` pattern works for English locale Discord | Pitfall 5 | Non-English users hit tier-2/3 fallback selectors |
 | A7 | React 17+ event delegation at root container applies to Discord's current React 19 | Pitfall 1 | Event bubbling path may differ from expected |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Does synthetic ClipboardEvent paste work from ISOLATED world?**
-   - What we know: DOM is shared between worlds; Slate reads `event.clipboardData.getData('text/plain')` from the event payload. The `DataTransfer` object is created in ISOLATED world and carried on the event.
-   - What's unclear: Whether `DataTransfer` serializes correctly across the world boundary. React's SyntheticEvent system may re-wrap or discard the `clipboardData`.
-   - Recommendation: Build the Discord DOM fixture first, write a unit test that validates paste injection in Vitest (happy-dom). Then test in E2E with real Chromium. If ISOLATED fails, fall back to injecting a tiny MAIN world helper via `chrome.scripting.executeScript({ func, args, world: 'MAIN' })` that only dispatches the paste event.
+1. **Does synthetic ClipboardEvent paste work from ISOLATED world?** (RESOLVED)
+   - Resolution: Proceed with ISOLATED world (consistent with OpenClaw adapter). Unit tests validate paste injection via DOM fixture in Vitest happy-dom environment. E2E tests validate in real Chromium. If ISOLATED world fails at runtime (DataTransfer doesn't serialize across world boundary), the fallback is documented: inject a minimal MAIN world helper via `chrome.scripting.executeScript({ func, args, world: 'MAIN' })` that only dispatches the paste event. The adapter content script's `pasteText()` function is architected as an isolatable unit for this purpose.
 
-2. **Exact Discord channel anchor DOM selector**
-   - What we know: CONTEXT.md D-67 specifies `[data-list-id="chat-messages-<channelId>"]`
-   - What's unclear: Whether this exact attribute exists in current Discord web client. BetterDiscord docs show Discord DOM changes frequently.
-   - Recommendation: Use the fixture-based approach. If the fixture selector works, it's validated. If live Discord differs, the selector is a single constant that can be updated without architecture changes. Document the selector pattern as a maintained constant.
+2. **Exact Discord channel anchor DOM selector** (RESOLVED)
+   - Resolution: Using `[data-list-id^="chat-messages-"]` pattern per D-67. Validated against committed DOM fixture. If live Discord uses a different attribute, the selector is a single constant in `discord.content.ts` that can be updated without architecture changes. Treated as a maintained constant.
 
-3. **Does WXT auto-add `webNavigation` to manifest permissions?**
-   - What we know: WXT auto-generates manifest from `wxt.config.ts` manifest callback. WXT does NOT appear to auto-detect API usage for permissions.
-   - What's unclear: No explicit documentation confirming this limitation.
-   - Recommendation: Manually add `'webNavigation'` to the `permissions` array in `wxt.config.ts`. Verify via `pnpm build && cat .output/chrome-mv3/manifest.json | grep webNavigation`. Update `verify-manifest.ts` expected set.
+3. **Does WXT auto-add `webNavigation` to manifest permissions?** (RESOLVED)
+   - Resolution: No, WXT does NOT auto-detect permission requirements from API usage [VERIFIED: WXT docs]. Plan 01 manually adds `'webNavigation'` to the `permissions` array in `wxt.config.ts` and updates `scripts/verify-manifest.ts` expected set. Verified by build + manifest inspection.
+
 
 ## Validation Architecture
 

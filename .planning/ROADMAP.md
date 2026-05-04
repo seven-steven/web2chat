@@ -187,15 +187,15 @@ Plans:
 
 Plans:
 
-**Wave 1** *(并行)*
+**Wave 1**
 - [ ] 05-01-PLAN.md — Foundation: discord-format.ts (compose + truncation + escape) + registry entry + webNavigation permission + i18n keys + 单元测试 (ADD-01, ADD-02, ADD-07, ADD-08)
-- [ ] 05-03-PLAN.md — Integration: background.ts webNavigation listener + PlatformIcon Discord SVG + SendForm ToS footnote (ADD-04, ADD-07, ADD-08)
 
-**Wave 2** *(blocked on Wave 1 — depends on 05-01)*
-- [ ] 05-02-PLAN.md — Discord adapter content script: ARIA selector + ClipboardEvent paste + rate limit + channel safety + login detection + DOM fixture + selector 单元测试 (ADD-01, ADD-03, ADD-04, ADD-05, ADD-06, ADD-07, ADD-09)
+**Wave 2** *(并行 — depends on 05-01)*
+- [ ] 05-02-PLAN.md — Discord adapter content script: ARIA selector + ClipboardEvent paste + rate limit + channel safety + DOM fixture + selector 单元测试 (ADD-01, ADD-03, ADD-04, ADD-05, ADD-06, ADD-07, ADD-09)
+- [ ] 05-03-PLAN.md — Integration: background.ts webNavigation listener + dispatch-pipeline login detection + PlatformIcon Discord SVG + SendForm ToS footnote (ADD-04, ADD-06, ADD-07, ADD-08)
 
 **Wave 3** *(blocked on Wave 2 — depends on 05-02 + 05-03)*
-- [ ] 05-04-PLAN.md — E2E: Discord stub fixture + Playwright specs (dispatch + login) + human verification checkpoint (ADD-01, ADD-03, ADD-04, ADD-05, ADD-06, ADD-07, ADD-09)
+- [ ] 05-04-PLAN.md — E2E: Discord stub fixture + Playwright specs (dispatch + login + channel-switch) + human verification checkpoint (ADD-01, ADD-03, ADD-04, ADD-05, ADD-06, ADD-07, ADD-09)
 
 **UI hint**：no
 
