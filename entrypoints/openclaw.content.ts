@@ -15,10 +15,9 @@ import { defineContentScript } from '#imports';
 import { setInputValue } from '@/shared/dom-injector';
 import { composeMarkdown } from '@/shared/adapters/openclaw-format';
 
-const OPENCLAW_FEATURE_SELECTOR =
-  '[data-testid="openclaw-app"], .agent-chat__messages, [class*="agent-chat"]';
-const TEXTAREA_SELECTOR = '.agent-chat__input textarea, textarea[data-testid="chat-input"]';
-const MESSAGE_LIST_SELECTOR = '.agent-chat__messages, [data-testid="message-list"]';
+const OPENCLAW_FEATURE_SELECTOR = '.agent-chat__input, .chat-thread';
+const TEXTAREA_SELECTOR = '.agent-chat__input textarea';
+const MESSAGE_LIST_SELECTOR = '.chat-thread, [role="log"]';
 const WAIT_TIMEOUT_MS = 5000;
 
 interface AdapterDispatchMessage {
