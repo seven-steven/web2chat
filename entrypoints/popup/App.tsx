@@ -148,6 +148,10 @@ export function App() {
             sendToSig.value = draftRes.send_to || '';
             promptSig.value = draftRes.prompt || '';
             promptDirtySig.value = (draftRes.prompt || '') !== '';
+            // Draft overrides capture for user-edited fields (DSP-09 draft recovery)
+            if (draftRes.title) titleSig.value = draftRes.title;
+            if (draftRes.description) descriptionSig.value = draftRes.description;
+            if (draftRes.content) contentSig.value = draftRes.content;
           }
         } else {
           if (!dispatchErrorSig.value) {
