@@ -11,24 +11,7 @@
  * The deny path is verified via unit test (tests/unit/popup/permission-deny.spec.ts).
  */
 import { test, expect } from './fixtures';
-
-const ARTICLE_URL = '/article.html';
-const OPENCLAW_URL =
-  process.env.OPENCLAW_URL || 'http://localhost:18789/chat?session=agent:main:main';
-
-async function openArticleAndPopup(
-  context: import('@playwright/test').BrowserContext,
-  extensionId: string,
-) {
-  const articlePage = await context.newPage();
-  await articlePage.goto(ARTICLE_URL, { waitUntil: 'domcontentloaded' });
-  const popupUrl = `chrome-extension://${extensionId}/popup.html`;
-  const popup = await context.newPage();
-  await articlePage.bringToFront();
-  await popup.goto(popupUrl);
-  await popup.waitForSelector('[data-testid="popup-sendform"]', { timeout: 5_000 });
-  return { articlePage, popup };
-}
+import { openArticleAndPopup, OPENCLAW_URL } from './helpers';
 
 test('openclaw permission: grant succeeds → dispatch proceeds (dev mode auto-grants)', async ({
   context,

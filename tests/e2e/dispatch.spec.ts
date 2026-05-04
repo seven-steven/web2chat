@@ -11,32 +11,9 @@
  * Phase 1 D-11: e2e is local-only; CI lift comes Phase 4.
  */
 import { test, expect } from './fixtures';
+import { openArticleAndPopup } from './helpers';
 
-const ARTICLE_URL = '/article.html';
 const MOCK_PLATFORM_URL = 'http://localhost:4321/mock-platform.html';
-
-/**
- * Helper: open article + popup with correct page ordering, wait for popup
- * SendForm state (after capture-success or draft-recovery), then return
- * { articlePage, popup, popupUrl }.
- */
-async function openArticleAndPopup(
-  context: import('@playwright/test').BrowserContext,
-  extensionId: string,
-) {
-  const articlePage = await context.newPage();
-  await articlePage.goto(ARTICLE_URL, { waitUntil: 'domcontentloaded' });
-  const popupUrl = `chrome-extension://${extensionId}/popup.html`;
-  const popup = await context.newPage();
-  await articlePage.bringToFront();
-  await popup.goto(popupUrl);
-
-  // Wait for SendForm to render (Phase 3 6-state machine: either SendForm or
-  // loading skeleton; SendForm appears once capture.run resolves with Ok).
-  await popup.waitForSelector('[data-testid="popup-sendform"]', { timeout: 5_000 });
-
-  return { articlePage, popup, popupUrl };
-}
 
 test('dispatch: happy path — Confirm → mock-platform tab visible + popup reopens clean (DSP-05, DSP-08)', async ({
   context,

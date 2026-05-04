@@ -6,24 +6,10 @@
  * OPENCLAW_OFFLINE → popup shows error banner after reopen.
  */
 import { test, expect } from './fixtures';
+import { openArticleAndPopup } from './helpers';
 
-const ARTICLE_URL = '/article.html';
 // Local fixture at /chat path but NOT an OpenClaw instance — triggers canDispatch fail
 const OPENCLAW_OFFLINE_URL = 'http://localhost:4321/chat?session=agent:main:main';
-
-async function openArticleAndPopup(
-  context: import('@playwright/test').BrowserContext,
-  extensionId: string,
-) {
-  const articlePage = await context.newPage();
-  await articlePage.goto(ARTICLE_URL, { waitUntil: 'domcontentloaded' });
-  const popupUrl = `chrome-extension://${extensionId}/popup.html`;
-  const popup = await context.newPage();
-  await articlePage.bringToFront();
-  await popup.goto(popupUrl);
-  await popup.waitForSelector('[data-testid="popup-sendform"]', { timeout: 5_000 });
-  return { articlePage, popup, popupUrl };
-}
 
 test('openclaw offline: non-OpenClaw chat page → OPENCLAW_OFFLINE error in popup', async ({
   context,
