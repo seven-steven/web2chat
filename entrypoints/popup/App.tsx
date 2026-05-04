@@ -141,17 +141,13 @@ export function App() {
 
         if (captureRes.ok) {
           snapshotSig.value = captureRes.data;
+          titleSig.value = captureRes.data.title;
+          descriptionSig.value = captureRes.data.description;
+          contentSig.value = captureRes.data.content;
           if (draftRes) {
-            titleSig.value = draftRes.title || captureRes.data.title;
-            descriptionSig.value = draftRes.description || captureRes.data.description;
-            contentSig.value = draftRes.content || captureRes.data.content;
             sendToSig.value = draftRes.send_to || '';
             promptSig.value = draftRes.prompt || '';
             promptDirtySig.value = (draftRes.prompt || '') !== '';
-          } else {
-            titleSig.value = captureRes.data.title;
-            descriptionSig.value = captureRes.data.description;
-            contentSig.value = captureRes.data.content;
           }
         } else {
           if (!dispatchErrorSig.value) {
