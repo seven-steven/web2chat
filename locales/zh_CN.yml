@@ -231,6 +231,18 @@ options_origins_remove:
   message: '移除'
 options_origins_empty:
   message: '暂无已授权的 Origin。'
+options_origins_confirm_title:
+  message: '移除 Origin 访问权限？'
+options_origins_confirm_body:
+  message: '这将撤销扩展对 $ORIGIN$ 的访问权限。之后需要重新授权才能向该地址投递消息。'
+  placeholders:
+    origin:
+      content: '$1'
+      example: 'http://localhost:18789'
+options_origins_confirm_cancel:
+  message: '取消'
+options_origins_confirm_action:
+  message: '移除'
 options_reserved_language_label:
   message: '语言'
 options_reserved_placeholder_body:

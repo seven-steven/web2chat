@@ -231,6 +231,18 @@ options_origins_remove:
   message: 'Remove'
 options_origins_empty:
   message: 'No origins authorized yet.'
+options_origins_confirm_title:
+  message: 'Remove origin access?'
+options_origins_confirm_body:
+  message: "This will revoke the extension's permission to access $ORIGIN$. You will need to re-authorize it to dispatch messages there again."
+  placeholders:
+    origin:
+      content: '$1'
+      example: 'http://localhost:18789'
+options_origins_confirm_cancel:
+  message: 'Cancel'
+options_origins_confirm_action:
+  message: 'Remove'
 options_reserved_language_label:
   message: 'Language'
 options_reserved_placeholder_body:
