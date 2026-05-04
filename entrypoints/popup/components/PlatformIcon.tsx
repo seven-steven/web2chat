@@ -1,8 +1,6 @@
 import { t } from '@/shared/i18n';
 
-// Placeholder letterforms for Phase 4/5 brand glyphs — not user-visible copy,
-// rendered inside SVG <text> as visual icon content.
-const OPENCLAW_GLYPH = 'Oc';
+// Placeholder letterform for Phase 5 Discord brand glyph.
 const DISCORD_GLYPH = 'D';
 
 type PlatformVariant = 'mock' | 'openclaw' | 'discord' | 'unsupported';
@@ -14,13 +12,14 @@ interface PlatformIconProps {
 
 /**
  * Inline-SVG platform icon — 4 variants per UI-SPEC S-Iconography lines 488-499.
- * Phase 4 will replace 'openclaw' letterform with a real brand glyph; Phase 5
- * does the same for 'discord'. The 'mock' + 'unsupported' icons are final.
+ * 'openclaw' uses the official pixel-lobster mascot (16×16 → scaled 1.5× to 24×24).
+ * Phase 5 will replace 'discord' letterform with a real brand glyph.
+ * The 'mock' + 'unsupported' icons are final.
  *
  * Color discipline (UI-SPEC S-Color reserved-list):
  *   - DO NOT use `text-sky-*` here — sky-600 is reserved for Confirm + focus
  *     ring + inline accent span (NOT for platform icons).
- *   - All variants use slate-500/slate-700 + currentColor for dark mode.
+ *   - OpenClaw uses hardcoded brand colors; other variants use currentColor.
  */
 export function PlatformIcon({ variant, size = 24 }: PlatformIconProps) {
   const tooltip =
@@ -69,9 +68,45 @@ export function PlatformIcon({ variant, size = 24 }: PlatformIconProps) {
         </>
       )}
       {variant === 'openclaw' && (
-        <text x="4" y="17" font-size="14" font-weight="600" fill="currentColor" stroke="none">
-          {OPENCLAW_GLYPH}
-        </text>
+        // Vector lobster favicon from OpenClaw server (120×120 → scaled 0.2× to 24×24)
+        <g transform="scale(0.2)" stroke="none">
+          <defs>
+            <linearGradient id="openclaw-lg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff4d4d" />
+              <stop offset="100%" stop-color="#991b1b" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M60 10 C30 10 15 35 15 55 C15 75 30 95 45 100 L45 110 L55 110 L55 100 C55 100 60 102 65 100 L65 110 L75 110 L75 100 C90 95 105 75 105 55 C105 35 90 10 60 10Z"
+            fill="url(#openclaw-lg)"
+          />
+          <path
+            d="M20 45 C5 40 0 50 5 60 C10 70 20 65 25 55 C28 48 25 45 20 45Z"
+            fill="url(#openclaw-lg)"
+          />
+          <path
+            d="M100 45 C115 40 120 50 115 60 C110 70 100 65 95 55 C92 48 95 45 100 45Z"
+            fill="url(#openclaw-lg)"
+          />
+          <path
+            d="M45 15 Q35 5 30 8"
+            stroke="#ff4d4d"
+            stroke-width="3"
+            stroke-linecap="round"
+            fill="none"
+          />
+          <path
+            d="M75 15 Q85 5 90 8"
+            stroke="#ff4d4d"
+            stroke-width="3"
+            stroke-linecap="round"
+            fill="none"
+          />
+          <circle cx="45" cy="35" r="6" fill="#050810" />
+          <circle cx="75" cy="35" r="6" fill="#050810" />
+          <circle cx="46" cy="34" r="2.5" fill="#00e5cc" />
+          <circle cx="76" cy="34" r="2.5" fill="#00e5cc" />
+        </g>
       )}
       {variant === 'discord' && (
         <text x="8" y="17" font-size="16" font-weight="600" fill="currentColor" stroke="none">
