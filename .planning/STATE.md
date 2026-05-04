@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing
-last_updated: "2026-05-03T12:20:00.000Z"
+last_updated: "2026-05-05T10:00:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 3
@@ -19,14 +19,14 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 4 gap closure complete — ready for Phase 5 (Discord adapter)
+**当前焦点：** Phase 5 context gathered — ready for plan-phase
 
 ## 当前位置
 
-- Phase：4 / 7（OpenClaw 适配器 — executed + gap closure，6/6 plans complete）
-- Plan：Phase 4 全部 6 plans 执行完毕（04-01..04-06，含 2 gap closure）
-- 状态：Phase 4 gap closure complete — 152 单元测试全绿 + 3 E2E specs (pending human verification)
-- 最近活动：2026-05-03 — Phase 4 gap closure 执行完成（04-05 popup fix + 04-06 E2E alignment）
+- Phase：5 / 7（Discord 适配器 — context gathered，ready for planning）
+- Plan：TBD
+- 状态：Phase 5 context captured（D-54..D-72，19 decisions）
+- 最近活动：2026-05-05 — Phase 5 discuss-phase 完成（消息格式化+截断、Discord escape、ToS 声明）
 
 进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (gap closure ✓, E2E pending)
 
@@ -127,6 +127,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-05-02（Phase 4 execute-phase — 4/4 plans executed，13 commits，152 单元测试 + 3 E2E specs）
-- 停在哪里：Phase 4 execution complete，待 human E2E 验证；可开始 Phase 5
-- Resume 文件：`.planning/phases/04-openclaw/04-04-SUMMARY.md`
+- 上次会话：2026-05-05（Phase 5 discuss-phase — context gathered，D-54..D-72）
+- 停在哪里：Phase 5 context gathered，ready for plan-phase
+- Resume 文件：`.planning/phases/05-discord/05-CONTEXT.md`
