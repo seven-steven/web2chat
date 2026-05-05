@@ -36,8 +36,12 @@ export function escapeMentions(text: string): string {
  * - Truncation: prompt-first priority (D-55). If > 2000 chars, content truncated first,
  *   then description if still over.
  */
-export function composeDiscordMarkdown(payload: { prompt: string; snapshot: Snapshot }): string {
-  const { prompt, snapshot } = payload;
+export function composeDiscordMarkdown(payload: {
+  prompt: string;
+  snapshot: Snapshot;
+  timestampLabel?: string;
+}): string {
+  const { prompt, snapshot, timestampLabel = '采集时间:' } = payload;
 
   // Escape user-controlled text fields
   const safePrompt = prompt ? escapeMentions(prompt) : '';
@@ -51,7 +55,7 @@ export function composeDiscordMarkdown(payload: { prompt: string; snapshot: Snap
   if (safeTitle) lines.push(`**${safeTitle}**`, '');
   if (snapshot.url) lines.push(snapshot.url, '');
   if (safeDescription) lines.push(`> ${safeDescription}`, '');
-  if (snapshot.create_at) lines.push(`> 采集时间: ${snapshot.create_at}`, '');
+  if (snapshot.create_at) lines.push(`> ${timestampLabel} ${snapshot.create_at}`, '');
   if (safeContent) lines.push(safeContent);
 
   const result = lines.join('\n').trim();
@@ -67,7 +71,7 @@ export function composeDiscordMarkdown(payload: { prompt: string; snapshot: Snap
   if (safeTitle) headerLines.push(`**${safeTitle}**`, '');
   if (snapshot.url) headerLines.push(snapshot.url, '');
   if (safeDescription) headerLines.push(`> ${safeDescription}`, '');
-  if (snapshot.create_at) headerLines.push(`> 采集时间: ${snapshot.create_at}`, '');
+  if (snapshot.create_at) headerLines.push(`> ${timestampLabel} ${snapshot.create_at}`, '');
 
   const headerText = headerLines.join('\n');
   const headerLen = headerText.length;
@@ -93,7 +97,7 @@ export function composeDiscordMarkdown(payload: { prompt: string; snapshot: Snap
   if (safePrompt) noContentLines.push(safePrompt, '');
   if (safeTitle) noContentLines.push(`**${safeTitle}**`, '');
   if (snapshot.url) noContentLines.push(snapshot.url, '');
-  if (snapshot.create_at) noContentLines.push(`> 采集时间: ${snapshot.create_at}`, '');
+  if (snapshot.create_at) noContentLines.push(`> ${timestampLabel} ${snapshot.create_at}`, '');
 
   const noContentText = noContentLines.join('\n');
 
