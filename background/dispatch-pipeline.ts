@@ -185,6 +185,9 @@ export async function startDispatch(
   return Ok({ dispatchId: input.dispatchId, state: rec.state });
 }
 
+/** Timeout for adapter response before re-checking tab URL (Gap 3 fix). */
+export const ADAPTER_RESPONSE_TIMEOUT_MS = 10_000;
+
 async function advanceToAdapterInjection(
   record: DispatchRecord,
   scriptFile: string,
@@ -221,19 +224,52 @@ async function advanceToAdapterInjection(
   }
 
   // Send ADAPTER_DISPATCH message — adapter's content-script listener responds.
+  // Gap 3 fix: Wrap with 10s Promise.race timeout. On timeout or connection-destroyed,
+  // re-check tab URL for login redirect (Discord SPA returns 200 then client-side redirects).
   let response: { ok: boolean; code?: string; message?: string; retriable?: boolean };
   try {
-    response = await chrome.tabs.sendMessage(tabId, {
-      type: 'ADAPTER_DISPATCH',
-      payload: {
-        dispatchId: updated.dispatchId,
-        send_to: updated.send_to,
-        prompt: updated.prompt,
-        snapshot: updated.snapshot,
-      },
-    });
+    response = await Promise.race([
+      chrome.tabs.sendMessage(tabId, {
+        type: 'ADAPTER_DISPATCH',
+        payload: {
+          dispatchId: updated.dispatchId,
+          send_to: updated.send_to,
+          prompt: updated.prompt,
+          snapshot: updated.snapshot,
+        },
+      }),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('ADAPTER_RESPONSE_TIMEOUT')),
+          ADAPTER_RESPONSE_TIMEOUT_MS,
+        ),
+      ),
+    ]);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
+
+    // On timeout or sendMessage failure, re-check the tab URL for login redirect
+    if (
+      msg === 'ADAPTER_RESPONSE_TIMEOUT' ||
+      /Receiving end does not exist|Could not establish connection/i.test(msg)
+    ) {
+      let actualUrl: string | undefined;
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        actualUrl = tab.url;
+      } catch {
+        // Tab closed
+      }
+      if (actualUrl) {
+        const adapter = findAdapter(updated.send_to);
+        // If URL no longer matches the adapter (e.g., redirected to /login)
+        if (adapter && !adapter.match(actualUrl)) {
+          await failDispatch(updated, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
+          return;
+        }
+      }
+    }
+
     await failDispatch(updated, 'EXECUTE_SCRIPT_FAILED', msg, true);
     return;
   }
