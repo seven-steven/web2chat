@@ -17,12 +17,12 @@ export const TRUNCATION_SUFFIX = '\n...[truncated]';
 
 /**
  * Break Discord mention patterns via zero-width space (U+200B) insertion (D-57).
- * - @everyone / @here → @​everyone / @​here (ZWS after @)
- * - <@id>, <@!id>, <@&id>, <#id> → <​@id> etc. (ZWS after <)
+ * - @everyone / @here → @[ZWS]everyone / @[ZWS]here (ZWS after @)
+ * - <@id>, <@!id>, <@&id>, <#id> → <[ZWS]@id> etc. (ZWS after <)
  */
 export function escapeMentions(text: string): string {
   // Break @everyone and @here
-  let result = text.replace(/@(everyone|here)/g, '@​$1');
+  let result = text.replace(/(?<!\w)@(everyone|here)\b/g, '@​$1');
   // Break <@id>, <@!id>, <@&id>, <#id>
   result = result.replace(/<(@[!&]?\d+|#\d+)>/g, '<​$1>');
   return result;
@@ -80,9 +80,10 @@ export function composeDiscordMarkdown(payload: { prompt: string; snapshot: Snap
 
     if (available > 0) {
       const truncatedContent = safeContent.slice(0, available);
-      const assembled = headerLen > 0
-        ? `${headerText}\n${truncatedContent}${TRUNCATION_SUFFIX}`
-        : `${truncatedContent}${TRUNCATION_SUFFIX}`;
+      const assembled =
+        headerLen > 0
+          ? `${headerText}\n${truncatedContent}${TRUNCATION_SUFFIX}`
+          : `${truncatedContent}${TRUNCATION_SUFFIX}`;
       return assembled.trim();
     }
   }
@@ -99,17 +100,24 @@ export function composeDiscordMarkdown(payload: { prompt: string; snapshot: Snap
   if (safeDescription) {
     const separator = noContentText.length > 0 ? '\n' : '';
     const available =
-      DISCORD_CHAR_LIMIT - noContentText.length - separator.length - TRUNCATION_SUFFIX.length - '> '.length;
+      DISCORD_CHAR_LIMIT -
+      noContentText.length -
+      separator.length -
+      TRUNCATION_SUFFIX.length -
+      '> '.length;
 
     if (available > 0) {
       const truncatedDesc = safeDescription.slice(0, available);
-      const assembled = noContentText.length > 0
-        ? `${noContentText}\n> ${truncatedDesc}${TRUNCATION_SUFFIX}`
-        : `> ${truncatedDesc}${TRUNCATION_SUFFIX}`;
+      const assembled =
+        noContentText.length > 0
+          ? `${noContentText}\n> ${truncatedDesc}${TRUNCATION_SUFFIX}`
+          : `> ${truncatedDesc}${TRUNCATION_SUFFIX}`;
       return assembled.trim();
     }
   }
 
   // Last resort: just truncate the whole thing
-  return noContentText.slice(0, DISCORD_CHAR_LIMIT - TRUNCATION_SUFFIX.length).trim() + TRUNCATION_SUFFIX;
+  return (
+    noContentText.slice(0, DISCORD_CHAR_LIMIT - TRUNCATION_SUFFIX.length).trim() + TRUNCATION_SUFFIX
+  );
 }

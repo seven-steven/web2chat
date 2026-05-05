@@ -111,4 +111,16 @@ describe('adapters/discord — escapeMentions (D-57)', () => {
     expect(result).toContain(`<${ZWS}#456>`);
     expect(result).toContain(`<${ZWS}@&789>`);
   });
+
+  it('@hereford unchanged (no partial match)', () => {
+    expect(escapeMentions('@hereford')).toBe('@hereford');
+  });
+
+  it('email user@everyone.com unchanged', () => {
+    expect(escapeMentions('user@everyone.com')).toBe('user@everyone.com');
+  });
+
+  it('@everywhere unchanged (no partial match)', () => {
+    expect(escapeMentions('@everywhere')).toBe('@everywhere');
+  });
 });
