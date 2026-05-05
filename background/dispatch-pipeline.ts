@@ -338,6 +338,36 @@ export async function onTabComplete(
       );
       continue;
     }
+
+    // Phase 5 D-70: Login redirect detection for Discord (and future adapters).
+    // After tab completes loading, check if the actual URL still matches the adapter.
+    // If tab URL is on the adapter's host but doesn't match adapter.match(),
+    // a redirect occurred (e.g., discord.com/login?redirect_to=...).
+    if (adapter.hostMatches.length > 0) {
+      let actualUrl: string | undefined;
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        actualUrl = tab.url;
+      } catch {
+        // Tab may have been closed
+      }
+      if (actualUrl && !adapter.match(actualUrl)) {
+        const isHostMatch = adapter.hostMatches.some((pattern) => {
+          try {
+            const patternHost = new URL(pattern.replace('*', 'x')).hostname;
+            const actualHost = new URL(actualUrl!).hostname;
+            return actualHost === patternHost || actualHost.endsWith('.' + patternHost);
+          } catch {
+            return false;
+          }
+        });
+        if (isHostMatch) {
+          await failDispatch(record, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
+          continue;
+        }
+      }
+    }
+
     await advanceToAdapterInjection(record, adapter.scriptFile);
   }
 }

@@ -131,4 +131,17 @@ export default defineBackground(() => {
   // functions read from chrome.storage.session (no module-scope state).
   chrome.tabs.onUpdated.addListener(onTabComplete);
   chrome.alarms.onAlarm.addListener(onAlarmFired);
+
+  // ───────── Phase 5: Discord SPA routing (D-66) ─────────
+  // Discord is a SPA — channel switches use history.pushState, not full navigation.
+  // This listener fires for pushState on discord.com, allowing the dispatch pipeline
+  // to detect that the target channel has loaded after a SPA transition.
+  chrome.webNavigation.onHistoryStateUpdated.addListener(
+    (details) => {
+      // Re-use the same handler as tabs.onUpdated — it reads dispatch state from
+      // storage.session and checks if the tab + URL match a pending dispatch.
+      void onTabComplete(details.tabId, { status: 'complete' }, { url: details.url } as chrome.tabs.Tab);
+    },
+    { url: [{ hostSuffix: 'discord.com' }] },
+  );
 });
