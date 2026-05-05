@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Discord Fixture</title></head>
+<body>
+  <div id="app-mount">
+    <div class="chat-xyz123">
+      <!-- Message list container -->
+      <div data-list-id="chat-messages-12345" role="list">
+        <div class="message-abc" data-testid="message-bubble">
+          <span>Existing message</span>
+        </div>
+      </div>
+      <!-- Slate editor -->
+      <div class="textArea-def456">
+        <div
+          role="textbox"
+          aria-label="Message #general"
+          contenteditable="true"
+          data-slate-editor="true"
+          data-slate-node="value"
+          aria-multiline="true"
+        >
+          <div data-slate-node="element">
+            <span data-slate-node="text">
+              <span data-slate-leaf="true">
+                <span data-slate-zero-width="z" data-slate-length="0">&#xFEFF;</span>
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
