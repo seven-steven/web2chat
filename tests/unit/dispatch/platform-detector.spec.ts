@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { adapterRegistry, findAdapter, detectPlatformId } from '@/shared/adapters/registry';
 
 describe('shared/adapters/registry (D-24 / D-26)', () => {
-  it('registry contains mock and openclaw entries', () => {
-    expect(adapterRegistry).toHaveLength(2);
+  it('registry contains mock, openclaw, and discord entries', () => {
+    expect(adapterRegistry).toHaveLength(3);
     expect(adapterRegistry[0]?.id).toBe('mock');
     expect(adapterRegistry[1]?.id).toBe('openclaw');
+    expect(adapterRegistry[2]?.id).toBe('discord');
   });
 
   it('mock entry matches the canonical localhost fixture URL', () => {
@@ -28,7 +29,7 @@ describe('shared/adapters/registry (D-24 / D-26)', () => {
 
   it('detectPlatformId returns "mock" for matching URL, null for non-matching', () => {
     expect(detectPlatformId('http://localhost:4321/mock-platform.html')).toBe('mock');
-    expect(detectPlatformId('https://discord.com/channels/1/2')).toBeNull();
+    expect(detectPlatformId('https://discord.com/channels/1/2')).toBe('discord');
     expect(detectPlatformId('not a url')).toBeNull();
   });
 
