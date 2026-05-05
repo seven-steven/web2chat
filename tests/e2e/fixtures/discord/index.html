@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Discord Stub — E2E</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 16px;
+        background: #313338;
+        color: #dbdee1;
+      }
+      .message-list {
+        min-height: 200px;
+        border: 1px solid #3f4147;
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 16px;
+      }
+      .message {
+        padding: 4px 8px;
+        margin: 4px 0;
+        background: #2b2d31;
+        border-radius: 4px;
+      }
+      .editor-wrapper {
+        border: 1px solid #3f4147;
+        border-radius: 8px;
+        padding: 8px;
+      }
+      [data-slate-editor] {
+        min-height: 40px;
+        outline: none;
+        padding: 8px;
+      }
+      #channel-info {
+        font-size: 12px;
+        color: #949ba4;
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-mount">
+      <div id="channel-info"></div>
+      <div class="chat-xyz123">
+        <!-- Message list container (data-list-id set by script from URL path) -->
+        <div id="message-list" role="list" class="message-list">
+          <div class="message" data-testid="message-bubble">
+            <span>Welcome to the channel!</span>
+          </div>
+        </div>
+        <!-- Slate editor -->
+        <div class="textArea-def456 editor-wrapper">
+          <div
+            id="slate-editor"
+            role="textbox"
+            aria-label="Message #general"
+            contenteditable="true"
+            data-slate-editor="true"
+            data-slate-node="value"
+            aria-multiline="true"
+          >
+            <div data-slate-node="element">
+              <span data-slate-node="text">
+                <span data-slate-leaf="true">
+                  <span data-slate-zero-width="z" data-slate-length="0">&#xFEFF;</span>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        // Extract channelId from URL pathname: /discord/channels/<serverId>/<channelId>
+        var pathname = window.location.pathname;
+        var segments = pathname.split('/').filter(Boolean);
+        // Expected: ['discord', 'channels', serverId, channelId]
+        var channelId = '12345'; // default
+        var channelsIdx = segments.indexOf('channels');
+        if (channelsIdx !== -1 && segments.length > channelsIdx + 2) {
+          channelId = segments[channelsIdx + 2];
+        }
+
+        // Set data-list-id dynamically based on channelId
+        var messageList = document.getElementById('message-list');
+        messageList.setAttribute('data-list-id', 'chat-messages-' + channelId);
+
+        // Display channel info
+        document.getElementById('channel-info').textContent = 'Channel ID: ' + channelId;
+
+        // Slate editor reference
+        var editor = document.getElementById('slate-editor');
+
+        // Paste handler: reads clipboardData text/plain, stores in dataset, updates visible content
+        editor.addEventListener('paste', function (e) {
+          e.preventDefault();
+          var text = e.clipboardData.getData('text/plain');
+          if (text) {
+            editor.dataset.slateValue = text;
+            // Update visible text content (replace Slate zero-width placeholder)
+            var leaf = editor.querySelector('[data-slate-leaf]');
+            if (leaf) {
+              leaf.textContent = text;
+            }
+          }
+        });
+
+        // Enter handler: on Enter (not Shift+Enter), create message bubble and clear editor
+        editor.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            var text = editor.dataset.slateValue || editor.textContent.replace(/﻿/g, '').trim();
+            if (!text) return;
+
+            // Create new message in the list
+            var msg = document.createElement('div');
+            msg.className = 'message';
+            msg.setAttribute('data-testid', 'message-bubble');
+            var span = document.createElement('span');
+            span.textContent = text;
+            msg.appendChild(span);
+            messageList.appendChild(msg);
+
+            // Clear editor
+            editor.dataset.slateValue = '';
+            var leaf = editor.querySelector('[data-slate-leaf]');
+            if (leaf) {
+              leaf.innerHTML = '<span data-slate-zero-width="z" data-slate-length="0">﻿</span>';
+            }
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
