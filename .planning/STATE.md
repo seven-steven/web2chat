@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-last_updated: "2026-05-05T01:59:01.428Z"
+status: Phase 05 Complete
+last_updated: "2026-05-05T02:50:00.000Z"
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 29
-  completed_plans: 25
-  percent: 86
+  completed_plans: 29
+  percent: 100
 ---
 
 # 项目状态
@@ -23,20 +23,20 @@ progress:
 
 ## 当前位置
 
-- Phase：5 / 7（Discord 适配器 — context gathered，ready for planning）
-- Plan：TBD
-- 状态：Phase 5 context captured（D-54..D-72，19 decisions）
-- 最近活动：2026-05-05 — Phase 5 discuss-phase 完成（消息格式化+截断、Discord escape、ToS 声明）
+- Phase：5 / 7（Discord 适配器 — 全部 4 plan 执行完毕）
+- Plan：4/4 complete
+- 状态：Phase 5 全部执行完毕，待人工 E2E 验证
+- 最近活动：2026-05-05 — Plan 05-04 E2E stub + specs（190 unit tests green, build OK）
 
-进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (gap closure ✓, E2E pending)
+进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (gap closure ✓, E2E pending) → [██████████] Phase 5 (E2E pending)
 
 ## 性能指标
 
 **速度：**
 
-- 已完成 plan 总数：19
+- 已完成 plan 总数：29
 - 平均时长：~6.3m
-- 累计执行时长：约 2.0 小时
+- 累计执行时长：约 2.5 小时
 
 **按 Phase：**
 
@@ -45,12 +45,13 @@ progress:
 | 1     | 4     | 42m   | 10.5m    |
 | 2     | 7     | ~40m  | ~5.7m    |
 | 3     | 8     | ~49m  | ~6.1m    |
-| 4     | 4     | ~27m  | ~6.8m    |
+| 4     | 6     | ~27m  | ~4.5m   |
+| 5     | 4     | ~30m  | ~7.5m   |
 
 **近期趋势：**
 
-- 最近 5 个 plan：04-04 (10m), 04-03 (4m), 04-02 (8m), 04-01 (5m), 03-08 (5m)
-- 趋势：Phase 4 plan 平均 ~6.8m；04-04 最重（E2E fixture + 3 specs + verify-manifest fix）耗时 10m
+- 最近 5 个 plan：05-04 (7m), 05-03 (8m), 05-02 (8m), 05-01 (7m), 04-06 (5m)
+- 趋势：Phase 5 plan 平均 ~7.5m；05-04（E2E fixture + 3 specs + checkpoint）耗时 7m
 
 _每完成一个 plan 后更新_
 
@@ -111,6 +112,7 @@ _每完成一个 plan 后更新_
 - Phase 2 closure 待人工 E2E 验证：`pnpm build && pnpm test:e2e -- capture.spec.ts`
 - Phase 3 closure 待人工 E2E 验证：`pnpm wxt build --mode development && pnpm test:e2e`（8 specs：dispatch 5 + draft-recovery 1 + options-reset 2）
 - Phase 4 closure 待人工 E2E 验证：`pnpm wxt build --mode development && pnpm test:e2e -- openclaw`（3 specs：dispatch + offline + permission）
+- Phase 5 closure 待人工 E2E 验证：`pnpm wxt build --mode development && pnpm test:e2e -- discord`（5 specs：dispatch + rate-limit + login + channel-mismatch + sequential）
 
 ### 阻塞 / 关注点
 
@@ -127,6 +129,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-05-05（Phase 5 discuss-phase — context gathered，D-54..D-72）
-- 停在哪里：Phase 5 context gathered，ready for plan-phase
-- Resume 文件：`.planning/phases/05-discord/05-CONTEXT.md`
+- 上次会话：2026-05-05（Phase 5 执行完毕 — 4/4 plans, 190 unit tests green）
+- 停在哪里：Phase 5 全部执行完毕，pending 人工 E2E 验证
+- Resume 文件：`.planning/phases/05-discord/05-04-SUMMARY.md`
