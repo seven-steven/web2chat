@@ -183,7 +183,7 @@ Plans:
 4. 限流守卫会在 5 秒内拒绝向同一 `channel_id` 的第二次投递，错误码为 `RATE_LIMITED` 并附带经 i18n 本地化的人性化文案；popup 上有一条永久性脚注链接到 Discord ToS 风险声明。
 5. "未登录" 路径（cookie 已清除）会检测到 `/login?redirect_to=...` 跳转并 surfacing `NOT_LOGGED_IN`，而不是让 popup 卡住；README + popup 脚注都以 zh_CN 与 en 引用 Discord ToS 风险。
 
-**Plans**：4 plans（3 waves）
+**Plans**：5 plans（4 waves）
 
 Plans:
 
@@ -196,6 +196,9 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 — depends on 05-02 + 05-03)*
 - [x] 05-04-PLAN.md — E2E: Discord stub fixture + Playwright specs (dispatch + login + channel-switch) + human verification checkpoint (ADD-01, ADD-03, ADD-04, ADD-05, ADD-06, ADD-07, ADD-09) ✓
+
+**Wave 4** *(gap closure — UAT Test 1/2/5 failures)*
+- [ ] 05-05-PLAN.md — Fix paste ISOLATED->MAIN world bridge + Discord icon SVG + login timeout race (ADD-01, ADD-03, ADD-06, ADD-08)
 
 **UI hint**：no
 
