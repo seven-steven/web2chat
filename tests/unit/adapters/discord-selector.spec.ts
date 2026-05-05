@@ -8,7 +8,7 @@ const fixtureHtml = readFileSync(
   'utf-8',
 );
 const bodyMatch = fixtureHtml.match(/<body>([\s\S]*)<\/body>/);
-const fixtureBody = bodyMatch ? bodyMatch[1].trim() : '';
+const fixtureBody = bodyMatch?.[1]?.trim() ?? '';
 
 // Three-tier ARIA-first editor selector (mirrors discord.content.ts logic)
 function findEditor(): HTMLElement | null {
