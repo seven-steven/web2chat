@@ -6,7 +6,7 @@ function validManifest(overrides: Partial<Manifest> = {}): Manifest {
     name: '__MSG_extension_name__',
     description: '__MSG_extension_description__',
     default_locale: 'en',
-    permissions: ['activeTab', 'alarms', 'scripting', 'storage'],
+    permissions: ['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation'],
     host_permissions: ['https://discord.com/*'],
     optional_host_permissions: ['<all_urls>'],
     action: { default_title: '__MSG_action_default_title__' },
