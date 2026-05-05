@@ -337,6 +337,22 @@ export function SendForm(props: SendFormProps) {
         </button>
       </div>
 
+      {/* Discord ToS warning footnote (D-59, D-61) */}
+      {platformId === 'discord' && (
+        <p class="mt-2 text-xs text-amber-600 dark:text-amber-400" data-testid="discord-tos-footnote">
+          {t('discord_tos_warning')}{' '}
+          <a
+            href="https://discord.com/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="underline ml-0.5"
+            data-testid="discord-tos-link"
+          >
+            {t('discord_tos_details')}
+          </a>
+        </p>
+      )}
+
       {/* Divider before Phase 2 capture preview region */}
       <hr class="border-slate-200 dark:border-slate-700" />
 
