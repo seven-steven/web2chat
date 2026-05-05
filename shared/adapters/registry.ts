@@ -61,7 +61,24 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     hostMatches: [], // dynamic permission — no static host_permissions
     iconKey: 'platform_icon_openclaw',
   },
-  // Phase 5 will append { id: 'discord', ... }
+  {
+    id: 'discord',
+    match: (url: string): boolean => {
+      try {
+        const u = new URL(url);
+        return (
+          u.hostname === 'discord.com' &&
+          u.pathname.startsWith('/channels/') &&
+          !u.pathname.startsWith('/channels/@me/')
+        );
+      } catch {
+        return false;
+      }
+    },
+    scriptFile: 'content-scripts/discord.js',
+    hostMatches: ['https://discord.com/*'],
+    iconKey: 'platform_icon_discord',
+  },
 ] as const;
 
 /**

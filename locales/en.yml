@@ -247,3 +247,9 @@ options_reserved_language_label:
   message: 'Language'
 options_reserved_placeholder_body:
   message: 'Coming in a later phase —'
+
+# Group J — Discord ToS (D-59, D-61)
+discord_tos_warning:
+  message: 'Discord dispatch uses DOM injection and may violate Discord Terms of Service.'
+discord_tos_details:
+  message: 'Details'

@@ -63,7 +63,7 @@ export function assertManifest(manifest: Manifest, errors: string[]): void {
   // ─── Phase 1 invariants ─────────────────────────────────────────────────
 
   try {
-    expectSet('permissions', manifest.permissions, ['activeTab', 'alarms', 'scripting', 'storage']);
+    expectSet('permissions', manifest.permissions, ['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation']);
   } catch (e) {
     errors.push((e as Error).message);
   }

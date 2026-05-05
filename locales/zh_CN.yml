@@ -247,3 +247,9 @@ options_reserved_language_label:
   message: '语言'
 options_reserved_placeholder_body:
   message: '后续版本支持 —'
+
+# Group J — Discord ToS (D-59, D-61)
+discord_tos_warning:
+  message: 'Discord 投递使用 DOM 注入，可能违反 Discord 服务条款。'
+discord_tos_details:
+  message: '详情'

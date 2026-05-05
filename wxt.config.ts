@@ -14,8 +14,8 @@ export default defineConfig({
     // the locked permission scope.
     permissions:
       mode === 'development'
-        ? ['activeTab', 'alarms', 'scripting', 'storage', 'tabs']
-        : ['activeTab', 'alarms', 'scripting', 'storage'],
+        ? ['activeTab', 'alarms', 'scripting', 'storage', 'tabs', 'webNavigation']
+        : ['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation'],
     // Production stays at the locked discord-only host scope; OpenClaw and any
     // user-supplied origin go through optional_host_permissions runtime grant.
     // Dev mode adds <all_urls> so Playwright E2E can executeScript into
