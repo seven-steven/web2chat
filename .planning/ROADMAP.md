@@ -12,10 +12,10 @@ Web2Chat 是一个 Chrome MV3 扩展，用于抓取结构化的页面元数据 +
 - 小数 phase（例如 2.1）：保留给执行过程中发现的紧急插入项
 
 - [x] **Phase 1: 扩展骨架 (Foundation)** ✓ Complete (2026-04-29) - 基于 WXT 的 MV3 脚手架，从第一天起就接入类型化消息、存储 schema 与 i18n
-- [ ] **Phase 2: 抓取流水线** - 点击进入 popup 的元数据抓取 + Readability 内容抽取与 sanitisation
+- [x] **Phase 2: 抓取流水线** ✓ Complete (2026-04-30) - 点击进入 popup 的元数据抓取 + Readability 内容抽取与 sanitisation
 - [x] **Phase 3: 投递核心 + Popup UI** ✓ Executed (2026-05-01) - 8/8 plans, 109 单元测试 + 8 E2E specs (pending human verification)
 - [x] **Phase 4: OpenClaw 适配器** ✓ Executed (2026-05-03) - 6/6 plans (4 original + 2 gap closure), 152 单元测试 + 3 E2E specs (pending human verification)
-- [ ] **Phase 5: Discord 适配器** - 兼容 Slate/Lexical 的粘贴注入、SPA 路由处理、ToS 感知的限流器
+- [ ] **Phase 5: Discord 适配器** - 4/4 plans ready, 待执行 — 兼容 Slate/Lexical 的粘贴注入、SPA 路由处理、ToS 感知的限流器
 - [ ] **Phase 6: i18n 加固 + 打磨** - 运行时切换语言、ESLint 禁止硬编码字符串、设置面板、错误信息人性化
 - [ ] **Phase 7: 分发上架** - Web Store 就绪的 zip、隐私政策、为 v2 预留的 optional_host_permissions、双语 README
 
@@ -117,20 +117,20 @@ Plans:
 Plans:
 
 **Wave 1** *(并行 — 无 inter-dependencies; 三个独立切面)*
-- [ ] 03-01-PLAN.md — Messaging foundation: ErrorCode + ProtocolMap split + IMAdapter types + Phase 3 i18n keys (DSP-01..DSP-04, DSP-07/08, STG-03)
-- [ ] 03-02-PLAN.md — Storage repos: 5 typed items + history/binding/popupDraft/dispatch business methods (DSP-02..DSP-04, DSP-06, DSP-09, STG-03)
-- [ ] 03-03-PLAN.md — Manifest: commands._execute_action + verify-manifest extension + DEVIATIONS.md (D-34 5s→30s) (DSP-08, DSP-10)
+- [x] 03-01-PLAN.md — Messaging foundation: ErrorCode + ProtocolMap split + IMAdapter types + Phase 3 i18n keys (DSP-01..DSP-04, DSP-07/08, STG-03) ✓
+- [x] 03-02-PLAN.md — Storage repos: 5 typed items + history/binding/popupDraft/dispatch business methods (DSP-02..DSP-04, DSP-06, DSP-09, STG-03) ✓
+- [x] 03-03-PLAN.md — Manifest: commands._execute_action + verify-manifest extension + DEVIATIONS.md (D-34 5s→30s) (DSP-08, DSP-10) ✓
 
 **Wave 2** *(并行 — depends on Wave 1; 三个独立切面)*
-- [ ] 03-04-PLAN.md — SW dispatch pipeline + adapter-registry + mock-platform stub + 6 RPC handlers + 2 chrome.* listeners on background.ts (DSP-01..DSP-09, STG-03)
-- [ ] 03-05-PLAN.md — Popup component primitives: PlatformIcon + Combobox + InProgressView + ErrorBanner (DSP-01..DSP-03, DSP-07/08)
-- [ ] 03-07-PLAN.md — Options page entrypoint + ResetSection + reusable ConfirmDialog modal (STG-03)
+- [x] 03-04-PLAN.md — SW dispatch pipeline + adapter-registry + mock-platform stub + 6 RPC handlers + 2 chrome.* listeners on background.ts (DSP-01..DSP-09, STG-03) ✓
+- [x] 03-05-PLAN.md — Popup component primitives: PlatformIcon + Combobox + InProgressView + ErrorBanner (DSP-01..DSP-03, DSP-07/08) ✓
+- [x] 03-07-PLAN.md — Options page entrypoint + ResetSection + reusable ConfirmDialog modal (STG-03) ✓
 
 **Wave 3** *(blocked on Wave 2 — depends on 04 + 05)*
-- [ ] 03-06-PLAN.md — Popup App.tsx 6-state machine + SendForm + PopupChrome integration (DSP-01..DSP-09)
+- [x] 03-06-PLAN.md — Popup App.tsx 6-state machine + SendForm + PopupChrome integration (DSP-01..DSP-09) ✓
 
 **Wave 4** *(blocked on Wave 3 — depends on 06 + 07)*
-- [ ] 03-08-PLAN.md — E2E specs: dispatch (5 tests) + draft-recovery + options-reset + mock-platform.html fixture (DSP-01, DSP-04..DSP-09, STG-03)
+- [x] 03-08-PLAN.md — E2E specs: dispatch (5 tests) + draft-recovery + options-reset + mock-platform.html fixture (DSP-01, DSP-04..DSP-09, STG-03) ✓
 
 **UI hint**：yes
 
@@ -234,15 +234,15 @@ Plans:
 **执行顺序：**
 Phase 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7。Phase 6 仅以 Phase 1 为硬依赖，但 i18n 审计需要 Phase 3 的 UI 表面 + Phase 4–5 的适配器错误信息齐备才能穷尽，因此安排在 Phase 5 之后。理论上只有当 `IMAdapter` 契约在 Phase 3 末冻结时，Phase 4 与 Phase 5 才能并行 — 推荐的顺序保持串行，以便吸收来自 OpenClaw 经验对契约的精化。
 
-| Phase                  | Plans Complete | Status      | Completed |
-| ---------------------- | -------------- | ----------- | --------- |
+| Phase                  | Plans Complete | Status      | Completed  |
+| ---------------------- | -------------- | ----------- | ---------- |
 | 1. 扩展骨架            | 4/4            | Complete    | 2026-04-29 |
-| 2. 抓取流水线          | 7/7            | In progress | -         |
-| 3. 投递核心 + Popup UI | 0/8            | Not started | -         |
-| 4. OpenClaw 适配器     | 4/6            | Gap closure | -         |
-| 5. Discord 适配器      | 0/4            | Not started | -         |
-| 6. i18n 加固 + 打磨    | 0/TBD          | Not started | -         |
-| 7. 分发上架            | 0/TBD          | Not started | -         |
+| 2. 抓取流水线          | 7/7            | Complete    | 2026-04-30 |
+| 3. 投递核心 + Popup UI | 8/8            | Complete    | 2026-05-01 |
+| 4. OpenClaw 适配器     | 6/6            | Complete    | 2026-05-03 |
+| 5. Discord 适配器      | 0/4            | Planning    | -          |
+| 6. i18n 加固 + 打磨    | 0/TBD          | Not started | -          |
+| 7. 分发上架            | 0/TBD          | Not started | -          |
 
 ---
 
