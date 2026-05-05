@@ -253,7 +253,7 @@ async function advanceToAdapterInjection(
         | 'EXECUTE_SCRIPT_FAILED'
         | 'OPENCLAW_OFFLINE'
         | 'OPENCLAW_PERMISSION_DENIED',
-      response.message ?? 'mock',
+      response.message ?? 'Adapter returned an unknown error',
       response.retriable ?? false,
     );
   }
