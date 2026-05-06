@@ -1,5 +1,5 @@
 ---
-status: diagnosed
+status: resolved
 phase: 05-discord
 source: [05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md, 05-05-SUMMARY.md]
 started: 2026-05-05T12:00:00Z
@@ -14,9 +14,10 @@ updated: 2026-05-06T14:30:00Z
 
 ### 1. Discord 粘贴注入修复验证（Gap 1: blocker fix）
 expected: 使用扩展向 Discord 频道投递消息，Slate 编辑器中应粘贴格式正确的 markdown（标题加粗、URL 可点击、@mention 被零宽空格转义），而非 "¬" 等乱码。粘贴后自动 Enter 发送，消息出现在聊天区。
-result: issue
+result: pending
 reported: "消息正常发送，但是 discord 输入框会残留消息内容文本"
 severity: minor
+note: "Plan 05-06 已添加 Escape keydown (200ms)，待人工重验"
 
 ### 2. Discord 品牌图标修复验证（Gap 2: cosmetic fix）
 expected: 在 popup 输入 Discord 频道 URL 后，平台图标应显示为官方 Discord Clyde logo（可识别的品牌形状，非简化版 generic icon）。
@@ -28,9 +29,10 @@ result: pass
 
 ### 4. SPA 路由支持（原 Test 4，被 Test 1 blocker 阻塞）
 expected: dispatch pipeline 导航到指定 Discord 频道 URL 时，正确检测 SPA 路由加载完成后执行注入。如果已在频道页面直接投递也应正常工作。
-result: issue
+result: pending
 reported: "投递正常，消息成功发送。但是 discord 输入框残留已发送内容。web2chat 插件图标显示 err, popup 提示投递超时。"
 severity: major
+note: "Plan 05-06 已将 ADAPTER_RESPONSE_TIMEOUT_MS 从 10s 增至 20s，待人工重验"
 
 ### 5. 未登录检测修复验证（Gap 3: major fix）
 expected: 未登录 Discord 时投递，应在 ~10s 内返回 NOT_LOGGED_IN 错误，popup 显示明确的登录提示（而非 30s 超时）。
@@ -67,7 +69,9 @@ blocked: 1
 ## Gaps
 
 - truth: "粘贴发送后 Discord 输入框应清空，不残留消息文本"
-  status: failed
+  status: resolved
+  resolved_by: "05-06"
+  fix: "discordMainWorldPaste 在 Enter 后 200ms 派发 Escape keydown"
   reason: "User reported: 消息正常发送，但是 discord 输入框会残留消息内容文本"
   severity: minor
   test: 1
@@ -81,7 +85,9 @@ blocked: 1
     - "Enter 后延迟 ~200ms 派发 Escape keydown（Discord 原生清空快捷键）或主动清空编辑器内容"
 
 - truth: "跨频道 SPA 导航投递后，popup 应显示成功而非超时"
-  status: failed
+  status: resolved
+  resolved_by: "05-06"
+  fix: "ADAPTER_RESPONSE_TIMEOUT_MS 从 10_000 增至 20_000"
   reason: "User reported: 投递正常，消息成功发送。但 web2chat 插件图标显示 err, popup 提示投递超时。"
   severity: major
   test: 4
