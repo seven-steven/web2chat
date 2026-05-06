@@ -1,5 +1,6 @@
 import { defineConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
+import { yamlLocalePlugin } from './vite-plugins/yaml-locale';
 
 export default defineConfig({
   manifest: ({ mode }) => ({
@@ -51,6 +52,6 @@ export default defineConfig({
   }),
   modules: ['@wxt-dev/i18n/module'],
   vite: () => ({
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), yamlLocalePlugin()],
   }),
 });
