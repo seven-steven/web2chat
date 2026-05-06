@@ -11,7 +11,22 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 type VoidFn = () => void;
 
-// Minimal mirror of the MAIN world paste function (post-gap-fix version)
+// Minimal mirror of the MAIN world paste function (post-UAT-regression-fix version).
+//
+// Why beforeinput[deleteContent] replaces Escape (UAT regression debug session
+// `discord-uat-regression`):
+//   - Prior fix used `KeyboardEvent('keydown', { key: 'Escape' })` 200ms after Enter
+//     to force Slate to clear residual text. First-dispatch worked.
+//   - Live UAT showed the second consecutive dispatch (no page refresh) left
+//     residual text AND timed out — Escape's side-effects (collapse Slate
+//     selection, blur composer, close UI panels) corrupted Slate's internal
+//     editor state across dispatches. Page refresh re-mounted React/Slate and
+//     fixed it.
+//   - beforeinput[deleteContent] routes through Slate's native editing pipeline
+//     (the same path Backspace/Delete take) — model and DOM stay in sync,
+//     no cross-dispatch state pollution.
+//   - We additionally pre-clean residual text BEFORE paste so any prior failure
+//     is self-recovering.
 async function discordMainWorldPasteMirror(
   text: string,
   deps?: {
@@ -41,6 +56,20 @@ async function discordMainWorldPasteMirror(
   // Focus
   editor.focus();
 
+  // Defensive pre-paste cleanup: if the editor still holds residual text from a
+  // prior (failed) dispatch, clear it via beforeinput[deleteContent] BEFORE pasting
+  // new content. This routes through Slate's native editing pipeline, keeping
+  // model and DOM in sync.
+  if ((editor.textContent ?? '').length > 0) {
+    editor.dispatchEvent(
+      new InputEvent('beforeinput', {
+        inputType: 'deleteContent',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  }
+
   // Paste event
   const dt = new DataTransfer();
   dt.setData('text/plain', text);
@@ -61,15 +90,21 @@ async function discordMainWorldPasteMirror(
     }),
   );
 
-  // Gap fix: wait 200ms then dispatch Escape to trigger Discord native clear
+  // Post-Enter clear: wait 200ms then dispatch beforeinput[deleteContent] ONLY if
+  // residual text is still present. Unlike the previous Escape approach (which
+  // polluted Slate state across dispatches), beforeinput goes through Slate's
+  // native editing pipeline; if Slate already cleared on Enter, textContent is
+  // empty and we skip the dispatch (no-op).
   await new Promise<void>((resolve) => st(resolve, 200));
-  editor.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      key: 'Escape',
-      bubbles: true,
-      cancelable: true,
-    }),
-  );
+  if ((editor.textContent ?? '').length > 0) {
+    editor.dispatchEvent(
+      new InputEvent('beforeinput', {
+        inputType: 'deleteContent',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  }
 
   return true;
 }
@@ -82,9 +117,9 @@ function createEditor(): HTMLElement {
   return el;
 }
 
-describe('discordMainWorldPaste (gap fix: Escape after Enter)', () => {
+describe('discordMainWorldPaste (gap fix: post-Enter clear via beforeinput)', () => {
   let editor: HTMLElement;
-  let events: { type: string; key?: string; eventType: string }[];
+  let events: { type: string; key?: string; inputType?: string; eventType: string }[];
 
   beforeEach(() => {
     events = [];
@@ -96,6 +131,10 @@ describe('discordMainWorldPaste (gap fix: Escape after Enter)', () => {
     editor.addEventListener('paste', () => {
       events.push({ type: 'paste', eventType: 'paste' });
     });
+    editor.addEventListener('beforeinput', (e: Event) => {
+      const ie = e as InputEvent;
+      events.push({ type: 'beforeinput', inputType: ie.inputType, eventType: 'beforeinput' });
+    });
     // Stub focus
     vi.spyOn(editor, 'focus').mockImplementation(() => {});
   });
@@ -104,13 +143,105 @@ describe('discordMainWorldPaste (gap fix: Escape after Enter)', () => {
     vi.restoreAllMocks();
   });
 
-  it('dispatches Escape keydown after 200ms delay following Enter', async () => {
-    let timeoutCb: VoidFn | null = null;
+  it('dispatches paste, Enter, then beforeinput[deleteContent] on first dispatch (clean editor)', async () => {
+    // Editor starts empty (textContent === '')
+    const mockSetTimeout = (fn: VoidFn, _ms: number) => {
+      fn();
+    };
+
+    // Stub textContent: starts empty, stays empty (Slate cleared synchronously)
+    Object.defineProperty(editor, 'textContent', {
+      get: () => '',
+      configurable: true,
+    });
+
+    await discordMainWorldPasteMirror('hello', {
+      activeElement: editor,
+      querySelector: () => null,
+      setTimeout: mockSetTimeout,
+    });
+
+    // Order on clean editor + clean post-Enter: paste, Enter, NO beforeinput
+    // (beforeinput is gated on textContent.length > 0)
+    expect(events).toEqual([
+      { type: 'paste', eventType: 'paste' },
+      { type: 'keydown', key: 'Enter', eventType: 'keydown' },
+    ]);
+  });
+
+  it('dispatches a defensive beforeinput[deleteContent] before paste when editor has residual text (REPRODUCES UAT bug 2)', async () => {
+    // This is the critical multi-dispatch scenario: the first dispatch left
+    // residual text in the editor (Slate state corruption from prior synthetic
+    // events). On the second dispatch, the paste handler MUST clean residual
+    // text BEFORE pasting; otherwise the new text appends to old.
+    const mockSetTimeout = (fn: VoidFn, _ms: number) => {
+      fn();
+    };
+
+    // Stub textContent: editor has residual text from a prior dispatch.
+    Object.defineProperty(editor, 'textContent', {
+      get: () => 'residual from prior dispatch',
+      configurable: true,
+    });
+
+    await discordMainWorldPasteMirror('new message', {
+      activeElement: editor,
+      querySelector: () => null,
+      setTimeout: mockSetTimeout,
+    });
+
+    // Pre-paste defensive cleanup MUST fire because residual text was present.
+    // Order: beforeinput[deleteContent] -> paste -> Enter -> beforeinput[deleteContent] (post-Enter, residual still present in stub).
+    expect(events[0]).toEqual({
+      type: 'beforeinput',
+      inputType: 'deleteContent',
+      eventType: 'beforeinput',
+    });
+    expect(events[1]).toEqual({ type: 'paste', eventType: 'paste' });
+    expect(events[2]).toEqual({ type: 'keydown', key: 'Enter', eventType: 'keydown' });
+    expect(events[3]).toEqual({
+      type: 'beforeinput',
+      inputType: 'deleteContent',
+      eventType: 'beforeinput',
+    });
+  });
+
+  it('does NOT dispatch Escape keydown (Escape side-effect was the UAT regression cause)', async () => {
+    // The 05-06 fix used a 200ms delayed Escape keydown to force Slate to clear.
+    // Live UAT showed that Escape's side-effects (collapse selection, close
+    // panels) corrupted Slate state across dispatches. The fix is to use
+    // beforeinput[deleteContent] instead — same intent, no side-effects.
+    const mockSetTimeout = (fn: VoidFn, _ms: number) => {
+      fn();
+    };
+
+    Object.defineProperty(editor, 'textContent', {
+      get: () => 'still here', // simulate Slate didn't clear after Enter
+      configurable: true,
+    });
+
+    await discordMainWorldPasteMirror('hello', {
+      activeElement: editor,
+      querySelector: () => null,
+      setTimeout: mockSetTimeout,
+    });
+
+    // No Escape keydown anywhere in the event stream.
+    expect(events.some((e) => e.type === 'keydown' && e.key === 'Escape')).toBe(false);
+  });
+
+  it('schedules the post-Enter clear on a 200ms timer', async () => {
     let timeoutMs = 0;
+    let timeoutCb: VoidFn | null = null;
     const mockSetTimeout = (fn: VoidFn, ms: number) => {
       timeoutCb = fn;
       timeoutMs = ms;
     };
+
+    Object.defineProperty(editor, 'textContent', {
+      get: () => '',
+      configurable: true,
+    });
 
     const result = discordMainWorldPasteMirror('hello', {
       activeElement: editor,
@@ -118,24 +249,11 @@ describe('discordMainWorldPaste (gap fix: Escape after Enter)', () => {
       setTimeout: mockSetTimeout,
     });
 
-    // Before the timeout fires: paste + Enter already dispatched, Escape not yet
-    expect(events).toEqual([
-      { type: 'paste', eventType: 'paste' },
-      { type: 'keydown', key: 'Enter', eventType: 'keydown' },
-    ]);
-    // Escape not dispatched yet
-    expect(events.some((e) => e.key === 'Escape')).toBe(false);
-
-    // The timeout was scheduled with 200ms
     expect(timeoutMs).toBe(200);
     expect(timeoutCb).not.toBeNull();
 
-    // Fire the timeout
-    await timeoutCb!();
-
-    // Now Escape should be dispatched
-    expect(events[2]).toEqual({ type: 'keydown', key: 'Escape', eventType: 'keydown' });
-
+    // Fire the timeout to let the promise resolve
+    timeoutCb!();
     const finalResult = await result;
     expect(finalResult).toBe(true);
   });
@@ -149,25 +267,5 @@ describe('discordMainWorldPaste (gap fix: Escape after Enter)', () => {
 
     expect(result).toBe(false);
     expect(events).toEqual([]);
-  });
-
-  it('dispatches paste, Enter, and Escape on the same editor in order', async () => {
-    // Immediately resolve the timeout
-    const mockSetTimeout = (fn: VoidFn, _ms: number) => {
-      fn();
-    };
-
-    await discordMainWorldPasteMirror('hello', {
-      activeElement: editor,
-      querySelector: () => null,
-      setTimeout: mockSetTimeout,
-    });
-
-    // Order: paste, Enter, Escape
-    expect(events).toEqual([
-      { type: 'paste', eventType: 'paste' },
-      { type: 'keydown', key: 'Enter', eventType: 'keydown' },
-      { type: 'keydown', key: 'Escape', eventType: 'keydown' },
-    ]);
   });
 });

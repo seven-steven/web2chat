@@ -53,6 +53,22 @@ async function discordMainWorldPaste(text: string): Promise<boolean> {
   if (!editor) return false;
 
   editor.focus();
+
+  // Defensive pre-paste cleanup (UAT regression fix, debug session
+  // discord-uat-regression): if the editor still holds residual text from a
+  // prior (failed) dispatch, clear it via beforeinput[deleteContent] BEFORE
+  // pasting new content. Routes through Slate's native editing pipeline so
+  // model and DOM stay in sync; idempotent on already-empty editors.
+  if ((editor.textContent ?? '').length > 0) {
+    editor.dispatchEvent(
+      new InputEvent('beforeinput', {
+        inputType: 'deleteContent',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  }
+
   const dt = new DataTransfer();
   dt.setData('text/plain', text);
   editor.dispatchEvent(
@@ -70,17 +86,25 @@ async function discordMainWorldPaste(text: string): Promise<boolean> {
     }),
   );
 
-  // Gap fix (05-06): wait 200ms then dispatch Escape to trigger Discord native clear.
-  // discordMainWorldPaste runs in MAIN world via executeScript, which awaits Promise resolution,
-  // so this delay does NOT cause Port message ordering issues.
+  // Post-Enter clear (UAT regression fix, replaces 05-06 Escape-keydown):
+  // wait 200ms then dispatch beforeinput[deleteContent] ONLY if residual text
+  // is still present. The previous Escape approach polluted Slate's internal
+  // editor state across dispatches (collapsed selection, blurred composer);
+  // the next dispatch then failed silently. beforeinput[deleteContent] uses
+  // the same path Backspace/Delete take, so it doesn't desync Slate.
+  // discordMainWorldPaste runs in MAIN world via executeScript which awaits
+  // Promise resolution, so this delay does NOT cause Port message ordering
+  // issues.
   await new Promise<void>((resolve) => setTimeout(resolve, 200));
-  editor.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      key: 'Escape',
-      bubbles: true,
-      cancelable: true,
-    }),
-  );
+  if ((editor.textContent ?? '').length > 0) {
+    editor.dispatchEvent(
+      new InputEvent('beforeinput', {
+        inputType: 'deleteContent',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  }
   return true;
 }
 
