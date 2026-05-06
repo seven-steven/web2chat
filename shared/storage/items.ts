@@ -135,3 +135,12 @@ export const pendingDispatchItem = storage.defineItem<DispatchStartInput | null>
   'local:pendingDispatch',
   { fallback: null },
 );
+
+// ─── Phase 6 i18n locale storage (D-76) ────────────────────────────────────
+
+export type LocaleChoice = 'en' | 'zh_CN' | null;
+
+/** D-76: User-explicit locale override. null = follow browser (navigator.language). */
+export const localeItem = storage.defineItem<LocaleChoice>('local:locale', {
+  fallback: null,
+});
