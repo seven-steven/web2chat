@@ -1,8 +1,8 @@
 ---
-status: investigating
+status: resolved
 trigger: "Discord 跨频道 SPA 导航投递成功但 popup 误报投递超时"
 created: 2026-05-06T10:00:00Z
-updated: 2026-05-06T10:30:00Z
+updated: 2026-05-06T17:10:00Z
 ---
 
 ## Current Focus
@@ -77,7 +77,7 @@ started: 跨频道 SPA 导航投递场景发现
 
 ## Resolution
 
-root_cause:
-fix:
-verification:
-files_changed: []
+root_cause: dispatch-pipeline 每次 dispatch 调用 chrome.scripting.executeScript 注入 discord.js，content script main() 每次执行注册新的 onMessage listener 不清理旧的。第 N 次 dispatch 累积 N 个 listener，N 个并发 handleDispatch 竞争同一编辑器导致时序混乱。第一次 dispatch (1 listener) 正常，第二次 (2 listener) 导致两个并发 paste+Enter 交错，waitForNewMessage 超时返回 TIMEOUT。
+fix: discord.content.ts main() 顶部加 globalThis.__web2chat_discord_registered 守卫，防止重复注册 listener。同时 ADAPTER_RESPONSE_TIMEOUT_MS 从 10s 增至 20s（保留）。
+verification: 用户 UAT 通过 — 连续多次 dispatch 不刷新，popup 均显示成功，input 均清空。
+files_changed: [entrypoints/discord.content.ts, entrypoints/openclaw.content.ts, entrypoints/mock-platform.content.ts, background/dispatch-pipeline.ts]

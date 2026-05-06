@@ -1,8 +1,8 @@
 ---
-status: investigating
+status: resolved
 trigger: "Discord投递后输入框残留消息文本"
 created: 2026-05-06T00:00:00Z
-updated: 2026-05-06T00:00:00Z
+updated: 2026-05-06T17:10:00Z
 ---
 
 ## Current Focus
@@ -41,7 +41,7 @@ started: Since the Port-based MAIN world paste implementation was introduced (co
 
 ## Resolution
 
-root_cause: discordMainWorldPaste (background.ts:40-73) dispatches a synthetic paste event followed by a synthetic Enter keydown, but Discord's Slate editor does not synchronously clear its document content on synthetic Enter — the text remains in the editor after the send completes. No post-send editor clearing logic exists anywhere in the adapter flow.
-fix: TBD
-verification: TBD
-files_changed: []
+root_cause: 同 discord-spa-dispatch-timeout.md — dispatch-pipeline 每次 dispatch 重新注入 content script，累积 N 个 onMessage listener，N 个并发 handleDispatch 导致 paste+Enter 交错。Discord Slate 在并发 paste 下无法正确清空编辑器。
+fix: discord.content.ts main() 顶部加 globalThis.__web2chat_discord_registered 守卫。同时 discordMainWorldPaste 改用 beforeinput[deleteContent] 替代 Escape keydown（无 UI 副作用）。
+verification: 用户 UAT 通过 — 连续多次 dispatch 不刷新，input 均清空。
+files_changed: [entrypoints/discord.content.ts, entrypoints/background.ts]
