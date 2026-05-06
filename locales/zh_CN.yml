@@ -7,13 +7,6 @@ extension_description:
 action_default_title:
   message: 'Web2Chat — 投递当前页面'
 
-popup_hello:
-  message: '你好，世界 ×$COUNT$'
-  placeholders:
-    count:
-      content: '$1'
-      example: '5'
-
 capture_loading_label:
   message: '正在抓取页面…'
 
@@ -243,13 +236,19 @@ options_origins_confirm_cancel:
   message: '取消'
 options_origins_confirm_action:
   message: '移除'
-options_reserved_language_label:
-  message: '语言'
-options_reserved_placeholder_body:
-  message: '后续版本支持 —'
 
 # Group J — Discord ToS (D-59, D-61)
 discord_tos_warning:
   message: 'Discord 投递使用 DOM 注入，可能违反 Discord 服务条款。'
 discord_tos_details:
   message: '详情'
+
+# Group K — Options page Language section (Phase 6, I18N-02)
+options_language_heading:
+  message: '语言'
+options_language_explainer:
+  message: '选择扩展的显示语言。'
+options_language_label:
+  message: '语言'
+options_language_auto:
+  message: '自动（跟随浏览器）'

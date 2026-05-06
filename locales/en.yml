@@ -7,13 +7,6 @@ extension_description:
 action_default_title:
   message: 'Web2Chat — clip current page'
 
-popup_hello:
-  message: 'Hello, world (×$COUNT$)'
-  placeholders:
-    count:
-      content: '$1'
-      example: '5'
-
 capture_loading_label:
   message: 'Capturing page…'
 
@@ -243,13 +236,19 @@ options_origins_confirm_cancel:
   message: 'Cancel'
 options_origins_confirm_action:
   message: 'Remove'
-options_reserved_language_label:
-  message: 'Language'
-options_reserved_placeholder_body:
-  message: 'Coming in a later phase —'
 
 # Group J — Discord ToS (D-59, D-61)
 discord_tos_warning:
   message: 'Discord dispatch uses DOM injection and may violate Discord Terms of Service.'
 discord_tos_details:
   message: 'Details'
+
+# Group K — Options page Language section (Phase 6, I18N-02)
+options_language_heading:
+  message: 'Language'
+options_language_explainer:
+  message: 'Choose the display language for this extension.'
+options_language_label:
+  message: 'Language'
+options_language_auto:
+  message: 'Auto (follow browser)'
