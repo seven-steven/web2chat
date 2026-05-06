@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Phase 05 Complete
-last_updated: "2026-05-05T08:45:00.000Z"
+last_updated: "2026-05-06T05:40:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 5
-  total_plans: 30
-  completed_plans: 30
+  total_plans: 31
+  completed_plans: 31
   percent: 100
 ---
 
@@ -23,10 +23,10 @@ progress:
 
 ## 当前位置
 
-- Phase：5 / 7（Discord 适配器 — 全部 5 plan 执行完毕，含 gap closure）
-- Plan：5/5 complete
-- 状态：Phase 5 全部执行完毕（含 UAT gap closure），待人工 E2E 验证
-- 最近活动：2026-05-05 — Plan 05-05 UAT gap closure（MAIN world paste bridge + icon + timeout，193 unit tests green, build OK）
+- Phase：5 / 7（Discord 适配器 — 全部 6 plan 执行完毕，含 gap closure）
+- Plan：6/6 complete
+- 状态：Phase 5 全部执行完毕（含 UAT gap closure plan 05-06），待人工 E2E 验证
+- 最近活动：2026-05-06 — Plan 05-06 gap closure（Escape clear + 20s timeout，202 unit tests green, build OK）
 
 进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (gap closure ✓, E2E pending) → [██████████] Phase 5 (gap closure ✓, E2E pending)
 
@@ -46,12 +46,12 @@ progress:
 | 2     | 7     | ~40m  | ~5.7m    |
 | 3     | 8     | ~49m  | ~6.1m    |
 | 4     | 6     | ~27m  | ~4.5m   |
-| 5     | 5     | ~35m  | ~7.0m   |
+| 5     | 6     | ~40m  | ~6.7m   |
 
 **近期趋势：**
 
-- 最近 5 个 plan：05-05 (5m), 05-04 (7m), 05-03 (8m), 05-02 (8m), 05-01 (7m)
-- 趋势：Phase 5 gap closure plan 最快（5m，仅修改 3 文件）；均值 7m
+- 最近 5 个 plan：05-06 (5m), 05-05 (5m), 05-04 (7m), 05-03 (8m), 05-02 (8m)
+- 趋势：Phase 5 gap closure plans 最快（5m x2）；均值 6.6m
 
 _每完成一个 plan 后更新_
 
@@ -129,6 +129,6 @@ _每完成一个 plan 后更新_
 
 ## 会话连续性
 
-- 上次会话：2026-05-05（Phase 5 gap closure plan 05-05 完成）
-- 停在哪里：Phase 5 全部执行完毕（含 UAT gap closure），pending 人工 E2E 验证
-- Resume 文件：`.planning/phases/05-discord/05-05-SUMMARY.md`
+- 上次会话：2026-05-06（Phase 5 gap closure plan 05-06 完成）
+- 停在哪里：Phase 5 全部 6 plan 执行完毕（含 2 个 UAT gap closure），pending 人工 E2E 验证
+- Resume 文件：`.planning/phases/05-discord/05-06-SUMMARY.md`
