@@ -76,8 +76,6 @@ popup_chrome_settings_tooltip:
 # Group C — dispatch interactions
 dispatch_confirm_label:
   message: 'Send'
-dispatch_confirm_disabled_tooltip:
-  message: 'Enter a Discord or OpenClaw URL to enable Send.'
 dispatch_in_progress_heading:
   message: 'Sending…'
 dispatch_in_progress_body_before:
@@ -92,8 +90,6 @@ dispatch_in_progress_copy_toast:
   message: 'Copied dispatch ID.'
 dispatch_cancel_label:
   message: 'Cancel'
-dispatch_cancelled_toast:
-  message: 'Dispatch cancelled.'
 
 # Group D — error_code_* for ErrorBanner
 error_code_NOT_LOGGED_IN_heading:
@@ -164,8 +160,6 @@ error_code_OPENCLAW_PERMISSION_DENIED_retry:
 # Group E — history
 history_empty_state:
   message: 'No history yet — type a URL to start.'
-history_view_all:
-  message: 'View all in settings…'
 history_remove_button:
   message: 'Remove from history'
 

@@ -76,8 +76,6 @@ popup_chrome_settings_tooltip:
 # Group C — dispatch interactions
 dispatch_confirm_label:
   message: '投递'
-dispatch_confirm_disabled_tooltip:
-  message: '请输入 Discord 或 OpenClaw URL 后再投递。'
 dispatch_in_progress_heading:
   message: '正在投递…'
 dispatch_in_progress_body_before:
@@ -92,8 +90,6 @@ dispatch_in_progress_copy_toast:
   message: '已复制投递 ID。'
 dispatch_cancel_label:
   message: '取消'
-dispatch_cancelled_toast:
-  message: '投递已取消。'
 
 # Group D — error_code_* for ErrorBanner
 error_code_NOT_LOGGED_IN_heading:
@@ -164,8 +160,6 @@ error_code_OPENCLAW_PERMISSION_DENIED_retry:
 # Group E — history
 history_empty_state:
   message: '暂无历史记录 — 输入 URL 开始使用。'
-history_view_all:
-  message: '在设置中查看全部…'
 history_remove_button:
   message: '从历史中移除'
 
