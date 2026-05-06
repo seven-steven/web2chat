@@ -185,8 +185,8 @@ export async function startDispatch(
   return Ok({ dispatchId: input.dispatchId, state: rec.state });
 }
 
-/** Timeout for adapter response before re-checking tab URL (Gap 3 fix). */
-export const ADAPTER_RESPONSE_TIMEOUT_MS = 10_000;
+/** Timeout for adapter response (Gap 2 fix: 10s → 20s). Covers two 5s internal waits + paste. */
+export const ADAPTER_RESPONSE_TIMEOUT_MS = 20_000;
 
 async function advanceToAdapterInjection(
   record: DispatchRecord,
