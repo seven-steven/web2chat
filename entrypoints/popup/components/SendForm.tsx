@@ -112,6 +112,9 @@ export function SendForm(props: SendFormProps) {
         title: props.titleValue,
         description: props.descriptionValue,
         content: props.contentValue,
+        // Record the captured URL so popup mount can scope the title/description/
+        // content restoration to the same page (popup-stale-capture fix).
+        url: props.snapshot.url,
       });
     }, 800);
     return () => {
@@ -339,7 +342,10 @@ export function SendForm(props: SendFormProps) {
 
       {/* Discord ToS warning footnote (D-59, D-61) */}
       {platformId === 'discord' && (
-        <p class="mt-2 text-xs text-amber-600 dark:text-amber-400" data-testid="discord-tos-footnote">
+        <p
+          class="mt-2 text-xs text-amber-600 dark:text-amber-400"
+          data-testid="discord-tos-footnote"
+        >
           {t('discord_tos_warning')}{' '}
           <a
             href="https://discord.com/terms"

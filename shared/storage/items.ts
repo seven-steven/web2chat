@@ -39,6 +39,11 @@ export interface BindingEntry {
  *  The sentinel `updated_at === new Date(0).toISOString()` indicates "never written" —
  *  the popupDraft repo's get() business method (repos/popupDraft.ts) returns null in
  *  that case so callers (Plan 06 popup mount) can `if (draftRes) { ... }` cleanly.
+ *
+ *  `url` records the captured-page URL when title/description/content were last
+ *  written, so popup mount can scope draft restoration of capture fields to the
+ *  same page (popup-stale-capture fix). Empty string = no URL recorded
+ *  (legacy drafts written before the URL field was introduced).
  */
 export interface PopupDraft {
   schemaVersion: typeof CURRENT_SCHEMA_VERSION;
@@ -47,6 +52,7 @@ export interface PopupDraft {
   title: string;
   description: string;
   content: string;
+  url: string;
   /** Optional in-flight dispatchId hint — popup writes here before window.close (D-35). */
   dispatch_id_hint?: string;
   updated_at: string; // ISO-8601 — sentinel new Date(0).toISOString() means "never written"
@@ -62,6 +68,7 @@ export const POPUP_DRAFT_DEFAULT: PopupDraft = {
   title: '',
   description: '',
   content: '',
+  url: '',
   updated_at: new Date(0).toISOString(),
 };
 

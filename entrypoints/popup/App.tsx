@@ -145,13 +145,18 @@ export function App() {
           descriptionSig.value = captureRes.data.description;
           contentSig.value = captureRes.data.content;
           if (draftRes) {
+            // send_to / prompt are URL-independent — always restore (DSP-09)
             sendToSig.value = draftRes.send_to || '';
             promptSig.value = draftRes.prompt || '';
             promptDirtySig.value = (draftRes.prompt || '') !== '';
-            // Draft overrides capture for user-edited fields (DSP-09 draft recovery)
-            if (draftRes.title) titleSig.value = draftRes.title;
-            if (draftRes.description) descriptionSig.value = draftRes.description;
-            if (draftRes.content) contentSig.value = draftRes.content;
+            // Draft overrides capture fields ONLY when the draft was recorded
+            // for the same page. Without this URL guard, navigating to a new
+            // page would render the previous page's capture (popup-stale-capture).
+            if (draftRes.url && draftRes.url === captureRes.data.url) {
+              if (draftRes.title) titleSig.value = draftRes.title;
+              if (draftRes.description) descriptionSig.value = draftRes.description;
+              if (draftRes.content) contentSig.value = draftRes.content;
+            }
           }
         } else {
           if (!dispatchErrorSig.value) {
