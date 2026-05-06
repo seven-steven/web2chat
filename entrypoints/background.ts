@@ -37,7 +37,7 @@ import { bindingUpsert, bindingGet } from '@/background/handlers/binding';
 
 const DISCORD_MAIN_WORLD_PASTE_PORT = 'WEB2CHAT_DISCORD_MAIN_WORLD_PASTE';
 
-function discordMainWorldPaste(text: string): boolean {
+async function discordMainWorldPaste(text: string): Promise<boolean> {
   const active = document.activeElement;
   const editor =
     (active instanceof HTMLElement &&
@@ -65,6 +65,18 @@ function discordMainWorldPaste(text: string): boolean {
   editor.dispatchEvent(
     new KeyboardEvent('keydown', {
       key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+
+  // Gap fix (05-06): wait 200ms then dispatch Escape to trigger Discord native clear.
+  // discordMainWorldPaste runs in MAIN world via executeScript, which awaits Promise resolution,
+  // so this delay does NOT cause Port message ordering issues.
+  await new Promise<void>((resolve) => setTimeout(resolve, 200));
+  editor.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'Escape',
       bubbles: true,
       cancelable: true,
     }),
