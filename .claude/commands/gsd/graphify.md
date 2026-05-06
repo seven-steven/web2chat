@@ -153,7 +153,7 @@ gsd-tools path: /Users/seven/data/coding/projects/seven/web2chat/.claude/get-shi
 1. **Invoke graphify:**
    Run from the project root:
    ```
-   graphify . --update
+   graphify update .
    ```
    This builds the knowledge graph with SHA256 incremental caching.
    Timeout: up to 5 minutes (or as configured via graphify.build_timeout).
