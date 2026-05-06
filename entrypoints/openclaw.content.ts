@@ -56,6 +56,13 @@ export default defineContentScript({
   matches: [],
   registration: 'runtime',
   main() {
+    // Guard: chrome.scripting.executeScript re-evaluates this script on every
+    // dispatch. Without this, N dispatches = N onMessage listeners, causing
+    // N concurrent handleDispatch calls. The flag persists in the ISOLATED world
+    // across re-injections but resets on tab navigation/refresh.
+    if ((globalThis as any).__web2chat_openclaw_registered) return;
+    (globalThis as any).__web2chat_openclaw_registered = true;
+
     chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       if (!isAdapterDispatch(msg)) return false;
       void handleDispatch(msg.payload).then(sendResponse);

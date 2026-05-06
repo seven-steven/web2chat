@@ -19,7 +19,6 @@ import { composeDiscordMarkdown } from '@/shared/adapters/discord-format';
 
 const WAIT_TIMEOUT_MS = 5000;
 const RATE_LIMIT_MS = 5000;
-const MESSAGE_LIST_SELECTOR = '[data-list-id^="chat-messages-"]';
 const DISCORD_MAIN_WORLD_PASTE_PORT = 'WEB2CHAT_DISCORD_MAIN_WORLD_PASTE';
 
 // Module-scope rate limit map (content script lifetime = tab lifetime)
@@ -125,6 +124,13 @@ export default defineContentScript({
   matches: [],
   registration: 'runtime',
   main() {
+    // Guard: chrome.scripting.executeScript re-evaluates this script on every
+    // dispatch. Without this, N dispatches = N onMessage listeners, causing
+    // N concurrent handleDispatch calls. The flag persists in the ISOLATED world
+    // across re-injections but resets on tab navigation/refresh.
+    if ((globalThis as any).__web2chat_discord_registered) return;
+    (globalThis as any).__web2chat_discord_registered = true;
+
     chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       if (!isAdapterDispatch(msg)) return false;
       void handleDispatch(msg.payload).then(sendResponse);
@@ -197,11 +203,6 @@ async function handleDispatch(
   // Compose message (D-54, D-55, D-57, D-58)
   const message = composeDiscordMarkdown({ prompt: payload.prompt, snapshot: payload.snapshot });
 
-  // Capture the pre-send count before paste+Enter. Some editors/tests append the
-  // sent message synchronously during keydown, so observing only after injection
-  // can miss the mutation and incorrectly report a confirmation timeout.
-  const initialMessageCount = getMessageCount(MESSAGE_LIST_SELECTOR);
-
   // Inject via MAIN world paste bridge (D-63)
   // Enter keydown is handled inside the MAIN world script.
   let pasteOk = false;
@@ -220,12 +221,14 @@ async function handleDispatch(
     };
   }
 
-  // Confirm message appeared (D-65)
-  const confirmed = await waitForNewMessage(
-    MESSAGE_LIST_SELECTOR,
-    WAIT_TIMEOUT_MS,
-    initialMessageCount,
-  );
+  // Confirm send: Discord clears the Slate editor after processing Enter → send.
+  // The MAIN world paste already waited 200ms post-Enter; poll briefly as a
+  // safety margin for Discord's async Slate reconciliation.
+  let confirmed = (editor.textContent ?? '').trim().length === 0;
+  if (!confirmed) {
+    await new Promise<void>((resolve) => setTimeout(resolve, 500));
+    confirmed = (editor.textContent ?? '').trim().length === 0;
+  }
   if (!confirmed) {
     return {
       ok: false,
@@ -263,41 +266,6 @@ function waitForElement<T extends Element>(selector: string, timeoutMs: number):
         settled = true;
         observer.disconnect();
         resolve(null);
-      }
-    }, timeoutMs);
-  });
-}
-
-function getMessageCount(containerSelector: string): number | null {
-  return document.querySelector(containerSelector)?.children.length ?? null;
-}
-
-function waitForNewMessage(
-  containerSelector: string,
-  timeoutMs: number,
-  initialCount: number | null,
-): Promise<boolean> {
-  const container = document.querySelector(containerSelector);
-  if (!container || initialCount === null) return Promise.resolve(false);
-  if (container.children.length > initialCount) return Promise.resolve(true);
-
-  return new Promise<boolean>((resolve) => {
-    let settled = false;
-    const observer = new MutationObserver(() => {
-      if (container.children.length > initialCount && !settled) {
-        settled = true;
-        observer.disconnect();
-        clearTimeout(timer);
-        resolve(true);
-      }
-    });
-    observer.observe(container, { childList: true });
-
-    const timer = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        observer.disconnect();
-        resolve(false);
       }
     }, timeoutMs);
   });
