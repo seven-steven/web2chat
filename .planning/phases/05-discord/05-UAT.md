@@ -1,9 +1,9 @@
 ---
-status: partial
+status: diagnosed
 phase: 05-discord
 source: [05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md, 05-05-SUMMARY.md]
 started: 2026-05-05T12:00:00Z
-updated: 2026-05-06T13:00:00Z
+updated: 2026-05-06T14:30:00Z
 ---
 
 ## Current Test
@@ -63,27 +63,33 @@ issues: 2
 pending: 0
 skipped: 1
 blocked: 1
-skipped: 0
-blocked: 0
 
 ## Gaps
-
-[re-verification: previous gaps diagnosed, fixes applied in 05-05 gap closure]
 
 - truth: "粘贴发送后 Discord 输入框应清空，不残留消息文本"
   status: failed
   reason: "User reported: 消息正常发送，但是 discord 输入框会残留消息内容文本"
   severity: minor
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
+  root_cause: "discordMainWorldPaste (background.ts:40-73) 同步派发 paste + Enter 后立即返回，但 Discord Slate 编辑器通过 React 异步批处理清空编辑器。函数返回时编辑器尚未被清空，且无后续清除逻辑。"
+  artifacts:
+    - path: "entrypoints/background.ts"
+      issue: "lines 40-73: discordMainWorldPaste 派发 Enter 后无等待/清除操作"
+    - path: "entrypoints/discord.content.ts"
+      issue: "lines 104-122: injectMainWorldPaste 成功后无编辑器清除步骤"
+  missing:
+    - "Enter 后延迟 ~200ms 派发 Escape keydown（Discord 原生清空快捷键）或主动清空编辑器内容"
 
 - truth: "跨频道 SPA 导航投递后，popup 应显示成功而非超时"
   status: failed
   reason: "User reported: 投递正常，消息成功发送。但 web2chat 插件图标显示 err, popup 提示投递超时。"
   severity: major
   test: 4
-  root_cause: ""
-  artifacts: []
-  missing: []
+  root_cause: "ADAPTER_RESPONSE_TIMEOUT_MS (10s) < waitForElement(5s) + paste(1-2s) + waitForNewMessage(5s) = 11-12s。SPA 导航时 Discord UI 异步渲染导致两个内部等待都接近最大值，总耗时超过 SW 超时，消息实际发送成功但 SW 已报超时。"
+  artifacts:
+    - path: "background/dispatch-pipeline.ts"
+      issue: "line 189: ADAPTER_RESPONSE_TIMEOUT_MS = 10_000 太短，不够覆盖两个 5s 内部等待 + paste 往返"
+    - path: "entrypoints/discord.content.ts"
+      issue: "line 20: WAIT_TIMEOUT_MS = 5000，handleDispatch 中使用两次（waitForElement + waitForNewMessage）"
+  missing:
+    - "将 ADAPTER_RESPONSE_TIMEOUT_MS 增至 20-25s，为两个内部 5s 等待 + paste 往返留余量"
