@@ -15,6 +15,7 @@ export default tseslint.config(
       'public/',
       '.claude/',
       '.planning/',
+      'tests/lint/*.fixture.tsx',
     ],
   },
   js.configs.recommended,
