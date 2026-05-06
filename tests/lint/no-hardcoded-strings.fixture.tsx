@@ -1,5 +1,4 @@
 // DO NOT FIX: this file intentionally contains hardcoded strings to test the ESLint rule.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { h } from 'preact';
 
 export function BadComponent() {

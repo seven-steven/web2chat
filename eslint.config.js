@@ -52,10 +52,9 @@ export default tseslint.config(
             create(context) {
               const CJK_RE = /[一-鿿㐀-䶿]/;
               const EN_RE = /^[A-Z][a-zA-Z\s]{1,}/;
-              const IGNORE_RE = /^[\s\d\W]*$/;
 
               function isUserVisible(str) {
-                if (!str || IGNORE_RE.test(str)) return false;
+                if (!str || !str.trim()) return false;
                 return CJK_RE.test(str) || EN_RE.test(str.trim());
               }
 

@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [WxtVitest() as any, yamlLocalePlugin()],
   test: {
     environment: 'happy-dom',
-    include: ['tests/unit/**/*.spec.ts', 'tests/unit/**/*.spec.tsx'],
+    include: ['tests/unit/**/*.spec.ts', 'tests/unit/**/*.spec.tsx', 'tests/lint/**/*.test.ts'],
     exclude: ['tests/e2e/**', 'node_modules/**', '.output/**', '.wxt/**'],
     globals: false,
     restoreMocks: true,
