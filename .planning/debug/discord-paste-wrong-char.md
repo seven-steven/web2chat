@@ -1,16 +1,16 @@
 ---
-status: diagnosed
+status: resolved
 trigger: "Discord adapter injects wrong content -- single '¬' character instead of formatted markdown. Enter never fires. Popup shows dispatch timeout."
 created: 2026-05-05T00:00:00.000Z
-updated: 2026-05-05T00:10:00.000Z
+updated: 2026-05-06T10:51:00.000Z
 ---
 
 ## Current Focus
 
-hypothesis: "CONFIRMED — ClipboardEvent dispatched from ISOLATED world content script carries a DataTransfer object that Discord's Slate editor (running in MAIN world) cannot read."
-test: "N/A — root cause confirmed via code review + web research + Chromium architecture documentation"
-expecting: "N/A"
-next_action: "Return diagnosis — fix requires paste injection to execute in MAIN world"
+hypothesis: "RESOLVED — Discord paste must be executed in MAIN world; the prior inline-script postMessage bridge did not execute under the E2E path and still timed out."
+test: "pnpm typecheck && pnpm test:e2e -- tests/e2e/discord-dispatch.spec.ts; pnpm build; pnpm test; pnpm lint"
+expecting: "Automated Discord stub dispatch succeeds; production build and unit tests pass; lint has no errors."
+next_action: "Human UAT on real Discord with fresh production build to confirm live Slate behavior."
 
 ## Symptoms
 
@@ -59,9 +59,27 @@ started: "Since Discord adapter implementation (Phase 5)"
   found: "Confirmed that clipboard paste from content script doesn't work with Slate editors. Recommended approach: inject into MAIN world or access Slate editor instance directly via React internals."
   implication: "Known community issue — paste injection into Slate requires MAIN world execution"
 
+- timestamp: 2026-05-06T10:45:00Z
+  checked: "Current code after Phase 05 Plan 05 summary"
+  found: "entrypoints/discord.content.ts had an inline <script> + postMessage bridge, but tests/e2e/discord-dispatch.spec.ts still failed with { ok:false, code:'TIMEOUT', message:'Paste injection timed out' }."
+  implication: "The claimed MAIN-world bridge was not sufficient in the current code state; automated regression still reproduced the send failure."
+
+- timestamp: 2026-05-06T10:48:00Z
+  checked: "Alternative bridge using chrome.runtime.sendMessage"
+  found: "webext-core messaging rejected the raw message format before the direct runtime listener could handle it."
+  implication: "Raw sendMessage conflicts with the project's typed messaging layer; the bridge needs a separate channel."
+
+- timestamp: 2026-05-06T10:50:00Z
+  checked: "Runtime Port + service-worker chrome.scripting.executeScript({ world:'MAIN' }) bridge"
+  found: "Content script connects to a dedicated runtime port; background executes the paste+Enter function in MAIN world for the sender tab. Discord E2E stub passes."
+  implication: "DataTransfer is now created in MAIN world without page inline script or postMessage spoofing surface."
+
 ## Resolution
 
-root_cause: "The discord.content.ts adapter is injected via chrome.scripting.executeScript with world:'ISOLATED' (dispatch-pipeline.ts line 211). The pasteText() function creates a DataTransfer object and ClipboardEvent in the ISOLATED world, then dispatches it to Discord's Slate editor. However, Discord's Slate JavaScript runs in the MAIN world and cannot read DataTransfer objects created in the ISOLATED world — getData('text/plain') returns empty string. With no valid paste data, Slate either ignores the event or produces unexpected behavior (the '¬' character), and the Enter key simulation that follows has nothing to send."
-fix: ""
-verification: ""
-files_changed: []
+root_cause: "The original Discord adapter created ClipboardEvent/DataTransfer in an ISOLATED content-script world, which Discord Slate cannot read in MAIN world. The later inline-script postMessage bridge still failed in the current automated E2E path, so the send operation timed out before confirmation."
+fix: "Replaced the inline postMessage bridge with a dedicated runtime Port from discord.content.ts to background.ts; the background executes paste+Enter via chrome.scripting.executeScript({ world:'MAIN' }) in the sender tab, and confirmation now captures the pre-send message count so synchronous sends are not missed."
+verification: "PASS: pnpm typecheck && pnpm test:e2e -- tests/e2e/discord-dispatch.spec.ts (2/2 passed). PASS: pnpm build. PASS: pnpm test (26 files, 193 tests). PASS: pnpm lint (0 errors, 4 pre-existing warnings in types/turndown-plugin-gfm.d.ts). NOTE: an earlier pnpm test run failed before production build because verify-manifest read stale .output/chrome-mv3 artifacts; after pnpm build it passed."
+files_changed:
+  - "/data/coding/projects/seven/web2chat/entrypoints/background.ts"
+  - "/data/coding/projects/seven/web2chat/entrypoints/discord.content.ts"
+  - "/data/coding/projects/seven/web2chat/tests/e2e/discord-dispatch.spec.ts"

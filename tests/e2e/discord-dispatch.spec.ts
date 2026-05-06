@@ -69,7 +69,7 @@ test.describe('discord adapter dispatch (direct injection)', () => {
     }, discordTabId);
 
     // 4. Verify adapter response
-    expect(result.ok).toBe(true);
+    expect(result.ok, JSON.stringify(result)).toBe(true);
 
     // 5. Verify message appeared in the stub page's message list
     const newMessages = await discordPage.locator('[data-testid="message-bubble"]').count();
@@ -131,7 +131,7 @@ test.describe('discord adapter dispatch (direct injection)', () => {
       },
       { tabId, msg: payload },
     );
-    expect(r1.ok).toBe(true);
+    expect(r1.ok, JSON.stringify(r1)).toBe(true);
 
     // Second dispatch within 5s -> RATE_LIMITED
     const r2 = await sw.evaluate(

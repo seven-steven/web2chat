@@ -6,9 +6,9 @@
  * message listener following the same protocol as OpenClaw adapter.
  *
  * DOM strategy (D-62): ARIA-first three-level fallback selector.
- * Injection (D-63): Two-phase — ISOLATED world delegates paste+Enter to
- *   a MAIN world inline script via postMessage bridge (DataTransfer must
- *   be created in MAIN world for Slate to read clipboardData).
+ * Injection (D-63): Two-phase — ISOLATED world asks the service worker to run
+ *   paste+Enter in MAIN world (DataTransfer must be created in MAIN world for
+ *   Slate to read clipboardData).
  * Send (D-64): Enter keydown dispatched in MAIN world script.
  * Confirm (D-65): MutationObserver watches chat-messages container.
  * Rate limit (D-69): 5s per channel.
@@ -20,6 +20,7 @@ import { composeDiscordMarkdown } from '@/shared/adapters/discord-format';
 const WAIT_TIMEOUT_MS = 5000;
 const RATE_LIMIT_MS = 5000;
 const MESSAGE_LIST_SELECTOR = '[data-list-id^="chat-messages-"]';
+const DISCORD_MAIN_WORLD_PASTE_PORT = 'WEB2CHAT_DISCORD_MAIN_WORLD_PASTE';
 
 // Module-scope rate limit map (content script lifetime = tab lifetime)
 const lastSendTime = new Map<string, number>();
@@ -93,74 +94,31 @@ function findEditor(): HTMLElement | null {
 }
 
 /**
- * Inject paste + Enter into MAIN world via inline <script> + postMessage bridge.
+ * Ask the service worker to execute paste + Enter in MAIN world.
  *
  * Root cause of the "¬" artifact: DataTransfer created in ISOLATED world is empty
- * when read by Slate in MAIN world (cross-V8 boundary). Solution: delegate the
- * actual paste+Enter to a page-level script running in MAIN world.
- *
- * Threat mitigation (T-05-05-03): Uses a unique random nonce per paste operation
- * in the message type to prevent page scripts from spoofing completion.
+ * when read by Slate in MAIN world (cross-V8 boundary). The service worker uses
+ * chrome.scripting.executeScript({ world: 'MAIN' }) so the DataTransfer and
+ * ClipboardEvent are created in the same world as Discord's Slate listeners.
  */
-function injectMainWorldPaste(editor: HTMLElement, text: string): Promise<boolean> {
-  const nonce = crypto.randomUUID();
-  const MSG_TYPE_PASTE = `WEB2CHAT_DISCORD_PASTE_${nonce}`;
-  const MSG_TYPE_DONE = `WEB2CHAT_DISCORD_PASTE_DONE_${nonce}`;
-
-  return new Promise<boolean>((resolve) => {
-    let settled = false;
-    const TIMEOUT_MS = 3000;
-
-    // Listen for completion from MAIN world
-    const onMessage = (event: MessageEvent) => {
-      if (event.data?.type === MSG_TYPE_DONE && !settled) {
-        settled = true;
-        window.removeEventListener('message', onMessage);
-        clearTimeout(timer);
-        resolve(true);
+async function injectMainWorldPaste(editor: HTMLElement, text: string): Promise<boolean> {
+  editor.focus();
+  const response = await new Promise<{ ok: boolean; message?: string }>((resolve) => {
+    const port = chrome.runtime.connect({ name: DISCORD_MAIN_WORLD_PASTE_PORT });
+    port.onMessage.addListener((msg: { ok?: unknown; message?: unknown }) => {
+      const message = typeof msg.message === 'string' ? msg.message : undefined;
+      resolve(message ? { ok: msg.ok === true, message } : { ok: msg.ok === true });
+    });
+    port.onDisconnect.addListener(() => {
+      if (chrome.runtime.lastError) {
+        const message = chrome.runtime.lastError.message;
+        resolve(message ? { ok: false, message } : { ok: false });
       }
-    };
-    window.addEventListener('message', onMessage);
-
-    const timer = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        window.removeEventListener('message', onMessage);
-        resolve(false);
-      }
-    }, TIMEOUT_MS);
-
-    // Inject inline script into MAIN world
-    const script = document.createElement('script');
-    script.textContent = `(function(){
-      var MSG_TYPE_PASTE = ${JSON.stringify(MSG_TYPE_PASTE)};
-      var MSG_TYPE_DONE = ${JSON.stringify(MSG_TYPE_DONE)};
-      function handler(event) {
-        if (!event.data || event.data.type !== MSG_TYPE_PASTE) return;
-        window.removeEventListener('message', handler);
-        var text = event.data.text;
-        var el = document.activeElement;
-        if (el) {
-          var dt = new DataTransfer();
-          dt.setData('text/plain', text);
-          el.dispatchEvent(new ClipboardEvent('paste', {
-            clipboardData: dt, bubbles: true, cancelable: true
-          }));
-          el.dispatchEvent(new KeyboardEvent('keydown', {
-            key: 'Enter', bubbles: true, cancelable: true
-          }));
-        }
-        window.postMessage({ type: MSG_TYPE_DONE }, '*');
-      }
-      window.addEventListener('message', handler);
-    })();`;
-    document.documentElement.appendChild(script);
-    script.remove();
-
-    // Focus editor (cross-world focus works at browser level) then post message
-    editor.focus();
-    window.postMessage({ type: MSG_TYPE_PASTE, text }, '*');
+    });
+    port.postMessage({ text });
   });
+  if (response.ok) return true;
+  throw new Error(response.message ?? 'MAIN world paste failed');
 }
 
 export default defineContentScript({
@@ -239,20 +197,35 @@ async function handleDispatch(
   // Compose message (D-54, D-55, D-57, D-58)
   const message = composeDiscordMarkdown({ prompt: payload.prompt, snapshot: payload.snapshot });
 
-  // Inject via MAIN world paste bridge (D-63 + T-05-05-03 nonce)
+  // Capture the pre-send count before paste+Enter. Some editors/tests append the
+  // sent message synchronously during keydown, so observing only after injection
+  // can miss the mutation and incorrectly report a confirmation timeout.
+  const initialMessageCount = getMessageCount(MESSAGE_LIST_SELECTOR);
+
+  // Inject via MAIN world paste bridge (D-63)
   // Enter keydown is handled inside the MAIN world script.
-  const pasteOk = await injectMainWorldPaste(editor, message);
+  let pasteOk = false;
+  let pasteError = 'Paste injection timed out';
+  try {
+    pasteOk = await injectMainWorldPaste(editor, message);
+  } catch (err) {
+    pasteError = err instanceof Error ? err.message : String(err);
+  }
   if (!pasteOk) {
     return {
       ok: false,
       code: 'TIMEOUT',
-      message: 'Paste injection timed out',
+      message: pasteError,
       retriable: true,
     };
   }
 
   // Confirm message appeared (D-65)
-  const confirmed = await waitForNewMessage(MESSAGE_LIST_SELECTOR, WAIT_TIMEOUT_MS);
+  const confirmed = await waitForNewMessage(
+    MESSAGE_LIST_SELECTOR,
+    WAIT_TIMEOUT_MS,
+    initialMessageCount,
+  );
   if (!confirmed) {
     return {
       ok: false,
@@ -295,11 +268,18 @@ function waitForElement<T extends Element>(selector: string, timeoutMs: number):
   });
 }
 
-function waitForNewMessage(containerSelector: string, timeoutMs: number): Promise<boolean> {
-  const container = document.querySelector(containerSelector);
-  if (!container) return Promise.resolve(false);
+function getMessageCount(containerSelector: string): number | null {
+  return document.querySelector(containerSelector)?.children.length ?? null;
+}
 
-  const initialCount = container.children.length;
+function waitForNewMessage(
+  containerSelector: string,
+  timeoutMs: number,
+  initialCount: number | null,
+): Promise<boolean> {
+  const container = document.querySelector(containerSelector);
+  if (!container || initialCount === null) return Promise.resolve(false);
+  if (container.children.length > initialCount) return Promise.resolve(true);
 
   return new Promise<boolean>((resolve) => {
     let settled = false;

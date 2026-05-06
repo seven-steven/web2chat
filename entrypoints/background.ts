@@ -35,6 +35,43 @@ import { bindingUpsert, bindingGet } from '@/background/handlers/binding';
  * is NOT valid on 0.20.25 and will fail at build time.
  */
 
+const DISCORD_MAIN_WORLD_PASTE_PORT = 'WEB2CHAT_DISCORD_MAIN_WORLD_PASTE';
+
+function discordMainWorldPaste(text: string): boolean {
+  const active = document.activeElement;
+  const editor =
+    (active instanceof HTMLElement &&
+    (active.matches('[role="textbox"][aria-label*="Message"]') ||
+      active.matches('[data-slate-editor="true"]') ||
+      active.matches('[contenteditable="true"]'))
+      ? active
+      : null) ??
+    document.querySelector<HTMLElement>('[role="textbox"][aria-label*="Message"]') ??
+    document.querySelector<HTMLElement>('[data-slate-editor="true"]') ??
+    document.querySelector<HTMLElement>('div[class*="textArea"] [contenteditable="true"]');
+
+  if (!editor) return false;
+
+  editor.focus();
+  const dt = new DataTransfer();
+  dt.setData('text/plain', text);
+  editor.dispatchEvent(
+    new ClipboardEvent('paste', {
+      clipboardData: dt,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  editor.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  return true;
+}
+
 /**
  * Wraps a handler so any thrown error becomes an Err('INTERNAL', ...).
  *
@@ -90,6 +127,43 @@ export default defineBackground(() => {
     }),
   );
 
+  chrome.runtime.onConnect.addListener((port) => {
+    if (port.name !== DISCORD_MAIN_WORLD_PASTE_PORT) return;
+    port.onMessage.addListener((msg, senderPort) => {
+      const tabId = senderPort.sender?.tab?.id;
+      const text = typeof msg?.text === 'string' ? msg.text : null;
+      if (typeof tabId !== 'number') {
+        port.postMessage({ ok: false, message: 'Missing sender tab id' });
+        port.disconnect();
+        return;
+      }
+      if (text === null) {
+        port.postMessage({ ok: false, message: 'Missing paste text' });
+        port.disconnect();
+        return;
+      }
+
+      void chrome.scripting
+        .executeScript({
+          target: { tabId },
+          world: 'MAIN',
+          func: discordMainWorldPaste,
+          args: [text],
+        })
+        .then((results) => {
+          port.postMessage({ ok: results[0]?.result === true });
+          port.disconnect();
+        })
+        .catch((err: unknown) => {
+          port.postMessage({
+            ok: false,
+            message: err instanceof Error ? err.message : String(err),
+          });
+          port.disconnect();
+        });
+    });
+  });
+
   // Phase 2 (CAP-01..CAP-04, D-15..D-17): SW-side capture orchestration.
   // Listener registered synchronously at module top level — no await before this.
   onMessage('capture.run', wrapHandler(runCapturePipeline));
@@ -140,7 +214,9 @@ export default defineBackground(() => {
     (details) => {
       // Re-use the same handler as tabs.onUpdated — it reads dispatch state from
       // storage.session and checks if the tab + URL match a pending dispatch.
-      void onTabComplete(details.tabId, { status: 'complete' }, { url: details.url } as chrome.tabs.Tab);
+      void onTabComplete(details.tabId, { status: 'complete' }, {
+        url: details.url,
+      } as chrome.tabs.Tab);
     },
     { url: [{ hostSuffix: 'discord.com' }] },
   );
