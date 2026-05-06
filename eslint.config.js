@@ -38,19 +38,57 @@ export default tseslint.config(
       ],
     },
   },
-  // 轻量版硬编码字符串规则：JSX 文本节点不能是裸字符串字面量。
-  // 完整版（CJK + 大写英文启发式）留 Phase 6 / I18N-03。
+  // Phase 6 (I18N-03): 完整硬编码字符串检测规则
+  // 检测 JSXText 节点和 JSXExpressionContainer 内的字符串字面量
+  // CJK: U+4E00-U+9FFF (Unified) + U+3400-U+4DBF (Extension A)
+  // 英文: 大写开头且长度 >= 2 的词组（排除单字母、全数字、全标点）
   {
     files: ['**/*.tsx'],
-    rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'JSXText[value=/[A-Za-z\\u4e00-\\u9fa5]/]',
-          message:
-            '禁止 JSX 文本节点出现裸字符串字面量；请使用 t("...") 走 i18n（轻量规则；完整版 hardcoded-string detector 留 Phase 6 / I18N-03）',
+    plugins: {
+      local: {
+        rules: {
+          'no-hardcoded-strings': {
+            create(context) {
+              const CJK_RE = /[一-鿿㐀-䶿]/;
+              const EN_RE = /^[A-Z][a-zA-Z\s]{1,}/;
+              const IGNORE_RE = /^[\s\d\W]*$/;
+
+              function isUserVisible(str) {
+                if (!str || IGNORE_RE.test(str)) return false;
+                return CJK_RE.test(str) || EN_RE.test(str.trim());
+              }
+
+              return {
+                JSXText(node) {
+                  const val = node.value;
+                  if (isUserVisible(val)) {
+                    context.report({
+                      node,
+                      message: '禁止 JSX 文本节点出现硬编码用户可见字符串，请使用 t("...")',
+                    });
+                  }
+                },
+                JSXExpressionContainer(node) {
+                  const expr = node.expression;
+                  if (
+                    expr.type === 'Literal' &&
+                    typeof expr.value === 'string' &&
+                    isUserVisible(expr.value)
+                  ) {
+                    context.report({
+                      node: expr,
+                      message: '禁止 JSXExpressionContainer 内的硬编码字符串，请使用 t("...")',
+                    });
+                  }
+                },
+              };
+            },
+          },
         },
-      ],
+      },
+    },
+    rules: {
+      'local/no-hardcoded-strings': 'error',
     },
   },
   prettier,
