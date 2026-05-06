@@ -217,7 +217,26 @@ Plans:
 3. `manifest.json` 的 `name`、`description` 和 `default_title` 使用 `__MSG_*__` 占位符，在 `chrome.management.getSelf()` 与 `chrome://extensions` 列表两种语言下都能正确解析。
 4. flat-config 下禁止 JSX/TSX 字符串字面量呈现用户可见文案（CJK + 大写英文启发式）的 ESLint 规则在 CI 中运行，能拦截任何未来的硬编码字符串；通过一个有意添加 `<button>Send</button>` 的 fixture commit 验证 lint 红灯。
 
-**Plans**：TBD
+**Plans**：5 plans（3 waves）
+
+Plans:
+
+**Wave 1** *(Wave 1 plans run in parallel)*
+- [ ] 06-1-i18n-signal-PLAN.md — Signal-based i18n rewrite: shared/i18n/index.ts + localeItem + Vite YAML plugin（I18N-02）
+- [ ] 06-2-eslint-rule-PLAN.md — ESLint 硬编码字符串完整规则 + fixture 测试（I18N-03）
+- [ ] 06-3-manifest-verify-PLAN.md — Manifest __MSG_*__ 完整性验证（I18N-04）
+
+**Wave 2** *(blocked on Wave 1 completion, specifically 06-1)*
+- [ ] 06-4-language-section-PLAN.md — LanguageSection UI + locale 文件 key 更新（I18N-02）
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 06-5-coverage-audit-PLAN.md — i18n coverage 审计脚本 + test:i18n-coverage（I18N-01）
+
+**Cross-cutting constraints:**
+- t() 必须返回纯 string（绝不 innerHTML）
+- locale choice 校验必须在 allowlist ['en', 'zh_CN', null] 内
+- "English" / "简体中文" option 标签豁免 ESLint 规则（eslint-disable 注释）
+
 **UI hint**：yes
 
 ### Phase 7: 分发上架
