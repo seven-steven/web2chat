@@ -54,6 +54,9 @@ requirements:
  *   t('key')  t("key")  t(`key`)
  * NOT scanned (dynamic keys are forbidden by convention):
  *   t(someVar)  t(`prefix-${x}`)
+ *
+ * MANIFEST_ONLY_KEYS: keys used in wxt.config.ts __MSG_*__ or index.html
+ * __MSG_*__ but never called via t() — these are expected "orphans".
  */
 
 import { parse } from 'yaml';
@@ -62,6 +65,17 @@ import { resolve, join, extname } from 'path';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const LOCALES_DIR = join(ROOT, 'locales');
+
+// Keys that live in locale files for manifest/__MSG_*__ use and are
+// intentionally NOT called via t() in source code.
+// Update this allowlist when new manifest keys are added.
+const MANIFEST_ONLY_KEYS = new Set([
+  'action_default_title',      // wxt.config.ts: action.default_title
+  'command_open_popup',        // wxt.config.ts: commands._execute_action.description
+  'extension_description',     // wxt.config.ts: description
+  'extension_name',            // wxt.config.ts: name
+  'options_page_title',        // entrypoints/options/index.html: <title>__MSG_...__</title>
+]);
 
 // ─── Gather all source files ────────────────────────────────────────────────
 const SCAN_DIRS = ['shared', 'entrypoints', 'background', 'content'];
@@ -118,8 +132,9 @@ const missingFromEn = [...usedKeys].filter((k) => !enKeys.has(k));
 const missingFromZh = [...usedKeys].filter((k) => !zhKeys.has(k));
 
 // 2. Keys in locale files not referenced in source
-const unusedInEn = [...enKeys].filter((k) => !usedKeys.has(k));
-const unusedInZh = [...zhKeys].filter((k) => !usedKeys.has(k));
+//    Subtract MANIFEST_ONLY_KEYS — they are expected orphans (used via __MSG_*__)
+const unusedInEn = [...enKeys].filter((k) => !usedKeys.has(k) && !MANIFEST_ONLY_KEYS.has(k));
+const unusedInZh = [...zhKeys].filter((k) => !usedKeys.has(k) && !MANIFEST_ONLY_KEYS.has(k));
 
 // 3. Keys in en but missing from zh_CN (asymmetric locale files)
 const enNotZh = [...enKeys].filter((k) => !zhKeys.has(k));
@@ -143,12 +158,13 @@ console.log(`===================`);
 console.log(`Source files scanned: ${sourceFiles.length}`);
 console.log(`t() keys referenced:  ${usedKeys.size}`);
 console.log(`en.yml keys:          ${enKeys.size}`);
-console.log(`zh_CN.yml keys:       ${zhKeys.size}\n`);
+console.log(`zh_CN.yml keys:       ${zhKeys.size}`);
+console.log(`Manifest-only keys (allowlist, not checked as orphans): ${[...MANIFEST_ONLY_KEYS].join(', ')}\n`);
 
 report('Keys used in source but MISSING from en.yml', missingFromEn);
 report('Keys used in source but MISSING from zh_CN.yml', missingFromZh);
-report('Keys in en.yml but NOT referenced in source', unusedInEn);
-report('Keys in zh_CN.yml but NOT referenced in source', unusedInZh);
+report('Keys in en.yml but NOT referenced in source (excluding manifest-only)', unusedInEn);
+report('Keys in zh_CN.yml but NOT referenced in source (excluding manifest-only)', unusedInZh);
 report('Keys in en.yml but MISSING from zh_CN.yml', enNotZh);
 report('Keys in zh_CN.yml but MISSING from en.yml', zhNotEn);
 
@@ -165,9 +181,11 @@ if (ok) {
 <acceptance_criteria>
 - `scripts/i18n-coverage.ts` 存在
 - 包含 `T_CALL_RE` 正则 `\bt\(\s*(['"\`])([a-z][a-z0-9_]*)\1`
+- 包含 `MANIFEST_ONLY_KEYS` allowlist，含 `action_default_title`、`command_open_popup`、`extension_description`、`extension_name`、`options_page_title` 五个键
+- 孤立键检查时通过 `&& !MANIFEST_ONLY_KEYS.has(k)` 过滤 allowlist 键
 - 包含 `missingFromEn`、`missingFromZh`、`unusedInEn`、`unusedInZh` 四个 gap 检查
 - 包含 `process.exit(0)` (全绿) 和 `process.exit(1)` (有 gap) 两个出口
-- 文件头部有使用说明注释
+- 文件头部有 `MANIFEST_ONLY_KEYS` 说明注释
 </acceptance_criteria>
 
 ---
@@ -207,30 +225,33 @@ if (ok) {
 pnpm test:i18n-coverage
 ```
 
-**预期 gap 分析：**
+**孤立键（unused）处理规则：**
 
-1. **`popup_hello` 在 locale 文件中已被 Plan 06-4 删除** — 但 `t('popup_hello')` 若还在源码中会被标记为 missing。需检查 `entrypoints/popup/App.tsx` 等文件是否还引用 `popup_hello`，如有则替换为新的翻译键或删除（Phase 1 hello-world，正式功能已不需要）。
+脚本会自动跳过 `MANIFEST_ONLY_KEYS` allowlist 中的键（manifest 用途，不走 `t()`）。
 
-2. **孤立键（unused）** — 若 locale 文件中还有其他键未被任何源码引用（例如 `popup_hello` 已从源码中删除但 Plan 06-4 未删干净），从 locale 文件删除。
+如果输出中仍有"Keys in en.yml but NOT referenced in source"报错，按如下规则处理：
 
-3. **asymmetric** — en 和 zh_CN 键不对称时修复较少的一方。
+1. **先判断该键是否有合法用途：**
+   - 在 `wxt.config.ts` 中以 `__MSG_xxx__` 形式使用 → 加入 `MANIFEST_ONLY_KEYS` allowlist
+   - 在 `*.html` 中以 `__MSG_xxx__` 形式使用 → 同上加入 allowlist
+   - 在 `tests/` 中使用但源码无引用 → **从 locale 文件删除**（测试不应新增 locale 键）
 
-**修复原则：**
-- 若某键在源码中被引用但 locale 文件中不存在 → 在 locale 文件中添加缺失键
-- 若某键在 locale 文件中存在但源码无引用 → 从 locale 文件删除孤立键
-- 修复后重新运行 `pnpm test:i18n-coverage` 直到退出码为 0
+2. **如果确认是废弃键（如 `popup_hello` Phase 1 hello-world 键）：**
+   - 确认源码 `grep -rn "t('popup_hello')"` 无引用
+   - 从 `locales/en.yml` 和 `locales/zh_CN.yml` 两处删除
 
-确认 `popup_hello` 的源码引用状态：
-```bash
-grep -rn "t('popup_hello')" --include="*.ts" --include="*.tsx" .
-```
-如果仍有引用，删除引用（Phase 1 test key，不再需要）。
+3. **RESEARCH.md Open Questions 中提到的潜在孤立键：**
+   - `dispatch_cancelled_toast`、`dispatch_confirm_disabled_tooltip`、`history_view_all` — 运行脚本后按实际结果处理
+   - 如果确实无引用且不在 manifest，从 locale 文件删除
+
+修复后重新运行 `pnpm test:i18n-coverage` 直到退出码为 0。
 </action>
 
 <acceptance_criteria>
 - `pnpm test:i18n-coverage` 退出码为 0
 - 输出包含 `✓ i18n coverage: 100%`
 - 输出中所有 6 个检查项均显示 `: none`（无 gap）
+- `MANIFEST_ONLY_KEYS` 中的 5 个 manifest 用途键不被报为孤立键
 </acceptance_criteria>
 
 ## Verification
@@ -248,10 +269,11 @@ pnpm test                  # 单元测试仍然通过
 must_haves:
   truths:
     - scripts/i18n-coverage.ts exists and scans source files for t() calls
+    - scripts/i18n-coverage.ts contains MANIFEST_ONLY_KEYS allowlist with 5 manifest-use keys
     - package.json scripts contains "test:i18n-coverage": "tsx scripts/i18n-coverage.ts"
     - pnpm test:i18n-coverage exits 0 with "✓ i18n coverage: 100%"
     - no t() keys in source are missing from en.yml
     - no t() keys in source are missing from zh_CN.yml
-    - no keys in en.yml are unused (not referenced in source)
+    - no keys in en.yml are unused (excluding manifest-only allowlist)
     - en.yml and zh_CN.yml have identical key sets
 ```

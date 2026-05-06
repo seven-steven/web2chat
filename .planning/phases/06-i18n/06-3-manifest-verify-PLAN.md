@@ -50,6 +50,10 @@ requirements:
 如果缺失，在 `locales/en.yml` 和 `locales/zh_CN.yml` 相应位置添加。根据当前 locale 文件开头，这三个键已存在（Phase 1 已落地），仅需验证。
 </action>
 
+<verify>
+  <automated>grep '__MSG_extension_name__' wxt.config.ts</automated>
+</verify>
+
 <acceptance_criteria>
 - `grep "__MSG_extension_name__" wxt.config.ts` 输出非空
 - `grep "__MSG_extension_description__" wxt.config.ts` 输出非空
@@ -95,6 +99,10 @@ if (!i18nOk) process.exit(1);
 确保该代码块在文件末尾的 `process.exit(1)` 之前，或与现有失败处理保持一致。
 </action>
 
+<verify>
+  <automated>pnpm build && pnpm verify:manifest</automated>
+</verify>
+
 <acceptance_criteria>
 - `scripts/verify-manifest.ts` 包含 `i18nChecks` 数组，含 name/description/action.default_title 三个检查
 - `scripts/verify-manifest.ts` 包含 `startsWith('__MSG_')` 检查
@@ -126,6 +134,10 @@ OK   [I18N-04] manifest.action.default_title = "__MSG_action_default_title__"
 如果任何一项 FAIL，检查 wxt.config.ts 中对应字段并修正。
 </action>
 
+<verify>
+  <automated>pnpm build && pnpm verify:manifest</automated>
+</verify>
+
 <acceptance_criteria>
 - `pnpm verify:manifest` 退出码为 0
 - 输出包含 3 行 `OK   [I18N-04]`
@@ -149,4 +161,5 @@ must_haves:
     - scripts/verify-manifest.ts asserts manifest.action.default_title starts with __MSG_
     - pnpm verify:manifest exits 0 with 3 OK [I18N-04] lines
     - locales/en.yml and locales/zh_CN.yml contain extension_name, extension_description, action_default_title keys
+    - chrome://extensions 中扩展 name/description 在浏览器 zh_CN UI 下显示中文（__MSG_*__ 由浏览器在扩展加载时解析）
 ```

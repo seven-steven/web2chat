@@ -4,7 +4,8 @@ plan: "06-4"
 type: execute
 wave: 2
 depends_on:
-  - "06-1"
+  - "06-1a"
+  - "06-1b"
 files_modified:
   - entrypoints/options/App.tsx
   - entrypoints/options/components/LanguageSection.tsx
@@ -31,14 +32,16 @@ requirements:
 
 ## Tasks
 
-### Task 1: 添加 Phase 6 locale 键到 en.yml + zh_CN.yml
+### Task 1: 更新 locale 文件（添加新键 + 删除废弃键）
 
 <read_first>
-- locales/en.yml (查看文件末尾结构，确认当前 options_* 键的格式)
+- locales/en.yml (查看文件末尾结构，确认当前 options_* 键的格式，以及 popup_hello/options_reserved_* 键的位置)
 - locales/zh_CN.yml (同上)
 </read_first>
 
 <action>
+**添加新键：**
+
 在 `locales/en.yml` 末尾（discord_tos_* 键之后）追加以下内容：
 
 ```yaml
@@ -66,29 +69,10 @@ options_language_label:
 options_language_auto:
   message: '自动（跟随浏览器）'
 ```
-</action>
 
-<acceptance_criteria>
-- `grep "^options_language_heading:" locales/en.yml` 输出非空
-- `grep "^options_language_explainer:" locales/en.yml` 输出非空
-- `grep "^options_language_label:" locales/en.yml` 输出非空
-- `grep "^options_language_auto:" locales/en.yml` 输出非空
-- `grep "^options_language_heading:" locales/zh_CN.yml` 输出非空（值为 `语言`）
-- `grep "^options_language_auto:" locales/zh_CN.yml` 输出非空（值含 `自动`）
-</acceptance_criteria>
+**删除废弃键：**
 
----
-
-### Task 2: 移除废弃 locale 键
-
-<read_first>
-- locales/en.yml (当前全文，定位 popup_hello, options_reserved_* 键)
-- locales/zh_CN.yml (同上)
-</read_first>
-
-<action>
 从 `locales/en.yml` 中删除以下键（含其 `message:` + 可能的 `placeholders:` 行）：
-
 1. `popup_hello:` 块（包含 message + placeholders.count 子块，约 6 行）
 2. `options_reserved_language_label:` 块（约 2 行）
 3. `options_reserved_placeholder_body:` 块（约 2 行）
@@ -98,18 +82,26 @@ options_language_auto:
 注意：`options_reserved_language` 键在 CONTEXT 中提到但实际不存在于 locale 文件（不需要删除）。
 </action>
 
+<verify>
+  <automated>pnpm typecheck</automated>
+</verify>
+
 <acceptance_criteria>
+- `grep "^options_language_heading:" locales/en.yml` 输出非空
+- `grep "^options_language_explainer:" locales/en.yml` 输出非空
+- `grep "^options_language_label:" locales/en.yml` 输出非空
+- `grep "^options_language_auto:" locales/en.yml` 输出非空
+- `grep "^options_language_heading:" locales/zh_CN.yml` 输出非空（值为 `语言`）
+- `grep "^options_language_auto:" locales/zh_CN.yml` 输出非空（值含 `自动`）
 - `grep "^popup_hello:" locales/en.yml` 输出为空
 - `grep "^options_reserved_language_label:" locales/en.yml` 输出为空
 - `grep "^options_reserved_placeholder_body:" locales/en.yml` 输出为空
-- `grep "^popup_hello:" locales/zh_CN.yml` 输出为空
-- `grep "^options_reserved_language_label:" locales/zh_CN.yml` 输出为空
-- `grep "^options_reserved_placeholder_body:" locales/zh_CN.yml` 输出为空
+- pnpm typecheck 通过
 </acceptance_criteria>
 
 ---
 
-### Task 3: 创建 LanguageSection 组件
+### Task 2: 创建 LanguageSection 组件
 
 <read_first>
 - entrypoints/options/components/ResetSection.tsx (参考现有 section 组件结构和样式)
@@ -191,6 +183,10 @@ export function LanguageSection() {
 - "English" 和 "简体中文" 是语言标识符，需要 eslint-disable 注释豁免
 </action>
 
+<verify>
+  <automated>pnpm typecheck && pnpm lint</automated>
+</verify>
+
 <acceptance_criteria>
 - `entrypoints/options/components/LanguageSection.tsx` 存在
 - 包含 `data-testid="options-language-section"`
@@ -201,11 +197,12 @@ export function LanguageSection() {
 - 包含 `LOCALE_ALLOWLIST.includes(val)` 验证
 - 包含 `for="locale-select"` （非 `htmlFor`）
 - `pnpm typecheck` 通过
+- `pnpm lint` 通过
 </acceptance_criteria>
 
 ---
 
-### Task 4: 更新 entrypoints/options/App.tsx
+### Task 3: 更新 entrypoints/options/App.tsx
 
 <read_first>
 - entrypoints/options/App.tsx (当前完整内容，含 ReservedSection 定义和用法)
@@ -241,6 +238,10 @@ export function LanguageSection() {
 4. 删除不再需要的 `ReservedSection` 相关注释。
 </action>
 
+<verify>
+  <automated>pnpm typecheck</automated>
+</verify>
+
 <acceptance_criteria>
 - `entrypoints/options/App.tsx` 包含 `import { LanguageSection } from './components/LanguageSection'`
 - `entrypoints/options/App.tsx` 包含 `<LanguageSection />`，且位于 `<ResetSection />` 之前
@@ -248,33 +249,6 @@ export function LanguageSection() {
 - `entrypoints/options/App.tsx` 不包含 `options_reserved_language` 引用
 - `pnpm typecheck` 通过
 - `pnpm lint` 通过（LanguageSection 文件的 eslint-disable 注释正确）
-</acceptance_criteria>
-
----
-
-### Task 5: 运行完整验证
-
-<read_first>
-- entrypoints/options/App.tsx (检查最终状态)
-- entrypoints/options/components/LanguageSection.tsx (检查最终状态)
-</read_first>
-
-<action>
-运行以下命令验证 Wave 2 工作完整性：
-
-```bash
-pnpm typecheck    # TypeScript 类型检查通过
-pnpm lint         # ESLint 不报错（含 LanguageSection 的 eslint-disable 注释正确）
-pnpm build        # 构建成功，yml 导入正常
-pnpm test         # 单元测试绿（含 signal-t.spec.ts）
-```
-</action>
-
-<acceptance_criteria>
-- `pnpm typecheck` 退出码 0
-- `pnpm lint` 退出码 0
-- `pnpm build` 退出码 0
-- `pnpm test` 退出码 0
 </acceptance_criteria>
 
 ## Verification

@@ -119,6 +119,10 @@ requirements:
 - locale 文件 (`locales/`) 在 eslint ignores 中已排除
 </action>
 
+<verify>
+  <automated>pnpm lint</automated>
+</verify>
+
 <acceptance_criteria>
 - `eslint.config.js` 不再包含旧的 `JSXText[value=/[A-Za-z\\u4e00-\\u9fa5]/]` selector
 - `eslint.config.js` 包含 `plugins: { 'local': {` 块
@@ -170,6 +174,10 @@ export function BadComponent() {
 期望违规数：4（span 发送、button Send、p 确认删除、label Reset all）
 </action>
 
+<verify>
+  <automated>ls tests/lint/no-hardcoded-strings.fixture.tsx</automated>
+</verify>
+
 <acceptance_criteria>
 - `tests/lint/no-hardcoded-strings.fixture.tsx` 存在
 - 文件包含注释 `DO NOT FIX: this file intentionally contains hardcoded strings`
@@ -191,11 +199,15 @@ export function BadComponent() {
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { Linter } from 'eslint';
+import { RuleTester } from 'eslint';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-// 提取自 eslint.config.js 的 inline plugin 规则（复制规则定义以便隔离测试）
+// ESLint 9 RuleTester 与 Vitest 集成
+RuleTester.describe = describe as typeof RuleTester.describe;
+RuleTester.it = it as typeof RuleTester.it;
+
+// ─── 规则定义（从 eslint.config.js 提取以便隔离测试）───────────────────────
 const CJK_RE = /[一-鿿㐀-䶿]/;
 const EN_RE = /^[A-Z][a-zA-Z\s]{1,}/;
 const IGNORE_RE = /^[\s\d\W]*$/;
@@ -205,22 +217,18 @@ function isUserVisible(str: string): boolean {
   return CJK_RE.test(str) || EN_RE.test(str.trim());
 }
 
-const noHardcodedStringsRule = {
-  create(context: Parameters<NonNullable<import('eslint').Rule.RuleModule['create']>>[0]) {
+const noHardcodedStringsRule: import('eslint').Rule.RuleModule = {
+  meta: { type: 'problem', schema: [] },
+  create(context) {
     return {
       JSXText(node: import('eslint').Rule.Node & { value: string }) {
-        if (isUserVisible((node as { value: string }).value)) {
+        if (isUserVisible((node as unknown as { value: string }).value)) {
           context.report({ node, message: '禁止 JSX 文本节点出现硬编码用户可见字符串，请使用 t("...")' });
         }
       },
-      JSXExpressionContainer(node: import('eslint').Rule.Node) {
-        const container = node as unknown as import('estree').JSXExpressionContainer;
-        const expr = container.expression;
-        if (
-          expr.type === 'Literal' &&
-          typeof (expr as import('estree').Literal).value === 'string' &&
-          isUserVisible((expr as import('estree').Literal).value as string)
-        ) {
+      'JSXExpressionContainer > Literal'(node: import('eslint').Rule.Node) {
+        const n = node as unknown as import('estree').Literal;
+        if (typeof n.value === 'string' && isUserVisible(n.value)) {
           context.report({ node, message: '禁止 JSXExpressionContainer 内的硬编码字符串，请使用 t("...")' });
         }
       },
@@ -228,8 +236,38 @@ const noHardcodedStringsRule = {
   },
 };
 
-describe('no-hardcoded-strings ESLint rule', () => {
-  it('reports expected violations in fixture file', () => {
+// ─── RuleTester（精确验证违规数量）────────────────────────────────────────
+const tester = new RuleTester({
+  languageOptions: {
+    // RESEARCH.md: ESLint 9 RuleTester 需要 @typescript-eslint/parser 解析 JSX
+    parser: require('@typescript-eslint/parser'),
+    parserOptions: { ecmaFeatures: { jsx: true } },
+  },
+});
+
+tester.run('no-hardcoded-strings', noHardcodedStringsRule, {
+  valid: [
+    // JSX 属性值不触发规则
+    { code: `function C() { return <div class="Send" data-testid="Reset all" />; }` },
+    // 纯空白 JSXText 不触发
+    { code: `function C() { return <span>   </span>; }` },
+    // 小写单词不触发
+    { code: `function C() { return <span>{'ok'}</span>; }` },
+    // t() 调用不触发
+    { code: `function C() { return <button>{t('send_button')}</button>; }` },
+  ],
+  invalid: [
+    { code: `function C() { return <span>发送</span>; }`, errors: 1 },
+    { code: `function C() { return <button>Send</button>; }`, errors: 1 },
+    { code: `function C() { return <p>{'确认删除'}</p>; }`, errors: 1 },
+    { code: `function C() { return <label>{'Reset all'}</label>; }`, errors: 1 },
+  ],
+});
+
+// ─── Fixture 文件整体违规计数验证 ─────────────────────────────────────────
+describe('no-hardcoded-strings fixture file', () => {
+  it('reports exactly 4 violations in fixture', () => {
+    const { Linter } = require('eslint');
     const linter = new Linter({ configType: 'flat' });
     const fixturePath = resolve(__dirname, 'no-hardcoded-strings.fixture.tsx');
     const code = readFileSync(fixturePath, 'utf-8');
@@ -241,6 +279,7 @@ describe('no-hardcoded-strings ESLint rule', () => {
           plugins: { local: { rules: { 'no-hardcoded-strings': noHardcodedStringsRule } } },
           rules: { 'local/no-hardcoded-strings': 'error' },
           languageOptions: {
+            parser: require('@typescript-eslint/parser'),
             parserOptions: { ecmaFeatures: { jsx: true } },
           },
         },
@@ -248,37 +287,22 @@ describe('no-hardcoded-strings ESLint rule', () => {
       { filename: 'fixture.tsx' },
     );
 
-    const errors = messages.filter((m) => m.severity === 2);
-    // fixture 中有 4 处预期违规
+    const errors = messages.filter((m: import('eslint').Linter.LintMessage) => m.severity === 2);
     expect(errors).toHaveLength(4);
-  });
-
-  it('does not report JSX attribute values as violations', () => {
-    const linter = new Linter({ configType: 'flat' });
-    const code = `function C() { return <div class="Send" data-testid="Reset all" />; }`;
-
-    const messages = linter.verify(
-      code,
-      [
-        {
-          plugins: { local: { rules: { 'no-hardcoded-strings': noHardcodedStringsRule } } },
-          rules: { 'local/no-hardcoded-strings': 'error' },
-          languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
-        },
-      ],
-      { filename: 'inline.tsx' },
-    );
-
-    expect(messages.filter((m) => m.severity === 2)).toHaveLength(0);
   });
 });
 ```
 </action>
 
+<verify>
+  <automated>pnpm test -- tests/lint/no-hardcoded-strings.test.ts</automated>
+</verify>
+
 <acceptance_criteria>
 - `tests/lint/no-hardcoded-strings.test.ts` 存在
+- 包含 `parser: require('@typescript-eslint/parser')` 配置（在 RuleTester 和 Linter.verify 两处）
 - 包含 `expect(errors).toHaveLength(4)` 断言
-- 包含验证 JSX 属性不报错的测试
+- RuleTester invalid 用例共 4 条（与 fixture 对应）
 - `pnpm test` 运行该测试文件通过
 </acceptance_criteria>
 
@@ -286,8 +310,8 @@ describe('no-hardcoded-strings ESLint rule', () => {
 
 ```bash
 pnpm lint                       # 现有代码库不新增 lint 错误
-pnpm test -- no-hardcoded       # 两个测试用例通过，violations = 4
-grep -c "local/no-hardcoded-strings" eslint.config.js  # 输出 1
+pnpm test -- no-hardcoded       # 测试用例通过，violations = 4
+grep -v '^//' eslint.config.js | grep -c "local/no-hardcoded-strings"  # 输出 >= 1
 ```
 
 ## Must Haves
@@ -300,5 +324,6 @@ must_haves:
     - rule does NOT report JSX attribute values
     - tests/lint/no-hardcoded-strings.fixture.tsx exists with 4 intentional violations
     - tests/lint/no-hardcoded-strings.test.ts passes with expect(errors).toHaveLength(4)
+    - test uses @typescript-eslint/parser in languageOptions
     - pnpm lint passes on existing codebase (no false positives)
 ```
