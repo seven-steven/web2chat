@@ -98,6 +98,7 @@ export function assertManifest(manifest: Manifest, errors: string[]): void {
     errors.push(`default_locale must be 'en', got ${JSON.stringify(manifest.default_locale)}`);
   }
 
+  // ─── I18N-04: manifest __MSG_*__ 本地化字段验证 ───────────────────────────
   const msgFields: Array<readonly [string, string | undefined]> = [
     ['name', manifest.name],
     ['description', manifest.description],
@@ -105,7 +106,9 @@ export function assertManifest(manifest: Manifest, errors: string[]): void {
   ];
   for (const [field, value] of msgFields) {
     if (typeof value !== 'string' || !value.startsWith('__MSG_')) {
-      errors.push(`${field} must use __MSG_*__ placeholder, got ${JSON.stringify(value)}`);
+      errors.push(
+        `[I18N-04] manifest.${field} must use __MSG_*__ placeholder, got ${JSON.stringify(value)}`,
+      );
     }
   }
 
@@ -164,5 +167,15 @@ if (errors.length) {
   console.error('[verify-manifest] FAIL:');
   for (const e of errors) console.error('  -', e);
   process.exit(1);
+}
+
+// ─── I18N-04: explicit success logging for manifest __MSG_*__ fields ────────
+const i18nFields: Array<{ path: string; value: string | undefined }> = [
+  { path: 'name', value: manifest.name },
+  { path: 'description', value: manifest.description },
+  { path: 'action.default_title', value: manifest.action?.default_title },
+];
+for (const check of i18nFields) {
+  console.log(`OK   [I18N-04] manifest.${check.path} = "${check.value}"`);
 }
 console.log('[verify-manifest] OK — all assertions passed');
