@@ -1,3 +1,5 @@
+English | [简体中文](./PRIVACY.zh_CN.md)
+
 # Web2Chat Privacy Policy
 
 **Last updated:** 2026-05-07
