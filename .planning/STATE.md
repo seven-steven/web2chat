@@ -19,14 +19,14 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 6 UI-SPEC approved — ready for planning
+**当前焦点：** Phase 7 context gathered — ready for planning
 
 ## 当前位置
 
-- Phase：7 / 7（分发上架 — 待规划）
+- Phase：7 / 7（分发上架 — context gathered, ready for planning）
 - Plan：0/TBD complete
-- 状态：Phase 6 执行完成（6/6 plans, human_needed），Phase 7 待规划
-- 最近活动：2026-05-07 — Phase 6 执行完毕，225 unit tests green，100% i18n coverage
+- 状态：Phase 7 context gathered，下一步 plan-phase
+- 最近活动：2026-05-07 — Phase 7 discuss 完成（README 双语分文件 + PRIVACY 法律风 + Limitations 精选 + CWS listing 文案）
 
 进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (gap closure ✓, E2E pending) → [██████████] Phase 5 (gap closure ✓, E2E pending) → [██████████] Phase 6 (human_needed)
 
