@@ -18,16 +18,17 @@
 - [x] i18n 国际化：至少支持 zh_CN / en — Validated in Phase 1（FND-06、@wxt-dev/i18n + en/zh_CN locale 100% 同构）
 - [x] 全部配置本地存储于 `chrome.storage.local` — Validated in Phase 1（STG-01/02、`metaItem` typed repo + 版本化 schema + migration 框架）
 - [x] 点击扩展图标弹出 popup，抓取并展示当前页面 `title` / `url` / `description` / `create_at` / `content` — Validated in Phase 2（CAP-01..05、Readability + DOMPurify + Turndown 抽取流水线、4-state popup UI、E2E 3/3 + 真实文章 visual UAT 通过）
+- [x] popup 提供 `send_to`（IM channel）输入：下拉历史记录、根据填写内容识别 IM 平台并展示对应 icon — Validated in Phase 3（DSP-01..03）
+- [x] popup 提供 `prompt` 输入：自动按历史记录提示，与 `send_to` 绑定，切换 `send_to` 时自动切换 prompt — Validated in Phase 3（DSP-04..06、DSP-09）
+- [x] 用户点击"确认"后：新开 tab / 唤起本地应用，导航到目标会话并把格式化信息 + prompt 发送到该会话 — Validated in Phase 3（DSP-07..10、STG-03）
+- [x] MVP 渠道：OpenClaw Web UI（`http://localhost:18789/chat?session=agent:<agent_name>:<session_name>`）— Validated in Phase 4（ADO-01..07、optional_host_permissions 动态授权）
+- [x] MVP 渠道：Discord Web（`https://discord.com/channels/<server_id>/<channel_id>`）— Validated in Phase 5（ADD-01..09、ClipboardEvent 粘贴注入 + MAIN world bridge + ToS 声明）
 
 ### 进行中 (Active)
 
 <!-- v1 假设。当前在朝这些目标推进。 -->
 
-- [ ] popup 提供 `send_to`（IM channel）输入：下拉历史记录、根据填写内容识别 IM 平台并展示对应 icon
-- [ ] popup 提供 `prompt` 输入：自动按历史记录提示，与 `send_to` 绑定，切换 `send_to` 时自动切换 prompt
-- [ ] 用户点击"确认"后：新开 tab / 唤起本地应用，导航到目标会话并把格式化信息 + prompt 发送到该会话
-- [ ] MVP 渠道：OpenClaw Web UI（`http://localhost:18789/chat?session=agent:<agent_name>:<session_name>`）
-- [ ] MVP 渠道：Discord Web（`https://discord.com/channels/<server_id>/<channel_id>`）
+_(v1 全部需求已验证，无 Active 项)_
 
 ### 不在范围 (Out of Scope)
 
@@ -69,13 +70,13 @@
 
 | 决策                                                    | 理由                                                                                                                                                                                                                                                                                                                                     | 结果     |
 | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| Chrome MV3 only（v1）                                   | 用户首发只覆盖 Chrome；MV3 是 2025 年 Chromium 主推标准，Firefox/Safari 推后避免分散精力                                                                                                                                                                                                                                                 | — 待评估 |
-| MVP 仅集成 OpenClaw + Discord                           | 这两个平台的 URL pattern 已确定，可优先打通主链路；其余平台沉淀适配模式后批量补齐                                                                                                                                                                                                                                                        | — 待评估 |
-| 通过新开 tab + content script 注入消息（非 Bot API）    | 不需要管理服务端 token / OAuth，符合"本地优先"约束，但需要为每个平台维护 DOM 适配器                                                                                                                                                                                                                                                      | — 待评估 |
-| 所有配置 `chrome.storage.local`                         | 隐私优先 + 单设备使用；云同步推到 v2                                                                                                                                                                                                                                                                                                     | — 待评估 |
-| Quality 模型档（GSD agents）                            | 项目核心抽象（适配器架构、i18n 边界）需要更深入的研究与规划                                                                                                                                                                                                                                                                              | — 待评估 |
-| send_to / prompt 绑定 + 历史                            | 让重复任务（如"沉淀到知识库 Agent"）一次配置反复使用，是 Core Value 的关键 UX                                                                                                                                                                                                                                                            | — 待评估 |
-| OpenClaw origin 走 `optional_host_permissions` 动态申请 | 用户自部署的 OpenClaw 落在任意域名 / IP+端口（如 `http://192.168.1.100:18789`、`https://openclaw.mycompany.com`），无法在 manifest 静态枚举。静态 `host_permissions` 只放 Discord；用户首次配置 OpenClaw 实例 URL 时通过 `chrome.permissions.request` 动态申请该具体 origin。Capture 仍走 `activeTab`，不会因此让出 Web Store 评审优势。 | — 待评估 |
+| Chrome MV3 only（v1）                                   | 用户首发只覆盖 Chrome；MV3 是 2025 年 Chromium 主推标准，Firefox/Safari 推后避免分散精力                                                                                                                                                                                                                                                 | ✓ 验证：v1 全程 Chrome MV3，无兼容性阻塞 |
+| MVP 仅集成 OpenClaw + Discord                           | 这两个平台的 URL pattern 已确定，可优先打通主链路；其余平台沉淀适配模式后批量补齐                                                                                                                                                                                                                                                        | ✓ 验证：两个适配器均完整交付，`IMAdapter` 接口已被证明可复用 |
+| 通过新开 tab + content script 注入消息（非 Bot API）    | 不需要管理服务端 token / OAuth，符合"本地优先"约束，但需要为每个平台维护 DOM 适配器                                                                                                                                                                                                                                                      | ✓ 验证：ClipboardEvent 粘贴注入 + property-descriptor setter 在 OpenClaw/Discord 均稳定工作 |
+| 所有配置 `chrome.storage.local`                         | 隐私优先 + 单设备使用；云同步推到 v2                                                                                                                                                                                                                                                                                                     | ✓ 验证：全部 storage 写入走 typed repo，无直接 chrome.storage 调用 |
+| Quality 模型档（GSD agents）                            | 项目核心抽象（适配器架构、i18n 边界）需要更深入的研究与规划                                                                                                                                                                                                                                                                              | ✓ 验证：7 phase / 46 plan / 47 req 全部完成 |
+| send_to / prompt 绑定 + 历史                            | 让重复任务（如"沉淀到知识库 Agent"）一次配置反复使用，是 Core Value 的关键 UX                                                                                                                                                                                                                                                            | ✓ 验证：MRU 历史 + 绑定在 Phase 3 UAT 通过 |
+| OpenClaw origin 走 `optional_host_permissions` 动态申请 | 用户自部署的 OpenClaw 落在任意域名 / IP+端口（如 `http://192.168.1.100:18789`、`https://openclaw.mycompany.com`），无法在 manifest 静态枚举。静态 `host_permissions` 只放 Discord；用户首次配置 OpenClaw 实例 URL 时通过 `chrome.permissions.request` 动态申请该具体 origin。Capture 仍走 `activeTab`，不会因此让出 Web Store 评审优势。 | ✓ 验证：Phase 4 UAT 通过，popup 关闭时权限对话仍可完成授权 |
 
 ## 演进 (Evolution)
 
@@ -98,4 +99,4 @@
 
 ---
 
-_最近更新：2026-04-30，Phase 2 (抓取流水线) ✓ Complete — Readability + DOMPurify + Turndown 抽取 + 4-state popup UI（loading/success/empty/error）+ SW capture-pipeline 顶层注册 + 18 个 capture i18n key 100% 同构 + E2E 3/3 通过 + 真实文章 visual UAT 通过。CAP-01..05 全部 Validated。_
+_最近更新：2026-05-07，Phase 7 (分发上架) ✓ Complete — v1.0 milestone 全部 7 个 phase 完成。47/47 需求全部 Validated。构建验证脚本、双语 PRIVACY.md、双语 README、CWS Store Listing（`seven-steven/web2chat`）均已就绪。_
