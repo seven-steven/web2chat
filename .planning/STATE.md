@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-last_updated: "2026-05-07T02:36:13Z"
+status: Complete
+last_updated: "2026-05-07T10:55:00Z"
 progress:
   total_phases: 7
-  completed_phases: 5
-  total_plans: 42
-  completed_plans: 39
-  percent: 93
+  completed_phases: 7
+  total_plans: 46
+  completed_plans: 46
+  percent: 100
 ---
 
 # 项目状态
@@ -19,16 +19,16 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-04-28)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** Phase 7 distribution plans executing
+**当前焦点：** Phase 7 分发上架完成 — v1.0 milestone 全部 7 个 phase 执行完毕
 
 ## 当前位置
 
-- Phase：7 / 7（分发上架 — plans executing）
-- Plan：03/04 complete
-- 状态：Phase 7 plan 03 完成，继续执行 plan 04
-- 最近活动：2026-05-07 — Phase 7 plan 03 完成（README.md zh_CN 重写 + README.en.md 英文版）
+- Phase：7 / 7（分发上架 — Executed, human_needed）
+- Plan：4/4 complete
+- 状态：Phase 7 执行完毕，3 项人工验证待完成
+- 最近活动：2026-05-07 — Phase 7 执行完成（验证脚本 + 隐私政策 + 双语 README + CWS Listing）
 
-进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (gap closure ✓, E2E pending) → [██████████] Phase 5 (gap closure ✓, E2E pending) → [██████████] Phase 6 (human_needed) → [██████░░░░] Phase 7 (3/4 plans)
+进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (gap closure ✓, E2E pending) → [██████████] Phase 5 (gap closure ✓, E2E pending) → [██████████] Phase 6 (human_needed) → [██████████] Phase 7 (human_needed)
 
 ## 性能指标
 

@@ -17,7 +17,7 @@ Web2Chat 是一个 Chrome MV3 扩展，用于抓取结构化的页面元数据 +
 - [x] **Phase 4: OpenClaw 适配器** ✓ Executed (2026-05-03) - 6/6 plans (4 original + 2 gap closure), 152 单元测试 + 3 E2E specs (pending human verification)
 - [x] **Phase 5: Discord 适配器** ✓ Complete (2026-05-06) - 6/6 plans (5 original + 1 gap closure), 202 单元测试 + 5 E2E specs (pending human verification) — 兼容 Slate/Lexical 的粘贴注入（MAIN world bridge + Escape clear）、SPA 路由处理、ToS 感知的限流器、20s adapter timeout
 - [x] **Phase 6: i18n 加固 + 打磨** ✓ Executed (2026-05-07) - 6/6 plans, 225 单元测试 + 100% locale 双向覆盖 (pending human verification)
-- [ ] **Phase 7: 分发上架** - Web Store 就绪的 zip、隐私政策、为 v2 预留的 optional_host_permissions、双语 README
+- [x] **Phase 7: 分发上架** ✓ Executed (2026-05-07) - 4/4 plans, 验证脚本 + 双语隐私政策 + 双语 README + CWS Store Listing (3 items pending human verification)
 
 ## Phase Details
 
