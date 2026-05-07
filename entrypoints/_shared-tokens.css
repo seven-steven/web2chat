@@ -221,3 +221,18 @@ body {
     }
   }
 }
+
+/* Reduced-motion safety net for hover/active transitions, keyframe-driven
+   animations, and inline transform-on-hover effects.
+   Standard a11y reset — cuts every animation/transition to ~0ms when the user
+   has expressed a motion preference. Honors WCAG 2.3.3. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
