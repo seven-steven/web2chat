@@ -53,7 +53,7 @@ export function ResetSection() {
 
   return (
     <section
-      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-4 flex flex-col gap-3"
+      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-3 flex flex-col gap-2"
       data-testid="options-reset-section"
     >
       <header class="flex flex-col gap-1">

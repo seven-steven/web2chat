@@ -12,7 +12,7 @@ import { GrantedOriginsSection } from './components/GrantedOriginsSection';
  */
 export function App() {
   return (
-    <main class="mx-auto max-w-[680px] p-6 flex flex-col gap-4 font-sans" data-testid="options-app">
+    <main class="mx-auto max-w-[680px] p-5 flex flex-col gap-3 font-sans" data-testid="options-app">
       <h1 class="m-0 text-[18px] leading-tight font-semibold tracking-tight text-[var(--color-ink-strong)] [animation:w2c-editorial-rise_var(--duration-pageload)_var(--ease-quint)_both]">
         {t('options_page_heading')}
       </h1>
