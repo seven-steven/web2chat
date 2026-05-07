@@ -23,10 +23,10 @@ progress:
 
 ## 当前位置
 
-- Phase：7 / 7（分发上架 — Executed, human_needed）
-- Plan：4/4 complete
-- 状态：Phase 7 执行完毕，3 项人工验证待完成
-- 最近活动：2026-05-07 — Phase 7 执行完成（验证脚本 + 隐私政策 + 双语 README + CWS Listing）
+- Phase：7 / 7（分发上架 — In progress, 3/4 plans）
+- Plan：3/4 complete（07-02, 07-03, 07-04 done; 07-01 pending）
+- 状态：Phase 6 UAT 通过（全 6 项），Phase 7 执行中，07-01（验证脚本）待执行
+- 最近活动：2026-05-07 — Phase 6 UAT 完成（6/6 通过）
 
 进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (gap closure ✓, E2E pending) → [██████████] Phase 5 (gap closure ✓, E2E pending) → [██████████] Phase 6 (human_needed) → [██████████] Phase 7 (human_needed)
 
