@@ -1,6 +1,9 @@
 @import 'tailwindcss';
 @import '../_shared-tokens.css';
 
+@source not '../../.claude/**';
+@source not '../../.planning/**';
+
 /* options-local overrides — keep minimal */
 :root {
   color-scheme: light dark;

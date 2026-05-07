@@ -56,5 +56,6 @@ export default defineConfig({
   },
   vite: () => ({
     plugins: [tailwindcss(), yamlLocalePlugin()],
+    build: { cssMinify: 'esbuild' },
   }),
 });
