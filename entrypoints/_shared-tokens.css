@@ -1,5 +1,5 @@
 /**
- * Web2Chat — Editorial / data-dense design tokens.
+ * Web2Chat — Obsidian-style charcoal + emerald design tokens.
  *
  * Single source of truth for design tokens across popup + options entrypoints.
  * Imported by entrypoints/popup/style.css and entrypoints/options/style.css.
@@ -7,13 +7,12 @@
  * Conventions:
  *   - Colors expressed via Tailwind v4 @theme inline { --color-*: ... }
  *     so utilities like `text-[var(--color-ink-strong)]` resolve at build time.
- *   - System font stacks only (0 KB shipped) — Inter / Roboto / Arial avoided
- *     because those fonts are the most common AI-generated UI cliché.
- *   - Dark mode handled via prefers-color-scheme override of the same variable
- *     names — utilities continue to resolve through the variable, no `dark:`
- *     prefix needed for these tokens.
- *   - Animations are guarded behind prefers-reduced-motion: no-preference so
- *     accessibility users see static states.
+ *   - System font stacks only (0 KB shipped) — Inter / Roboto / Arial avoided.
+ *   - Dark mode handled via prefers-color-scheme override on :root inside the
+ *     @media block — utilities resolve through the variable, no `dark:` prefix
+ *     needed for these tokens.
+ *   - Animations are guarded behind prefers-reduced-motion: no-preference; a
+ *     global reduce-motion reset zeroes transitions/animations.
  */
 
 @theme inline {
@@ -28,35 +27,35 @@
     ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', 'JetBrains Mono',
     monospace;
 
-  /* === Surface (light) === */
-  --color-canvas: #fafaf7;
+  /* === Surface (light) — cool gray (zinc), not warm stone === */
+  --color-canvas: #fafafa;
   --color-surface: #ffffff;
-  --color-surface-subtle: #f5f5f1;
-  --color-surface-sunken: #efefe9;
-  --color-border-strong: #e7e5de;
-  --color-border-soft: #f0efe9;
-  --color-rule: rgb(26 26 23 / 0.08);
+  --color-surface-subtle: #f4f4f5;
+  --color-surface-sunken: #e4e4e7;
+  --color-border-strong: #e4e4e7;
+  --color-border-soft: #f4f4f5;
+  --color-rule: rgb(24 24 27 / 0.08);
 
   /* === Ink (light) === */
-  --color-ink-strong: #0f0f0e;
-  --color-ink-base: #3f3f3a;
-  --color-ink-muted: #6b6b62;
-  --color-ink-faint: #9a968b;
+  --color-ink-strong: #18181b;
+  --color-ink-base: #3f3f46;
+  --color-ink-muted: #71717a;
+  --color-ink-faint: #a1a1aa;
 
-  /* === Accent — single distinctive brand signal (replaces sky-600) === */
-  --color-accent: #c2410c;
-  --color-accent-hover: #9a330a;
-  --color-accent-active: #7c2d12;
-  --color-accent-soft: rgb(194 65 12 / 0.1);
-  --color-accent-ring: rgb(194 65 12 / 0.2);
+  /* === Accent — emerald (replaces sky-600 cliche; communicates "send/go") === */
+  --color-accent: #10b981;
+  --color-accent-hover: #059669;
+  --color-accent-active: #047857;
+  --color-accent-soft: rgb(16 185 129 / 0.1);
+  --color-accent-ring: rgb(16 185 129 / 0.22);
 
   /* === Status === */
-  --color-danger: #b91c1c;
-  --color-danger-soft: rgb(185 28 28 / 0.08);
-  --color-warn: #a16207;
-  --color-warn-soft: rgb(161 98 7 / 0.1);
+  --color-danger: #dc2626;
+  --color-danger-soft: rgb(220 38 38 / 0.08);
+  --color-warn: #d97706;
+  --color-warn-soft: rgb(217 119 6 / 0.1);
   --color-success: #15803d;
-  --color-info: #0f766e;
+  --color-info: #0284c7;
 
   /* === Radii === */
   --radius-sharp: 2px;
@@ -75,47 +74,44 @@
   --ease-edit: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-/* Dark mode token overrides — same variable names so utilities don't change.
+/* Dark mode token overrides — Obsidian-style charcoal canvas.
  *
- * IMPORTANT: dark-mode redefinition uses `:root` not nested `@theme inline { }`.
- * Tailwind v4 only processes `@theme` blocks at the top level; nested @theme
- * inside @media is passed through as-is and the browser does not understand it
- * (lightningcss warns "Unknown at rule: @theme"). Re-declaring the same custom
- * properties on `:root` inside the dark media query is the correct path: utility
- * classes resolve through `var(--color-*)` regardless of which scope set the
- * variable, and `:root` variables under `(prefers-color-scheme: dark)` cleanly
- * shadow the @theme defaults. */
+ * Tailwind v4 only processes top-level @theme; nested @theme inside @media is
+ * ignored (lightningcss warns "Unknown at rule"). Re-declaring the same custom
+ * properties on :root inside the dark media query is the correct path —
+ * utilities resolve through `var(--color-*)` regardless of which scope set the
+ * variable. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-canvas: #0c0c0b;
-    --color-surface: #16161a;
-    --color-surface-subtle: #1f1f23;
-    --color-surface-sunken: #0a0a0a;
-    --color-border-strong: #2e2e33;
-    --color-border-soft: #27272a;
-    --color-rule: rgb(250 250 247 / 0.12);
+    --color-canvas: #1e1e1e;
+    --color-surface: #262626;
+    --color-surface-subtle: #2a2a2a;
+    --color-surface-sunken: #161616;
+    --color-border-strong: rgb(255 255 255 / 0.1);
+    --color-border-soft: rgb(255 255 255 / 0.05);
+    --color-rule: rgb(255 255 255 / 0.06);
 
-    --color-ink-strong: #fafaf7;
-    --color-ink-base: #d6d3cb;
-    --color-ink-muted: #9a968b;
-    --color-ink-faint: #6b6b62;
+    --color-ink-strong: #e7e7e7;
+    --color-ink-base: #a8a8a8;
+    --color-ink-muted: #71717a;
+    --color-ink-faint: #52525b;
 
-    --color-accent: #fb923c;
-    --color-accent-hover: #fdba74;
-    --color-accent-active: #fed7aa;
-    --color-accent-soft: rgb(251 146 60 / 0.12);
-    --color-accent-ring: rgb(251 146 60 / 0.28);
+    --color-accent: #34d399;
+    --color-accent-hover: #6ee7b7;
+    --color-accent-active: #a7f3d0;
+    --color-accent-soft: rgb(52 211 153 / 0.14);
+    --color-accent-ring: rgb(52 211 153 / 0.32);
 
     --color-danger: #f87171;
     --color-danger-soft: rgb(248 113 113 / 0.12);
     --color-warn: #fbbf24;
     --color-warn-soft: rgb(251 191 36 / 0.1);
     --color-success: #4ade80;
-    --color-info: #5eead4;
+    --color-info: #38bdf8;
   }
 }
 
-/* === Body chrome — paper-like canvas + tabular numerals for data === */
+/* === Body chrome — canvas + tabular numerals for data alignment === */
 html,
 body {
   background: var(--color-canvas);
@@ -126,9 +122,8 @@ body {
 }
 
 /* === Animations (a11y-guarded) ===
-   All animation keyframes live behind prefers-reduced-motion: no-preference.
-   When the user has motion preference set, the keyframe rules are not parsed,
-   so referenced animations resolve to no-op (browser ignores undefined name). */
+   Keyframes inside prefers-reduced-motion: no-preference. When reduce-motion,
+   referenced animations resolve to no-op (browser ignores undefined name). */
 @media (prefers-reduced-motion: no-preference) {
   /* Editorial entrance — InProgressView stagger, options sections, banners */
   @keyframes w2c-editorial-rise {
@@ -142,7 +137,7 @@ body {
     }
   }
 
-  /* Margin-note slide — error banner, soft-overwrite hint */
+  /* Margin-note slide — error banner */
   @keyframes w2c-margin-note-in {
     from {
       opacity: 0;
@@ -166,7 +161,7 @@ body {
     }
   }
 
-  /* Loading shimmer — replaces pulse on skeleton (sweeps across gradient) */
+  /* Loading shimmer */
   @keyframes w2c-shimmer {
     0% {
       background-position: -200% 0;
@@ -176,7 +171,7 @@ body {
     }
   }
 
-  /* Drift — empty/error icon idle motion (subtle 2px float) */
+  /* Drift — empty/error icon idle motion */
   @keyframes w2c-drift {
     0%,
     100% {
@@ -199,7 +194,7 @@ body {
     }
   }
 
-  /* Dialog open — subtle scale-in for ConfirmDialog */
+  /* Dialog open — scale-in for ConfirmDialog */
   @keyframes w2c-dialog-open {
     from {
       opacity: 0;
@@ -211,7 +206,7 @@ body {
     }
   }
 
-  /* Slow editorial spinner — replaces fast spin with calm 1.6s rotation */
+  /* Slow editorial spinner — calm 1.6s linear rotation */
   @keyframes w2c-editorial-spin {
     from {
       transform: rotate(0deg);
@@ -222,10 +217,8 @@ body {
   }
 }
 
-/* Reduced-motion safety net for hover/active transitions, keyframe-driven
-   animations, and inline transform-on-hover effects.
-   Standard a11y reset — cuts every animation/transition to ~0ms when the user
-   has expressed a motion preference. Honors WCAG 2.3.3. */
+/* Reduced-motion safety net — collapses every animation/transition to ~0ms.
+   WCAG 2.3.3. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

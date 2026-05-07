@@ -52,9 +52,7 @@ export function ErrorBanner({ code, onRetry, onDismiss }: ErrorBannerProps) {
       data-testid={`error-banner-${code}`}
     >
       <div class="flex-1">
-        <h3 class="m-0 font-serif text-sm leading-snug font-semibold tracking-tight text-[var(--color-danger)]">
-          {heading}
-        </h3>
+        <h3 class="m-0 text-sm leading-snug font-semibold text-[var(--color-danger)]">{heading}</h3>
         <p class="mt-1 m-0 text-sm leading-normal font-normal text-[var(--color-ink-base)]">
           {body}
         </p>

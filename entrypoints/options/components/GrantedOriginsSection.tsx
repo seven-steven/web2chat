@@ -48,28 +48,20 @@ export function GrantedOriginsSection() {
       data-testid="options-origins-section"
     >
       <header class="flex flex-col gap-2">
-        <h2 class="m-0 font-serif text-[15px] leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]">
+        <h2 class="m-0 text-[14px] leading-snug font-semibold text-[var(--color-ink-strong)]">
           {t('options_origins_heading')}
         </h2>
-        <p class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)]">
+        <p class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)]">
           {t('options_origins_explainer')}
         </p>
       </header>
       {origins.length === 0 ? (
-        <div class="flex flex-col items-center gap-2 py-2">
-          <p
-            class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)]"
-            data-testid="options-origins-empty"
-          >
-            {t('options_origins_empty')}
-          </p>
-          <span
-            class="text-[var(--color-ink-faint)] tracking-[0.5em] text-xs select-none"
-            aria-hidden="true"
-          >
-            ∗ ∗ ∗
-          </span>
-        </div>
+        <p
+          class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)]"
+          data-testid="options-origins-empty"
+        >
+          {t('options_origins_empty')}
+        </p>
       ) : (
         <ul class="list-none m-0 p-0 flex flex-col">
           {origins.map((origin, idx) => (

@@ -15,10 +15,10 @@ export function PopupChrome() {
   }
   return (
     <div
-      class="flex items-center justify-between px-4 pt-4 pb-2 border-b border-[var(--color-border-strong)] shadow-[inset_0_-3px_0_-2px_var(--color-rule)]"
+      class="flex items-center justify-between px-3 pt-3 pb-2 border-b border-[var(--color-border-strong)]"
       data-testid="popup-chrome"
     >
-      <h1 class="m-0 font-serif text-[15px] leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]">
+      <h1 class="m-0 text-[13px] leading-snug font-semibold text-[var(--color-ink-strong)]">
         {t('popup_chrome_title')}
       </h1>
       <button

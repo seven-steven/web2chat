@@ -35,10 +35,10 @@ export function LanguageSection() {
       data-testid="options-language-section"
     >
       <header class="flex flex-col gap-2">
-        <h2 class="m-0 font-serif text-[15px] leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]">
+        <h2 class="m-0 text-[14px] leading-snug font-semibold text-[var(--color-ink-strong)]">
           {t('options_language_heading')}
         </h2>
-        <p class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)]">
+        <p class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)]">
           {t('options_language_explainer')}
         </p>
       </header>

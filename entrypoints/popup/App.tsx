@@ -389,20 +389,14 @@ function EmptyView({ code }: { code: 'RESTRICTED_URL' | 'EXTRACTION_EMPTY' }) {
       <div class="[animation:w2c-drift_4s_infinite_ease-in-out]">
         <EmptyIcon variant={variant} />
       </div>
-      <h2 class="m-0 font-serif text-base leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]">
+      <h2 class="m-0 text-[14px] leading-snug font-semibold text-[var(--color-ink-strong)]">
         {heading}
       </h2>
-      <p class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)] max-w-[280px]">
+      <p class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)] max-w-[280px]">
         {before}
-        <span class="text-[var(--color-accent)] not-italic font-semibold">{icon}</span>
+        <span class="text-[var(--color-accent)] font-semibold">{icon}</span>
         {after}
       </p>
-      <div
-        class="mt-1 text-[var(--color-ink-faint)] tracking-[0.5em] text-sm select-none"
-        aria-hidden="true"
-      >
-        ∗ ∗ ∗
-      </div>
     </main>
   );
 }
@@ -420,22 +414,16 @@ function ErrorView() {
       <div class="[animation:w2c-drift_4s_infinite_ease-in-out]">
         <AlertIcon />
       </div>
-      <h2 class="m-0 font-serif text-base leading-snug font-semibold tracking-tight text-[var(--color-danger)]">
+      <h2 class="m-0 text-[14px] leading-snug font-semibold text-[var(--color-danger)]">
         {t('capture_error_scriptFailed_heading')}
       </h2>
-      <p class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)] max-w-[280px]">
+      <p class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)] max-w-[280px]">
         {t('capture_error_scriptFailed_body_before')}
-        <span class="text-[var(--color-accent)] not-italic font-semibold">
+        <span class="text-[var(--color-accent)] font-semibold">
           {t('capture_error_scriptFailed_body_icon')}
         </span>
         {t('capture_error_scriptFailed_body_after')}
       </p>
-      <div
-        class="mt-1 text-[var(--color-ink-faint)] tracking-[0.5em] text-sm select-none"
-        aria-hidden="true"
-      >
-        ∗ ∗ ∗
-      </div>
     </main>
   );
 }

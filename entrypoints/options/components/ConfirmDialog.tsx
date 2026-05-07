@@ -87,7 +87,7 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
       >
         <h2
           id="confirm-dialog-title"
-          class="m-0 font-serif text-base leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]"
+          class="m-0 text-base leading-snug font-semibold text-[var(--color-ink-strong)]"
         >
           {props.title}
         </h2>

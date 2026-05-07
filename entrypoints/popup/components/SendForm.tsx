@@ -265,7 +265,7 @@ export function SendForm(props: SendFormProps) {
   const confirmTooltip = confirmEnabled ? undefined : t('error_code_PLATFORM_UNSUPPORTED_body');
 
   return (
-    <main class="flex flex-col p-4 gap-4 min-w-[360px] font-sans" data-testid="popup-sendform">
+    <main class="flex flex-col p-3 gap-3 min-w-[360px] font-sans" data-testid="popup-sendform">
       {/* Error banner — above everything else */}
       {props.dispatchError && (
         <ErrorBanner
@@ -308,28 +308,28 @@ export function SendForm(props: SendFormProps) {
         />
       </div>
 
-      {/* Soft-overwrite hint (D-27) — sidenote style with rust stripe + italic mono host */}
+      {/* Soft-overwrite hint (D-27) — text-link style with inline accent on host */}
       {showBindingHint && (
         <button
           type="button"
-          class="text-left border-l-2 border-[var(--color-accent)] pl-3 py-1 text-xs leading-snug font-normal italic text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent-soft)] transition-colors duration-[var(--duration-instant)] [animation:w2c-margin-note-in_var(--duration-base)_var(--ease-quint)]"
+          class="text-left text-xs leading-snug font-normal text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] underline-offset-2 hover:underline transition-colors duration-[var(--duration-instant)]"
           onClick={handleSoftOverwriteAccept}
           data-testid="binding-soft-overwrite"
         >
           {t('binding_use_bound_for_before')}
-          <span class="font-mono not-italic text-[var(--color-accent)]">{sendToHost}</span>
+          <span class="font-mono text-[var(--color-accent)]">{sendToHost}</span>
           {t('binding_use_bound_for_after')}
         </button>
       )}
 
-      {/* Confirm button — press-style with rust accent */}
+      {/* Confirm button — emerald primary with press-style active feedback */}
       <div class="flex justify-end">
         <button
           type="button"
           class={
             confirmEnabled
-              ? 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)] active:translate-y-[0.5px] active:brightness-95 text-white px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em] transition-[background-color,transform,filter] duration-[var(--duration-snap)]'
-              : 'bg-[var(--color-surface-subtle)] text-[var(--color-ink-faint)] cursor-not-allowed px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em]'
+              ? 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)] active:translate-y-[0.5px] active:brightness-95 text-white px-5 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.02em] transition-[background-color,transform,filter] duration-[var(--duration-snap)]'
+              : 'bg-[var(--color-surface-subtle)] text-[var(--color-ink-faint)] cursor-not-allowed px-5 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.02em]'
           }
           disabled={!confirmEnabled}
           title={confirmTooltip}
@@ -340,21 +340,18 @@ export function SendForm(props: SendFormProps) {
         </button>
       </div>
 
-      {/* Discord ToS warning footnote (D-59, D-61) — print footnote style with ¹ marker */}
+      {/* Discord ToS warning — compact muted note with warn-color link */}
       {platformId === 'discord' && (
         <p
-          class="mt-2 text-xs leading-relaxed text-[var(--color-ink-muted)]"
+          class="text-xs leading-snug text-[var(--color-ink-muted)]"
           data-testid="discord-tos-footnote"
         >
-          <sup class="text-[var(--color-warn)] font-semibold mr-0.5 not-italic" aria-hidden="true">
-            ¹
-          </sup>
           {t('discord_tos_warning')}{' '}
           <a
             href="https://discord.com/terms"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-[var(--color-warn)] underline underline-offset-2 hover:text-[var(--color-ink-strong)] transition-colors duration-[var(--duration-instant)] ml-0.5"
+            class="text-[var(--color-warn)] underline underline-offset-2 hover:text-[var(--color-ink-strong)] transition-colors duration-[var(--duration-instant)]"
             data-testid="discord-tos-link"
           >
             {t('discord_tos_details')}

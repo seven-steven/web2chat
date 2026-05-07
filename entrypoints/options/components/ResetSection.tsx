@@ -57,10 +57,10 @@ export function ResetSection() {
       data-testid="options-reset-section"
     >
       <header class="flex flex-col gap-2">
-        <h2 class="m-0 font-serif text-[15px] leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]">
+        <h2 class="m-0 text-[14px] leading-snug font-semibold text-[var(--color-ink-strong)]">
           {t('options_reset_heading')}
         </h2>
-        <p class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)]">
+        <p class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)]">
           {t('options_reset_explainer')}
         </p>
       </header>
@@ -97,7 +97,7 @@ export function ResetSection() {
       )}
       {showToastSig.value && (
         <p
-          class="text-sm leading-normal font-normal italic text-[var(--color-ink-muted)]"
+          class="text-sm leading-normal font-normal text-[var(--color-ink-muted)]"
           role="status"
           aria-live="polite"
           data-testid="options-reset-toast"

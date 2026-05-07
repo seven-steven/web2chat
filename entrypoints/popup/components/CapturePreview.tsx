@@ -1,23 +1,23 @@
 /**
- * Phase 2 capture-preview region — extracted from App.tsx SuccessView.
+ * Capture-preview region — Obsidian-style Properties row-list + standalone
+ * Content block (260507-n86 revision).
  *
- * Editorial pattern (260507-n86):
- *   - Title textarea uses serif font (display character — capture-as-headline metaphor)
- *   - URL output is mono with a host chip prefix (e.g. [github.com])
- *   - createdAt shows absolute mono timestamp + relative-time supplement via
- *     Intl.RelativeTimeFormat (browser-native, 0 KB, no new i18n key)
- *   - Description and Content textareas remain sans
- *   - Field labels via shared FieldLabel (11px UPPERCASE tracking-wider)
- *   - Hairline rules between fields via border-t in the label/output blocks
+ * Two-section layout matching the Obsidian Web Clipper Properties panel:
+ *   1. Properties block: title / source / description / created — each
+ *      rendered as a row [icon, label (fixed-width muted), value (flex-1)].
+ *   2. Content block: standalone large textarea below a hairline rule.
  *
- * The 5 visible fields ALL retain their data-testid attributes that Phase 2
+ * The 6 visible fields ALL retain their data-testid attributes that Phase 2
  * e2e (tests/e2e/capture.spec.ts) depends on:
- *   - data-testid="capture-success"
- *   - data-testid="capture-field-title"
- *   - data-testid="capture-field-url"
- *   - data-testid="capture-field-description"
- *   - data-testid="capture-field-createAt"
- *   - data-testid="capture-field-content"
+ *   - data-testid="capture-success"            (wrapper div)
+ *   - data-testid="capture-field-title"        (Title textarea)
+ *   - data-testid="capture-field-url"          (URL output)
+ *   - data-testid="capture-field-description"  (Description textarea)
+ *   - data-testid="capture-field-createAt"     (CreatedAt output)
+ *   - data-testid="capture-field-content"      (Content textarea)
+ *
+ * Inline value editors (textarea) keep their `id` so the FieldLabel <label
+ * for=id> association is preserved (a11y contract).
  */
 import { t } from '@/shared/i18n';
 import type { ArticleSnapshot } from '@/shared/messaging';
@@ -40,94 +40,189 @@ export function CapturePreview(props: CapturePreviewProps) {
     timeStyle: 'short',
   }).format(captureDate);
   const relativeTime = formatRelative(captureDate);
-
   const host = safeHost(props.snapshot.url);
 
   return (
     <div class="flex flex-col gap-3" data-testid="capture-success">
-      {/* Title — serif display textarea */}
-      <FieldLabel id="field-title" label={t('capture_field_title')} />
-      <textarea
-        id="field-title"
-        class={`${textareaClass} font-serif text-[15px] leading-snug tracking-tight`}
-        style="min-height:2.25rem"
-        value={props.titleValue}
-        onInput={(e) => {
-          props.onTitleChange((e.target as HTMLTextAreaElement).value);
-        }}
-        spellcheck={false}
-        data-testid="capture-field-title"
-      />
+      {/* Properties block — Obsidian-style row list */}
+      <div class="flex flex-col gap-0.5 -mx-1">
+        {/* Title row */}
+        <PropertyRow icon={<TypeIcon />} labelFor="field-title" label={t('capture_field_title')}>
+          <textarea
+            id="field-title"
+            class={`${textareaClass} font-serif text-[14px] leading-snug tracking-tight min-h-[1.75rem] py-1 px-2`}
+            value={props.titleValue}
+            onInput={(e) => {
+              props.onTitleChange((e.target as HTMLTextAreaElement).value);
+            }}
+            spellcheck={false}
+            data-testid="capture-field-title"
+            rows={1}
+          />
+        </PropertyRow>
 
-      {/* URL — read-only output with host chip + mono full URL */}
-      <div class="flex flex-col gap-1">
-        <span class="text-[11px] uppercase tracking-[0.06em] font-semibold text-[var(--color-ink-muted)]">
-          {t('capture_field_url')}
-        </span>
-        <output
-          class="flex items-baseline flex-wrap gap-x-2 gap-y-1 text-xs leading-snug font-mono text-[var(--color-ink-muted)] break-all"
-          data-testid="capture-field-url"
+        {/* Source (URL) row — read-only output, host chip prefix + mono URL */}
+        <PropertyRow icon={<LinkIcon />} label={t('capture_field_url')}>
+          <output
+            class="flex items-baseline flex-wrap gap-x-2 gap-y-0.5 px-2 py-1 text-xs leading-snug font-mono text-[var(--color-ink-base)] break-all"
+            data-testid="capture-field-url"
+          >
+            {host && (
+              <span class="font-mono text-[10px] uppercase tracking-wide bg-[var(--color-surface-subtle)] text-[var(--color-ink-muted)] px-1.5 py-0.5 rounded-[var(--radius-sharp)]">
+                {host}
+              </span>
+            )}
+            <span class="text-[var(--color-ink-muted)]">{props.snapshot.url}</span>
+          </output>
+        </PropertyRow>
+
+        {/* Description row — textarea, capped height in row context */}
+        <PropertyRow
+          icon={<TextIcon />}
+          labelFor="field-description"
+          label={t('capture_field_description')}
         >
-          {host && (
-            <span class="font-mono text-[10px] uppercase tracking-wide bg-[var(--color-surface-subtle)] text-[var(--color-ink-muted)] px-1.5 py-0.5 rounded-[var(--radius-sharp)]">
-              {host}
-            </span>
-          )}
-          <span class="text-[var(--color-ink-muted)]">{props.snapshot.url}</span>
-        </output>
+          <textarea
+            id="field-description"
+            class={`${textareaClass} text-[13px] leading-snug min-h-[1.75rem] py-1 px-2`}
+            style="max-height:5.5rem"
+            value={props.descriptionValue}
+            onInput={(e) => {
+              props.onDescriptionChange((e.target as HTMLTextAreaElement).value);
+            }}
+            spellcheck={false}
+            data-testid="capture-field-description"
+            rows={2}
+          />
+        </PropertyRow>
+
+        {/* Created row — read-only mono with relative-time supplement */}
+        <PropertyRow icon={<ClockIcon />} label={t('capture_field_createAt')}>
+          <output
+            class="flex items-baseline flex-wrap gap-x-2 px-2 py-1 text-xs leading-snug font-mono text-[var(--color-ink-base)] tabular-nums"
+            data-testid="capture-field-createAt"
+          >
+            <span>{formattedDate}</span>
+            {relativeTime && <span class="text-[var(--color-ink-faint)]">· {relativeTime}</span>}
+          </output>
+        </PropertyRow>
       </div>
 
-      {/* Description — sans textarea */}
-      <FieldLabel id="field-description" label={t('capture_field_description')} />
-      <textarea
-        id="field-description"
-        class={textareaClass}
-        style="min-height:4.5rem"
-        value={props.descriptionValue}
-        onInput={(e) => {
-          props.onDescriptionChange((e.target as HTMLTextAreaElement).value);
-        }}
-        spellcheck={false}
-        data-testid="capture-field-description"
-      />
+      {/* Hairline divider */}
+      <hr class="border-0 border-t border-[var(--color-rule)] -mx-1" />
 
-      {/* Captured at — read-only mono with relative-time supplement */}
+      {/* Content block — standalone textarea (full width, large) */}
       <div class="flex flex-col gap-1">
-        <span class="text-[11px] uppercase tracking-[0.06em] font-semibold text-[var(--color-ink-muted)]">
-          {t('capture_field_createAt')}
-        </span>
-        <output
-          class="flex items-baseline flex-wrap gap-x-2 text-sm leading-normal font-normal text-[var(--color-ink-muted)] tabular-nums"
-          data-testid="capture-field-createAt"
-        >
-          <span class="font-mono text-xs">{formattedDate}</span>
-          {relativeTime && (
-            <span class="text-[var(--color-ink-faint)] font-mono text-xs">· {relativeTime}</span>
-          )}
-        </output>
+        <FieldLabel id="field-content" label={t('capture_field_content')} />
+        <textarea
+          id="field-content"
+          class={textareaClass}
+          style="min-height:9rem"
+          value={props.contentValue}
+          onInput={(e) => {
+            props.onContentChange((e.target as HTMLTextAreaElement).value);
+          }}
+          spellcheck={false}
+          data-testid="capture-field-content"
+        />
       </div>
-
-      {/* Content — sans textarea (tallest) */}
-      <FieldLabel id="field-content" label={t('capture_field_content')} />
-      <textarea
-        id="field-content"
-        class={textareaClass}
-        style="min-height:9rem"
-        value={props.contentValue}
-        onInput={(e) => {
-          props.onContentChange((e.target as HTMLTextAreaElement).value);
-        }}
-        spellcheck={false}
-        data-testid="capture-field-content"
-      />
     </div>
   );
 }
 
-/**
- * Best-effort host extraction — returns null when URL is malformed (e.g.
- * extension-internal pages or test fixtures). Caller hides the chip when null.
- */
+// ─── Property row primitive ──────────────────────────────────────────────────
+
+interface PropertyRowProps {
+  icon: preact.JSX.Element;
+  /** When provided, label becomes a <label for=id>; otherwise a plain <span>. */
+  labelFor?: string;
+  label: string;
+  children: preact.ComponentChildren;
+}
+
+function PropertyRow({ icon, labelFor, label, children }: PropertyRowProps) {
+  return (
+    <div class="grid grid-cols-[14px_88px_1fr] items-start gap-2 px-1 py-1 rounded-[var(--radius-sharp)] hover:bg-[var(--color-surface-subtle)] transition-colors duration-[var(--duration-instant)]">
+      <span class="text-[var(--color-ink-faint)] mt-1.5 flex items-center justify-center">
+        {icon}
+      </span>
+      {labelFor ? (
+        <label
+          for={labelFor}
+          class="self-center text-[12px] leading-snug font-normal text-[var(--color-ink-muted)] truncate"
+        >
+          {label}
+        </label>
+      ) : (
+        <span class="self-center text-[12px] leading-snug font-normal text-[var(--color-ink-muted)] truncate">
+          {label}
+        </span>
+      )}
+      <div class="min-w-0">{children}</div>
+    </div>
+  );
+}
+
+// ─── Lucide-style icons (14×14, stroke 1.5) ──────────────────────────────────
+
+const ICON_PROPS = {
+  width: '14',
+  height: '14',
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': '1.5',
+  'stroke-linecap': 'round' as const,
+  'stroke-linejoin': 'round' as const,
+  'aria-hidden': true,
+};
+
+function TypeIcon() {
+  // Lucide type — for Title row
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" {...ICON_PROPS}>
+      <polyline points="4 7 4 4 20 4 20 7" />
+      <line x1="9" y1="20" x2="15" y2="20" />
+      <line x1="12" y1="4" x2="12" y2="20" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  // Lucide link — for URL row
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" {...ICON_PROPS}>
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+  );
+}
+
+function TextIcon() {
+  // Lucide align-left — for Description row
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" {...ICON_PROPS}>
+      <line x1="17" y1="10" x2="3" y2="10" />
+      <line x1="21" y1="6" x2="3" y2="6" />
+      <line x1="21" y1="14" x2="3" y2="14" />
+      <line x1="17" y1="18" x2="3" y2="18" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  // Lucide clock — for Created row
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" {...ICON_PROPS}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Best-effort host extraction — returns null when URL is malformed. */
 function safeHost(url: string): string | null {
   try {
     return new URL(url).host || null;
@@ -139,9 +234,6 @@ function safeHost(url: string): string | null {
 /**
  * Relative-time formatter using Intl.RelativeTimeFormat (browser-native, 0 KB,
  * automatic locale handling — no new i18n key required).
- *
- * Returns a localized string like "5 min ago" / "刚刚" / "2 hr ago" depending
- * on navigator.language.
  */
 function formatRelative(date: Date): string {
   const diffSec = Math.round((date.getTime() - Date.now()) / 1000);

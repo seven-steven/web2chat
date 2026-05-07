@@ -51,7 +51,7 @@ export function InProgressView({ dispatchId, onCancel }: InProgressViewProps) {
         <Spinner />
       </div>
       <h2
-        class="m-0 font-serif text-base leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)] [animation:w2c-editorial-rise_320ms_var(--ease-quint)_both] [animation-delay:60ms]"
+        class="m-0 text-[14px] leading-snug font-semibold text-[var(--color-ink-strong)] [animation:w2c-editorial-rise_320ms_var(--ease-quint)_both] [animation-delay:60ms]"
         data-testid="dispatch-in-progress-heading"
       >
         {t('dispatch_in_progress_heading')}
