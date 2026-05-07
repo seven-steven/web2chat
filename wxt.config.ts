@@ -51,6 +51,9 @@ export default defineConfig({
     },
   }),
   modules: ['@wxt-dev/i18n/module'],
+  zip: {
+    exclude: ['content-scripts/mock-platform.js'],
+  },
   vite: () => ({
     plugins: [tailwindcss(), yamlLocalePlugin()],
   }),
