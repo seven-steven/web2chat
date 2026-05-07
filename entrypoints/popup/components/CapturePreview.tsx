@@ -3,21 +3,25 @@
  * Content block (260507-n86 revision).
  *
  * Two-section layout matching the Obsidian Web Clipper Properties panel:
- *   1. Properties block: title / source / description / created — each
- *      rendered as a row [icon, label (fixed-width muted), value (flex-1)].
+ *   1. Properties block: title / source / description / created — each row
+ *      is `[14px icon, auto-width label, 1fr value]`. The label column auto-
+ *      sizes to the longest label across rows via CSS subgrid, so it scales
+ *      with the active locale (CN labels are 2–4 chars; EN labels can be
+ *      longer like "Captured at"). Avoids the 88px fixed-width gap that
+ *      looked sparse in CN.
  *   2. Content block: standalone large textarea below a hairline rule.
  *
- * The 6 visible fields ALL retain their data-testid attributes that Phase 2
- * e2e (tests/e2e/capture.spec.ts) depends on:
- *   - data-testid="capture-success"            (wrapper div)
+ * Each editable value is a textarea with NO box border — the surrounding
+ * row-hover bg + focus ring serve as the affordance, matching Obsidian's
+ * inline-editable Properties pattern.
+ *
+ * The 6 visible fields ALL retain their data-testid attributes:
+ *   - data-testid="capture-success"            (wrapper)
  *   - data-testid="capture-field-title"        (Title textarea)
  *   - data-testid="capture-field-url"          (URL output)
  *   - data-testid="capture-field-description"  (Description textarea)
  *   - data-testid="capture-field-createAt"     (CreatedAt output)
  *   - data-testid="capture-field-content"      (Content textarea)
- *
- * Inline value editors (textarea) keep their `id` so the FieldLabel <label
- * for=id> association is preserved (a11y contract).
  */
 import { t } from '@/shared/i18n';
 import type { ArticleSnapshot } from '@/shared/messaging';
@@ -33,6 +37,25 @@ interface CapturePreviewProps {
   onContentChange: (next: string) => void;
 }
 
+/**
+ * Inline-editable textarea class — for use inside PropertyRow value column.
+ * No box border (the surrounding row-hover bg provides the affordance);
+ * focus shows an emerald ring instead of a hard border so the row alignment
+ * stays clean.
+ */
+const inlineEditableClass = [
+  'w-full px-2 py-1 rounded-[var(--radius-sharp)]',
+  'leading-snug',
+  'text-[var(--color-ink-strong)]',
+  'bg-transparent',
+  'border-0',
+  'focus-visible:outline-none',
+  'focus-visible:bg-[var(--color-surface)]',
+  'focus-visible:shadow-[inset_0_0_0_1px_var(--color-accent)]',
+  'resize-none field-sizing-content',
+  'transition-[background-color,box-shadow] duration-[var(--duration-instant)]',
+].join(' ');
+
 export function CapturePreview(props: CapturePreviewProps) {
   const captureDate = new Date(props.snapshot.create_at);
   const formattedDate = new Intl.DateTimeFormat(navigator.language, {
@@ -40,17 +63,16 @@ export function CapturePreview(props: CapturePreviewProps) {
     timeStyle: 'short',
   }).format(captureDate);
   const relativeTime = formatRelative(captureDate);
-  const host = safeHost(props.snapshot.url);
 
   return (
     <div class="flex flex-col gap-3" data-testid="capture-success">
-      {/* Properties block — Obsidian-style row list */}
-      <div class="flex flex-col gap-0.5 -mx-1">
+      {/* Properties block — subgrid: all rows share label-column width */}
+      <div class="grid grid-cols-[14px_auto_1fr] items-start gap-x-2 gap-y-0">
         {/* Title row */}
         <PropertyRow icon={<TypeIcon />} labelFor="field-title" label={t('capture_field_title')}>
           <textarea
             id="field-title"
-            class={`${textareaClass} font-serif text-[14px] leading-snug tracking-tight min-h-[1.75rem] py-1 px-2`}
+            class={`${inlineEditableClass} font-serif text-[14px] tracking-tight`}
             value={props.titleValue}
             onInput={(e) => {
               props.onTitleChange((e.target as HTMLTextAreaElement).value);
@@ -61,22 +83,17 @@ export function CapturePreview(props: CapturePreviewProps) {
           />
         </PropertyRow>
 
-        {/* Source (URL) row — read-only output, host chip prefix + mono URL */}
+        {/* Source (URL) row — bare URL, no host chip (Obsidian convention) */}
         <PropertyRow icon={<LinkIcon />} label={t('capture_field_url')}>
           <output
-            class="flex items-baseline flex-wrap gap-x-2 gap-y-0.5 px-2 py-1 text-xs leading-snug font-mono text-[var(--color-ink-base)] break-all"
+            class="block px-2 py-1 text-[12px] leading-snug font-mono text-[var(--color-ink-base)] break-all"
             data-testid="capture-field-url"
           >
-            {host && (
-              <span class="font-mono text-[10px] uppercase tracking-wide bg-[var(--color-surface-subtle)] text-[var(--color-ink-muted)] px-1.5 py-0.5 rounded-[var(--radius-sharp)]">
-                {host}
-              </span>
-            )}
-            <span class="text-[var(--color-ink-muted)]">{props.snapshot.url}</span>
+            {props.snapshot.url}
           </output>
         </PropertyRow>
 
-        {/* Description row — textarea, capped height in row context */}
+        {/* Description row */}
         <PropertyRow
           icon={<TextIcon />}
           labelFor="field-description"
@@ -84,7 +101,7 @@ export function CapturePreview(props: CapturePreviewProps) {
         >
           <textarea
             id="field-description"
-            class={`${textareaClass} text-[13px] leading-snug min-h-[1.75rem] py-1 px-2`}
+            class={`${inlineEditableClass} text-[13px]`}
             style="max-height:5.5rem"
             value={props.descriptionValue}
             onInput={(e) => {
@@ -96,20 +113,20 @@ export function CapturePreview(props: CapturePreviewProps) {
           />
         </PropertyRow>
 
-        {/* Created row — read-only mono with relative-time supplement */}
+        {/* Created row — mono date + relative-time supplement */}
         <PropertyRow icon={<ClockIcon />} label={t('capture_field_createAt')}>
           <output
-            class="flex items-baseline flex-wrap gap-x-2 px-2 py-1 text-xs leading-snug font-mono text-[var(--color-ink-base)] tabular-nums"
+            class="block px-2 py-1 text-[12px] leading-snug font-mono text-[var(--color-ink-base)] tabular-nums break-words"
             data-testid="capture-field-createAt"
           >
             <span>{formattedDate}</span>
-            {relativeTime && <span class="text-[var(--color-ink-faint)]">· {relativeTime}</span>}
+            {relativeTime && <span class="text-[var(--color-ink-faint)]"> · {relativeTime}</span>}
           </output>
         </PropertyRow>
       </div>
 
       {/* Hairline divider */}
-      <hr class="border-0 border-t border-[var(--color-rule)] -mx-1" />
+      <hr class="border-0 border-t border-[var(--color-rule)]" />
 
       {/* Content block — standalone textarea (full width, large) */}
       <div class="flex flex-col gap-1">
@@ -140,21 +157,26 @@ interface PropertyRowProps {
   children: preact.ComponentChildren;
 }
 
+/**
+ * Subgrid row — `display: grid` with `grid-cols-subgrid` so all rows
+ * inherit the parent grid's column track sizes. Hover tints the entire
+ * row (icon column → value column) with surface-subtle.
+ */
 function PropertyRow({ icon, labelFor, label, children }: PropertyRowProps) {
   return (
-    <div class="grid grid-cols-[14px_88px_1fr] items-start gap-2 px-1 py-1 rounded-[var(--radius-sharp)] hover:bg-[var(--color-surface-subtle)] transition-colors duration-[var(--duration-instant)]">
+    <div class="col-span-3 grid grid-cols-subgrid items-start py-1 rounded-[var(--radius-sharp)] hover:bg-[var(--color-surface-subtle)] transition-colors duration-[var(--duration-instant)]">
       <span class="text-[var(--color-ink-faint)] mt-1.5 flex items-center justify-center">
         {icon}
       </span>
       {labelFor ? (
         <label
           for={labelFor}
-          class="self-center text-[12px] leading-snug font-normal text-[var(--color-ink-muted)] truncate"
+          class="self-start mt-1.5 text-[12px] leading-snug font-normal text-[var(--color-ink-muted)] whitespace-nowrap"
         >
           {label}
         </label>
       ) : (
-        <span class="self-center text-[12px] leading-snug font-normal text-[var(--color-ink-muted)] truncate">
+        <span class="self-start mt-1.5 text-[12px] leading-snug font-normal text-[var(--color-ink-muted)] whitespace-nowrap">
           {label}
         </span>
       )}
@@ -221,15 +243,6 @@ function ClockIcon() {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/** Best-effort host extraction — returns null when URL is malformed. */
-function safeHost(url: string): string | null {
-  try {
-    return new URL(url).host || null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Relative-time formatter using Intl.RelativeTimeFormat (browser-native, 0 KB,
