@@ -64,10 +64,8 @@ Text for each permission to enter in the CWS developer dashboard:
 ### Privacy Policy URL
 
 ```
-https://github.com/<owner>/web2chat/blob/main/PRIVACY.md
+https://github.com/seven-steven/web2chat/blob/main/PRIVACY.md
 ```
-
-(Replace `<owner>` with the actual GitHub username or organization.)
 
 ### Privacy Practices Labels
 
