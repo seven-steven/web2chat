@@ -77,3 +77,13 @@ All 13 acceptance criteria verified and passing:
 ## Threat Flags
 
 No new threat surface introduced. Files are documentation only (no runtime code).
+
+## Self-Check: PASSED
+
+| Item | Status |
+|------|--------|
+| STORE-LISTING.md | FOUND |
+| STORE-LISTING.en.md | FOUND |
+| 07-04-SUMMARY.md | FOUND |
+| Commit 2f2809f (task) | FOUND |
+| Commit 9a4c75e (summary) | FOUND |
