@@ -23,6 +23,8 @@
     "test:e2e": "wxt build --mode development && playwright test",
     "test:i18n-coverage": "tsx scripts/i18n-coverage.ts",
     "verify:manifest": "wxt build && tsx scripts/verify-manifest.ts",
+    "verify:zip": "wxt build && wxt zip && tsx scripts/verify-zip.ts",
+    "verify:readme": "tsx scripts/verify-readme-anchors.ts",
     "postinstall": "wxt prepare && husky",
     "prepare": "husky"
   },
