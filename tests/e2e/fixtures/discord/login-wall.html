@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Discord Login Wall Stub — E2E</title>
+    <!--
+      Mimics Discord's logged-out-user-on-channel-URL state: the SPA shell loads
+      at /channels/<g>/<c>, returns 200, but renders a login form in place of the
+      chat editor. No [role=textbox][aria-label*=Message] is present — only the
+      Discord login UI markers (input[name=email][type=email] + authBox class).
+
+      Used by tests/e2e/discord-login.spec.ts to assert that the adapter detects
+      the login wall via DOM probe and returns NOT_LOGGED_IN before falling
+      through to the 5s findEditor timeout.
+    -->
+  </head>
+  <body>
+    <div id="app-mount">
+      <div class="authBox-loginRoot">
+        <h1>Welcome back!</h1>
+        <p>We're so excited to see you again!</p>
+        <form>
+          <label for="email">Email or Phone Number</label>
+          <input type="email" name="email" id="email" />
+          <label for="password">Password</label>
+          <input type="password" name="password" id="password" />
+          <button type="submit">Log In</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

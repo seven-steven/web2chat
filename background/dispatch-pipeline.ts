@@ -40,6 +40,7 @@ import type {
   DispatchCancelOutput,
 } from '@/shared/messaging';
 import { findAdapter } from '@/shared/adapters/registry';
+import type { AdapterRegistryEntry } from '@/shared/adapters/types';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 import * as historyRepo from '@/shared/storage/repos/history';
 import * as bindingRepo from '@/shared/storage/repos/binding';
@@ -60,6 +61,24 @@ export const DISPATCH_TIMEOUT_MINUTES = 0.5;
 /** Alarm name prefixes — listed for spec assertion + cancelDispatch cleanup. */
 const ALARM_PREFIX_TIMEOUT = 'dispatch-timeout:';
 const ALARM_PREFIX_BADGE_CLEAR = 'badge-clear:';
+
+/**
+ * True when `actualUrl` lives on a host described by any of the adapter's
+ * `hostMatches` glob patterns. Used as the "did the tab navigate within the
+ * platform's domain" check — distinguishing a logged-out redirect to
+ * /login (still discord.com) from a tab close or unrelated navigation.
+ */
+function isOnAdapterHost(adapter: AdapterRegistryEntry, actualUrl: string): boolean {
+  return adapter.hostMatches.some((pattern) => {
+    try {
+      const patternHost = new URL(pattern.replace('*', 'x')).hostname;
+      const actualHost = new URL(actualUrl).hostname;
+      return actualHost === patternHost || actualHost.endsWith('.' + patternHost);
+    } catch {
+      return false;
+    }
+  });
+}
 
 /**
  * Open or activate the tab whose URL canonical-equals send_to.
@@ -276,23 +295,52 @@ async function advanceToAdapterInjection(
 
   if (response.ok) {
     await succeedDispatch(updated);
-  } else {
-    const code = response.code ?? 'INTERNAL';
-    await failDispatch(
-      updated,
-      code as
-        | 'INTERNAL'
-        | 'NOT_LOGGED_IN'
-        | 'INPUT_NOT_FOUND'
-        | 'TIMEOUT'
-        | 'RATE_LIMITED'
-        | 'EXECUTE_SCRIPT_FAILED'
-        | 'OPENCLAW_OFFLINE'
-        | 'OPENCLAW_PERMISSION_DENIED',
-      response.message ?? 'Adapter returned an unknown error',
-      response.retriable ?? false,
-    );
+    return;
   }
+
+  // Backstop remap (debug session discord-login-detection, 2026-05-07):
+  // The adapter may return INPUT_NOT_FOUND from its "Channel mismatch" branch when
+  // Discord has navigated the tab away from /channels/<g>/<c> to a non-channel URL
+  // (e.g. /login, /, /register) BEFORE the adapter's URL probe runs. The adapter
+  // cannot tell from inside content-script context whether that off-channel URL is
+  // a logged-out redirect; the pipeline can — by re-checking the tab URL host vs.
+  // adapter.match(). Promote INPUT_NOT_FOUND -> NOT_LOGGED_IN when host still
+  // matches but URL pattern doesn't. Other INPUT_NOT_FOUND causes (legit "editor
+  // not found" on a still-channel URL) are unaffected.
+  let code = response.code ?? 'INTERNAL';
+  let message = response.message ?? 'Adapter returned an unknown error';
+  let retriable = response.retriable ?? false;
+  if (code === 'INPUT_NOT_FOUND') {
+    const adapter = findAdapter(updated.send_to);
+    if (adapter && adapter.hostMatches.length > 0) {
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        const actualUrl = tab.url;
+        if (actualUrl && isOnAdapterHost(adapter, actualUrl) && !adapter.match(actualUrl)) {
+          code = 'NOT_LOGGED_IN';
+          message = `Redirected to ${actualUrl}`;
+          retriable = true;
+        }
+      } catch {
+        // Tab closed — leave INPUT_NOT_FOUND as-is.
+      }
+    }
+  }
+
+  await failDispatch(
+    updated,
+    code as
+      | 'INTERNAL'
+      | 'NOT_LOGGED_IN'
+      | 'INPUT_NOT_FOUND'
+      | 'TIMEOUT'
+      | 'RATE_LIMITED'
+      | 'EXECUTE_SCRIPT_FAILED'
+      | 'OPENCLAW_OFFLINE'
+      | 'OPENCLAW_PERMISSION_DENIED',
+    message,
+    retriable,
+  );
 }
 
 async function succeedDispatch(record: DispatchRecord): Promise<void> {
@@ -387,20 +435,9 @@ export async function onTabComplete(
       } catch {
         // Tab may have been closed
       }
-      if (actualUrl && !adapter.match(actualUrl)) {
-        const isHostMatch = adapter.hostMatches.some((pattern) => {
-          try {
-            const patternHost = new URL(pattern.replace('*', 'x')).hostname;
-            const actualHost = new URL(actualUrl!).hostname;
-            return actualHost === patternHost || actualHost.endsWith('.' + patternHost);
-          } catch {
-            return false;
-          }
-        });
-        if (isHostMatch) {
-          await failDispatch(record, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
-          continue;
-        }
+      if (actualUrl && !adapter.match(actualUrl) && isOnAdapterHost(adapter, actualUrl)) {
+        await failDispatch(record, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
+        continue;
       }
     }
 

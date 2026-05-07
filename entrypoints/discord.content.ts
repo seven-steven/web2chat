@@ -13,11 +13,20 @@
  * Confirm (D-65): MutationObserver watches chat-messages container.
  * Rate limit (D-69): 5s per channel.
  * Safety (D-68): channelId consistency check.
+ * Login wall (debug session discord-login-detection, 2026-05-07):
+ *   - Pathname guard widened to /login + /register + root '/'.
+ *   - Pre-editor DOM probe via detectLoginWall() so logged-out users who
+ *     land on /channels/<id> with a login overlay are surfaced as
+ *     NOT_LOGGED_IN instead of timing out as INPUT_NOT_FOUND.
+ *   - Post-findEditor-failure recheck so a login wall that paints during
+ *     the 5s waitForElement window is also caught.
  */
 import { defineContentScript } from '#imports';
 import { composeDiscordMarkdown } from '@/shared/adapters/discord-format';
+import { detectLoginWall } from '@/shared/adapters/discord-login-detect';
 
 const WAIT_TIMEOUT_MS = 5000;
+const LOGIN_WALL_PROBE_MS = 1500;
 const RATE_LIMIT_MS = 5000;
 const DISCORD_MAIN_WORLD_PASTE_PORT = 'WEB2CHAT_DISCORD_MAIN_WORLD_PASTE';
 
@@ -79,6 +88,17 @@ function checkRateLimit(channelId: string): boolean {
 }
 
 /**
+ * URL-based logged-out path detector. Discord may navigate logged-out
+ * sessions to /login, /register, or the root domain — none match the
+ * adapter's /channels/<g>/<c> pattern. The pre-fix code only checked
+ * /login; this widens to cover observed redirect targets without false
+ * positives (channels/<id> URLs can never satisfy any of these).
+ */
+function isLoggedOutPath(pathname: string): boolean {
+  return pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/register');
+}
+
+/**
  * ARIA-first three-level fallback editor selector (D-62).
  * Tier 1: role=textbox + aria-label containing "Message"
  * Tier 2: data-slate-editor attribute
@@ -90,6 +110,54 @@ function findEditor(): HTMLElement | null {
     document.querySelector<HTMLElement>('[data-slate-editor="true"]') ??
     document.querySelector<HTMLElement>('div[class*="textArea"] [contenteditable="true"]')
   );
+}
+
+/**
+ * Race the editor element against login-wall markers using a single
+ * MutationObserver. Resolves with the first signal that appears within
+ * `timeoutMs`, or `{ kind: 'timeout' }` if neither does.
+ *
+ * Returning the editor when found avoids the redundant 5s waitForElement
+ * pass for the happy path; returning 'login' lets handleDispatch
+ * short-circuit to NOT_LOGGED_IN before the editor timeout would fire.
+ */
+function waitForReady(
+  timeoutMs: number,
+): Promise<{ kind: 'editor'; el: HTMLElement } | { kind: 'login' } | { kind: 'timeout' }> {
+  // Synchronous probe first — covers the case where the page is already
+  // settled at adapter injection time.
+  const eagerEditor = findEditor();
+  if (eagerEditor) return Promise.resolve({ kind: 'editor', el: eagerEditor });
+  if (detectLoginWall()) return Promise.resolve({ kind: 'login' });
+
+  return new Promise((resolve) => {
+    let settled = false;
+    const observer = new MutationObserver(() => {
+      const editor = findEditor();
+      if (editor && !settled) {
+        settled = true;
+        observer.disconnect();
+        clearTimeout(timer);
+        resolve({ kind: 'editor', el: editor });
+        return;
+      }
+      if (!settled && detectLoginWall()) {
+        settled = true;
+        observer.disconnect();
+        clearTimeout(timer);
+        resolve({ kind: 'login' });
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        observer.disconnect();
+        resolve({ kind: 'timeout' });
+      }
+    }, timeoutMs);
+  });
 }
 
 /**
@@ -142,12 +210,26 @@ export default defineContentScript({
 async function handleDispatch(
   payload: AdapterDispatchMessage['payload'],
 ): Promise<AdapterDispatchResponse> {
-  // Defense-in-depth login guard (D-70 note: primary detection in dispatch-pipeline)
-  if (window.location.pathname.startsWith('/login')) {
+  // Defense-in-depth login guards — pathname-based check covers Discord's
+  // server-side or pre-injection redirects to /login, /register, or '/'.
+  // (Primary URL-based detection still happens in dispatch-pipeline.ts.)
+  if (isLoggedOutPath(window.location.pathname)) {
     return {
       ok: false,
       code: 'NOT_LOGGED_IN',
       message: 'Discord login required',
+      retriable: true,
+    };
+  }
+
+  // DOM-based login wall probe. Catches the case where Discord renders
+  // a login overlay on /channels/<id> (URL unchanged) — invisible to
+  // pathname-based detection both here and in the pipeline.
+  if (detectLoginWall()) {
+    return {
+      ok: false,
+      code: 'NOT_LOGGED_IN',
+      message: 'Discord login required (login UI detected)',
       retriable: true,
     };
   }
@@ -183,15 +265,38 @@ async function handleDispatch(
     };
   }
 
-  // waitForReady: find editor with fallback + MutationObserver (D-62)
-  let editor = findEditor();
-  if (!editor) {
+  // waitForReady: race editor render vs login-wall render. If a login wall
+  // paints during the probe window, return NOT_LOGGED_IN immediately rather
+  // than waiting out the full 5s editor timeout for a guaranteed failure.
+  const probe = await waitForReady(LOGIN_WALL_PROBE_MS);
+  let editor: HTMLElement | null = null;
+  if (probe.kind === 'editor') {
+    editor = probe.el;
+  } else if (probe.kind === 'login') {
+    return {
+      ok: false,
+      code: 'NOT_LOGGED_IN',
+      message: 'Discord login required (login UI detected)',
+      retriable: true,
+    };
+  } else {
+    // Probe timed out — fall back to the original 5s editor wait.
     editor = await waitForElement<HTMLElement>(
       '[role="textbox"][aria-label*="Message"], [data-slate-editor="true"]',
       WAIT_TIMEOUT_MS,
     );
   }
   if (!editor) {
+    // Final login-wall recheck — if Discord rendered the login UI during
+    // the 5s editor wait, surface that instead of a generic INPUT_NOT_FOUND.
+    if (detectLoginWall() || isLoggedOutPath(window.location.pathname)) {
+      return {
+        ok: false,
+        code: 'NOT_LOGGED_IN',
+        message: 'Discord login required (detected after editor timeout)',
+        retriable: true,
+      };
+    }
     return {
       ok: false,
       code: 'INPUT_NOT_FOUND',

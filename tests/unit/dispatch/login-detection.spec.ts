@@ -4,15 +4,21 @@
  * Validates that onTabComplete detects Discord login redirects:
  * when a tab URL is on the adapter's host but doesn't match adapter.match(),
  * the dispatch should fail with NOT_LOGGED_IN.
+ *
+ * Also covers the post-launch fix (debug session discord-login-detection,
+ * 2026-05-07): when the adapter returns INPUT_NOT_FOUND but the tab URL
+ * has navigated to a non-channel discord.com URL (e.g. /login or /), the
+ * pipeline should remap the error code to NOT_LOGGED_IN.
  */
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
-import { onTabComplete } from '@/background/dispatch-pipeline';
+import { onTabComplete, startDispatch } from '@/background/dispatch-pipeline';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 import type { DispatchRecord } from '@/shared/storage/repos/dispatch';
 
 const DISCORD_CHANNEL_URL = 'https://discord.com/channels/123/456';
 const DISCORD_LOGIN_URL = 'https://discord.com/login?redirect_to=%2Fchannels%2F123%2F456';
+const DISCORD_ROOT_URL = 'https://discord.com/';
 const OPENCLAW_URL = 'http://localhost:18789/chat?session=agent:test:s1';
 
 const TAB_ID = 42;
@@ -144,5 +150,162 @@ describe('dispatch-pipeline login detection (D-70)', () => {
     const updated = await dispatchRepo.get(record.dispatchId);
     expect(updated?.state).toBe('awaiting_complete');
     expect(chrome.tabs.get).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Backstop remap added in debug session discord-login-detection (2026-05-07).
+ *
+ * When the Discord adapter races against a tab navigation to /login or /,
+ * its `extractChannelId(window.location.href)` returns null and it emits
+ * INPUT_NOT_FOUND ("Channel mismatch"). The pipeline must detect this and
+ * remap to NOT_LOGGED_IN so the user gets the correct error banner.
+ *
+ * We exercise the path via startDispatch with `expectsCompleteEvent: false`
+ * (tab already at the target URL) — that drives advanceToAdapterInjection
+ * directly so we can assert on the response handling.
+ */
+describe('dispatch-pipeline INPUT_NOT_FOUND -> NOT_LOGGED_IN remap (post-launch fix)', () => {
+  const SEND_TO = DISCORD_CHANNEL_URL;
+  const DISPATCH_ID = 'remap-001';
+  const TAB_ID_REMAP = 99;
+
+  function baseStartInput() {
+    return {
+      dispatchId: DISPATCH_ID,
+      send_to: SEND_TO,
+      prompt: 'hi',
+      snapshot: {
+        title: 'T',
+        url: 'https://x.com',
+        description: '',
+        create_at: '',
+        content: 'c',
+      },
+    };
+  }
+
+  beforeEach(() => {
+    fakeBrowser.reset();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function stubChrome(opts: {
+    tabsGetUrl: string | null;
+    sendMessageResponse: { ok: boolean; code?: string; message?: string; retriable?: boolean };
+  }) {
+    vi.stubGlobal('chrome', {
+      ...chrome,
+      tabs: {
+        ...chrome.tabs,
+        // tabs.query returns existing matching tab so startDispatch's openOrActivateTab
+        // takes the "exact URL match, already complete" branch — fast-path.
+        query: vi
+          .fn()
+          .mockResolvedValue([{ id: TAB_ID_REMAP, url: SEND_TO, status: 'complete', windowId: 1 }]),
+        update: vi.fn().mockResolvedValue(undefined),
+        get: vi.fn().mockResolvedValue({
+          id: TAB_ID_REMAP,
+          url: opts.tabsGetUrl,
+        }),
+        sendMessage: vi.fn().mockResolvedValue(opts.sendMessageResponse),
+      },
+      windows: {
+        ...chrome.windows,
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+      scripting: {
+        ...chrome.scripting,
+        executeScript: vi.fn().mockResolvedValue([{ result: undefined }]),
+      },
+      action: {
+        ...chrome.action,
+        setBadgeText: vi.fn().mockResolvedValue(undefined),
+        setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+      },
+      alarms: {
+        ...chrome.alarms,
+        create: vi.fn().mockResolvedValue(undefined),
+        clear: vi.fn().mockResolvedValue(true),
+      },
+      storage: chrome.storage,
+      permissions: chrome.permissions,
+    });
+  }
+
+  it('remaps INPUT_NOT_FOUND to NOT_LOGGED_IN when tab URL is /login on discord.com', async () => {
+    stubChrome({
+      tabsGetUrl: DISCORD_LOGIN_URL,
+      sendMessageResponse: {
+        ok: false,
+        code: 'INPUT_NOT_FOUND',
+        message: 'Channel mismatch',
+        retriable: false,
+      },
+    });
+
+    await startDispatch(baseStartInput());
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.state).toBe('error');
+    expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(stored?.error?.message).toContain('discord.com');
+    expect(stored?.error?.retriable).toBe(true);
+  });
+
+  it('remaps INPUT_NOT_FOUND to NOT_LOGGED_IN when tab URL is discord.com root', async () => {
+    stubChrome({
+      tabsGetUrl: DISCORD_ROOT_URL,
+      sendMessageResponse: {
+        ok: false,
+        code: 'INPUT_NOT_FOUND',
+        message: 'Channel mismatch',
+        retriable: false,
+      },
+    });
+
+    await startDispatch(baseStartInput());
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
+  });
+
+  it('keeps INPUT_NOT_FOUND when tab URL is still on a valid channel (genuine editor failure)', async () => {
+    stubChrome({
+      tabsGetUrl: DISCORD_CHANNEL_URL,
+      sendMessageResponse: {
+        ok: false,
+        code: 'INPUT_NOT_FOUND',
+        message: 'Editor not found',
+        retriable: true,
+      },
+    });
+
+    await startDispatch(baseStartInput());
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.error?.code).toBe('INPUT_NOT_FOUND');
+    expect(stored?.error?.message).toBe('Editor not found');
+  });
+
+  it('passes through NOT_LOGGED_IN from adapter unchanged (DOM-detected login wall)', async () => {
+    stubChrome({
+      tabsGetUrl: DISCORD_CHANNEL_URL,
+      sendMessageResponse: {
+        ok: false,
+        code: 'NOT_LOGGED_IN',
+        message: 'Discord login required (login UI detected)',
+        retriable: true,
+      },
+    });
+
+    await startDispatch(baseStartInput());
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(stored?.error?.message).toContain('login UI detected');
   });
 });
