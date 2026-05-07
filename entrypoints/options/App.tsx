@@ -16,7 +16,13 @@ export function App() {
       <h1 class="m-0 text-[18px] leading-tight font-semibold tracking-tight text-[var(--color-ink-strong)] [animation:w2c-editorial-rise_var(--duration-pageload)_var(--ease-quint)_both]">
         {t('options_page_heading')}
       </h1>
-      <div class="[animation:w2c-editorial-rise_var(--duration-pageload)_var(--ease-quint)_both] [animation-delay:80ms]">
+      {/* relative z-20: the Language section's Select dropdown uses absolute
+          positioning and can overlap subsequent sections. Each section wrapper
+          has an animation with transform, creating a stacking context; without
+          an explicit z-index, later wrappers paint on top (DOM order wins).
+          Elevating this wrapper ensures the dropdown paints above Reset and
+          GrantedOrigins sections. */}
+      <div class="relative z-20 [animation:w2c-editorial-rise_var(--duration-pageload)_var(--ease-quint)_both] [animation-delay:80ms]">
         <LanguageSection />
       </div>
       <div class="[animation:w2c-editorial-rise_var(--duration-pageload)_var(--ease-quint)_both] [animation-delay:160ms]">
