@@ -258,7 +258,7 @@ Plans:
 
 **Wave 1** *(全并行 — 四个 plan 无文件重叠)*
 - [ ] 07-01-PLAN.md — Build verification tooling: verify-zip.ts + verify-readme-anchors.ts + wxt.config.ts zip.exclude + package.json scripts (DST-01, DST-03, DST-04)
-- [ ] 07-02-PLAN.md — Privacy policy: PRIVACY.md (en) + PRIVACY.zh_CN.md (DST-02)
+- [x] 07-02-PLAN.md — Privacy policy: PRIVACY.md (en) + PRIVACY.zh_CN.md (DST-02) ✓ Complete
 - [ ] 07-03-PLAN.md — Bilingual README: README.md (zh_CN rewrite) + README.en.md (DST-04)
 - [ ] 07-04-PLAN.md — CWS store listing: STORE-LISTING.md (zh_CN) + STORE-LISTING.en.md (DST-01)
 
