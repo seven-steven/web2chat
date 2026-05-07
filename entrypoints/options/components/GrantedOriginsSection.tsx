@@ -14,6 +14,14 @@ effect(() => {
   });
 });
 
+/**
+ * Granted-origins section — edge-line card with table-row layout:
+ *   01  https://example.org   Remove
+ *   02  https://other.io      Remove
+ *
+ * Origin numbers are zero-padded mono indices (10px tracking-wider) — print
+ * convention for an inventory list. Hairline rules separate rows.
+ */
 export function GrantedOriginsSection() {
   async function handleConfirmRemove() {
     const origin = pendingOriginSig.value;
@@ -36,38 +44,49 @@ export function GrantedOriginsSection() {
 
   return (
     <section
-      class="bg-slate-100 dark:bg-slate-800 rounded-lg p-6 flex flex-col gap-4"
+      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-6 flex flex-col gap-4"
       data-testid="options-origins-section"
     >
       <header class="flex flex-col gap-2">
-        <h2 class="m-0 text-base leading-snug font-semibold text-slate-900 dark:text-slate-100">
+        <h2 class="m-0 font-serif text-[15px] leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]">
           {t('options_origins_heading')}
         </h2>
-        <p class="m-0 text-sm leading-normal font-normal text-slate-500 dark:text-slate-400">
+        <p class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)]">
           {t('options_origins_explainer')}
         </p>
       </header>
       {origins.length === 0 ? (
-        <p
-          class="m-0 text-sm leading-normal font-normal text-slate-500 dark:text-slate-400 italic"
-          data-testid="options-origins-empty"
-        >
-          {t('options_origins_empty')}
-        </p>
+        <div class="flex flex-col items-center gap-2 py-2">
+          <p
+            class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)]"
+            data-testid="options-origins-empty"
+          >
+            {t('options_origins_empty')}
+          </p>
+          <span
+            class="text-[var(--color-ink-faint)] tracking-[0.5em] text-xs select-none"
+            aria-hidden="true"
+          >
+            ∗ ∗ ∗
+          </span>
+        </div>
       ) : (
-        <ul class="list-none m-0 p-0 flex flex-col gap-2">
-          {origins.map((origin) => (
+        <ul class="list-none m-0 p-0 flex flex-col">
+          {origins.map((origin, idx) => (
             <li
               key={origin}
-              class="flex items-center justify-between bg-white dark:bg-slate-700 px-4 py-2 rounded-md"
+              class="flex items-center gap-3 px-1 py-2 border-b border-[var(--color-rule)] last:border-b-0"
               data-testid={`options-origin-item-${origin}`}
             >
-              <span class="text-sm font-mono text-slate-700 dark:text-slate-200 truncate">
+              <span class="font-mono text-[10px] uppercase tracking-[0.06em] font-semibold text-[var(--color-ink-faint)] tabular-nums">
+                {String(idx + 1).padStart(2, '0')}
+              </span>
+              <span class="flex-1 font-mono text-sm text-[var(--color-ink-base)] truncate">
                 {origin}
               </span>
               <button
                 type="button"
-                class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-semibold ml-4 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="text-[var(--color-danger)] hover:underline underline-offset-2 text-sm font-semibold shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-[var(--duration-instant)]"
                 disabled={removingOrigin === origin}
                 onClick={() => {
                   pendingOriginSig.value = origin;

@@ -19,8 +19,8 @@ interface ConfirmDialogProps {
  *   - Fixed overlay click-through prevented; clicks on overlay call onCancel
  *   - ESC key calls onCancel (added/removed via useEffect)
  *   - Focus trap: confirm button auto-focuses on mount; Tab cycles within dialog
- *   - When variant='destructive', confirm button uses bg-red-600 + text-white
- *   - When variant='default' (or unset), confirm button uses bg-sky-600 + text-white
+ *   - When variant='destructive', confirm button uses var(--color-danger) bg + white text
+ *   - When variant='default' (or unset), confirm button uses var(--color-accent) bg + white text
  */
 export function ConfirmDialog(props: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -64,12 +64,12 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
 
   const confirmClass =
     props.variant === 'destructive'
-      ? 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 text-white px-4 py-2 rounded-md text-sm font-semibold'
-      : 'bg-sky-600 hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400 text-white px-4 py-2 rounded-md text-sm font-semibold';
+      ? 'bg-[var(--color-danger)] hover:brightness-95 active:translate-y-[0.5px] transition-[transform,filter] duration-[var(--duration-snap)] text-white px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em]'
+      : 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)] active:translate-y-[0.5px] active:brightness-95 transition-[background-color,transform,filter] duration-[var(--duration-snap)] text-white px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em]';
 
   return (
     <div
-      class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black/40 dark:bg-black/60 flex items-center justify-center z-50"
       onClick={(e) => {
         // Overlay click (target === currentTarget) cancels; bubbled clicks from card don't
         if (e.target === e.currentTarget) props.onCancel();
@@ -82,25 +82,25 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-body"
-        class="bg-white dark:bg-slate-900 rounded-lg p-6 max-w-md w-full mx-4 flex flex-col gap-4"
+        class="bg-[var(--color-surface)] rounded-[var(--radius-card)] p-6 max-w-md w-full mx-4 flex flex-col gap-4 border border-[var(--color-border-strong)] shadow-[0_1px_2px_rgb(0_0_0/0.04),0_12px_32px_rgb(0_0_0/0.06)] [animation:w2c-dialog-open_var(--duration-base)_var(--ease-quint)]"
         data-testid="confirm-dialog"
       >
         <h2
           id="confirm-dialog-title"
-          class="m-0 text-base leading-snug font-semibold text-slate-900 dark:text-slate-100"
+          class="m-0 font-serif text-base leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]"
         >
           {props.title}
         </h2>
         <p
           id="confirm-dialog-body"
-          class="m-0 text-sm leading-normal font-normal text-slate-500 dark:text-slate-400"
+          class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-base)]"
         >
           {props.body}
         </p>
         <div class="flex justify-end gap-2">
           <button
             type="button"
-            class="border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 px-4 py-2 rounded-md text-sm font-semibold"
+            class="border border-[var(--color-border-strong)] text-[var(--color-ink-strong)] hover:bg-[var(--color-surface-subtle)] active:translate-y-[0.5px] transition-[background-color,transform] duration-[var(--duration-snap)] px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em]"
             onClick={props.onCancel}
             data-testid="confirm-dialog-cancel"
           >

@@ -4,19 +4,27 @@ import { ResetSection } from './components/ResetSection';
 import { GrantedOriginsSection } from './components/GrantedOriginsSection';
 
 /**
- * Options page — Phase 3 (STG-03). Single column layout @ max-w-720px center.
+ * Options page — Editorial / data-dense (260507-n86).
  *
- * Spacing scale: page padding p-8 (32px), section gap-4 (16px), card p-6 (24px).
+ * Single-column 720px container with serif page heading and edge-line
+ * (border-only) section cards. Three sections stagger-reveal at 0/80/160ms
+ * to anchor the entrance with editorial cadence.
  */
 export function App() {
   return (
-    <main class="mx-auto max-w-[720px] p-8 flex flex-col gap-4 font-sans" data-testid="options-app">
-      <h1 class="m-0 text-base leading-snug font-semibold text-slate-900 dark:text-slate-100">
+    <main class="mx-auto max-w-[720px] p-8 flex flex-col gap-6 font-sans" data-testid="options-app">
+      <h1 class="m-0 font-serif text-[22px] leading-tight font-semibold tracking-tight text-[var(--color-ink-strong)] [animation:w2c-editorial-rise_var(--duration-pageload)_var(--ease-quint)_both]">
         {t('options_page_heading')}
       </h1>
-      <LanguageSection />
-      <ResetSection />
-      <GrantedOriginsSection />
+      <div class="[animation:w2c-editorial-rise_var(--duration-pageload)_var(--ease-quint)_both] [animation-delay:80ms]">
+        <LanguageSection />
+      </div>
+      <div class="[animation:w2c-editorial-rise_var(--duration-pageload)_var(--ease-quint)_both] [animation-delay:160ms]">
+        <ResetSection />
+      </div>
+      <div class="[animation:w2c-editorial-rise_var(--duration-pageload)_var(--ease-quint)_both] [animation-delay:240ms]">
+        <GrantedOriginsSection />
+      </div>
     </main>
   );
 }

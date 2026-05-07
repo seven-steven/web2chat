@@ -4,18 +4,18 @@ import { sendMessage } from '@/shared/messaging';
 import { ConfirmDialog } from './ConfirmDialog';
 
 /**
- * STG-03 Reset section — section card with destructive button.
+ * STG-03 Reset section — edge-line card with rust-outline destructive button
+ * that escalates to filled-danger on hover (tactile warning escalation).
  *
  * Flow:
- *   1. User clicks "Reset all history" -> showConfirmSig.value = true
- *   2. ConfirmDialog renders -> user clicks Reset -> onConfirm fires
- *   3. onConfirm dispatches 2 RPCs in sequence (history.delete{kind:'sendTo',resetAll:true}
- *      and binding.upsert{resetAll:true,...})
- *   4. On both Ok -> toast "History cleared." for 3s; close dialog
- *   5. On any Err -> leave dialog open, show inline error in dialog body
+ *   1. Click "Reset all history" -> showConfirmSig.value = true
+ *   2. ConfirmDialog renders -> Reset clicked -> onConfirm fires
+ *   3. onConfirm dispatches 2 RPCs in sequence
+ *   4. Both Ok -> toast "History cleared." for 3s; close dialog
+ *   5. Any Err -> leave dialog open, show inline error
  *
- * Per UI-SPEC Color Destructive reserved-list: button uses bg-red-600 text-white
- * (high-severity destructive — CONTEXT D-37 + STG-03).
+ * Per UI-SPEC Color Destructive reserved-list: button uses var(--color-danger)
+ * for filled-on-hover state; default state is outline only (less aggressive).
  */
 const showConfirmSig = signal(false);
 const showToastSig = signal(false);
@@ -26,9 +26,6 @@ export function ResetSection() {
     errorSig.value = null;
     try {
       // Both RPCs run in sequence per Plan 04 handler shapes.
-      // history.delete with kind:'sendTo'+resetAll:true clears BOTH history lists
-      // (the handler signature accepts kind for the response shape but resetAll
-      // ignores kind — see Plan 04 historyDelete which calls resetAllHistory).
       const histRes = await sendMessage('history.delete', { kind: 'sendTo', resetAll: true });
       if (!histRes.ok) {
         errorSig.value = histRes.message || 'history.delete failed';
@@ -56,21 +53,21 @@ export function ResetSection() {
 
   return (
     <section
-      class="bg-slate-100 dark:bg-slate-800 rounded-lg p-6 flex flex-col gap-4"
+      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-6 flex flex-col gap-4"
       data-testid="options-reset-section"
     >
       <header class="flex flex-col gap-2">
-        <h2 class="m-0 text-base leading-snug font-semibold text-slate-900 dark:text-slate-100">
+        <h2 class="m-0 font-serif text-[15px] leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]">
           {t('options_reset_heading')}
         </h2>
-        <p class="m-0 text-sm leading-normal font-normal text-slate-500 dark:text-slate-400">
+        <p class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)]">
           {t('options_reset_explainer')}
         </p>
       </header>
       <div class="flex justify-end">
         <button
           type="button"
-          class="bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400 text-white px-4 py-2 rounded-md text-sm font-semibold"
+          class="border border-[var(--color-danger)] text-[var(--color-danger)] bg-transparent hover:bg-[var(--color-danger)] hover:text-white active:translate-y-[0.5px] transition-[background-color,color,transform] duration-[var(--duration-snap)] px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em]"
           onClick={() => {
             showConfirmSig.value = true;
             errorSig.value = null;
@@ -100,7 +97,7 @@ export function ResetSection() {
       )}
       {showToastSig.value && (
         <p
-          class="text-sm leading-normal font-normal text-slate-700 dark:text-slate-300"
+          class="text-sm leading-normal font-normal italic text-[var(--color-ink-muted)]"
           role="status"
           aria-live="polite"
           data-testid="options-reset-toast"
