@@ -72,6 +72,8 @@ popup_chrome_title:
   message: 'web2chat'
 popup_chrome_settings_tooltip:
   message: '设置'
+popup_chrome_back_tooltip:
+  message: '返回'
 
 # Group C — dispatch interactions
 dispatch_confirm_label:
