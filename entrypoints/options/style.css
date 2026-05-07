@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '../_shared-tokens.css';
 
 /* options-local overrides — keep minimal */
 :root {
