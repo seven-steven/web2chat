@@ -1,12 +1,9 @@
 /**
  * Popup chrome — title bar with settings gear (D-37).
  *
- * Rendered above EVERY popup view: loading skeleton, SendForm, EmptyView,
- * ErrorView, InProgressView. State-specific main content sits below.
- *
- * Settings gear triggers chrome.runtime.openOptionsPage(). Phase 4 may add
- * a status dot showing granted-origin count next to the gear; Phase 6 may
- * surface locale switcher state — those plans modify this file.
+ * Editorial typography: `Web2Chat` wordmark in serif display weight.
+ * Settings gear: 60deg rotation on hover (signature micro-interaction).
+ * Bottom rule: stone-200 hairline + 1px inset rule above for double-line print feel.
  */
 import { t } from '@/shared/i18n';
 
@@ -18,15 +15,15 @@ export function PopupChrome() {
   }
   return (
     <div
-      class="flex items-center justify-between px-4 pt-4 pb-2 border-b border-slate-200 dark:border-slate-700"
+      class="flex items-center justify-between px-4 pt-4 pb-2 border-b border-[var(--color-border-strong)] shadow-[inset_0_-3px_0_-2px_var(--color-rule)]"
       data-testid="popup-chrome"
     >
-      <h1 class="m-0 text-xs leading-snug font-normal text-slate-500 dark:text-slate-400">
+      <h1 class="m-0 font-serif text-[15px] leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]">
         {t('popup_chrome_title')}
       </h1>
       <button
         type="button"
-        class="size-6 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+        class="size-6 text-[var(--color-ink-muted)] hover:text-[var(--color-ink-strong)] transition-transform duration-[var(--duration-base)] ease-[var(--ease-snap)] hover:rotate-[60deg]"
         aria-label={t('popup_chrome_settings_tooltip')}
         title={t('popup_chrome_settings_tooltip')}
         onClick={handleSettingsClick}
@@ -40,7 +37,7 @@ export function PopupChrome() {
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="2"
+          stroke-width="1.75"
           stroke-linecap="round"
           stroke-linejoin="round"
           aria-hidden="true"

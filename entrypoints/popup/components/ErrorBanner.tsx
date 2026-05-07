@@ -46,22 +46,22 @@ export function ErrorBanner({ code, onRetry, onDismiss }: ErrorBannerProps) {
 
   return (
     <div
-      class="bg-red-50 dark:bg-red-950/40 border-l-4 border-red-600 p-4 rounded-r-md flex items-start gap-2"
+      class="bg-transparent border-l-[3px] border-[var(--color-danger)] pl-3 py-2 rounded-r-[var(--radius-sharp)] flex items-start gap-2 hover:bg-[var(--color-danger-soft)] transition-colors duration-[var(--duration-instant)] [animation:w2c-margin-note-in_var(--duration-base)_var(--ease-quint)]"
       role="alert"
       aria-live="assertive"
       data-testid={`error-banner-${code}`}
     >
       <div class="flex-1">
-        <h3 class="m-0 text-sm leading-snug font-semibold text-red-700 dark:text-red-300">
+        <h3 class="m-0 font-serif text-sm leading-snug font-semibold tracking-tight text-[var(--color-danger)]">
           {heading}
         </h3>
-        <p class="mt-1 m-0 text-sm leading-normal font-normal text-slate-700 dark:text-slate-300">
+        <p class="mt-1 m-0 text-sm leading-normal font-normal text-[var(--color-ink-base)]">
           {body}
         </p>
         {showRetry && (
           <button
             type="button"
-            class="mt-2 text-sm font-semibold text-red-600 hover:text-red-700 dark:hover:text-red-400 underline-offset-2 hover:underline"
+            class="mt-2 text-sm font-semibold text-[var(--color-danger)] hover:underline underline-offset-2"
             onClick={onRetry}
             data-testid={`error-banner-${code}-retry`}
           >
@@ -71,7 +71,7 @@ export function ErrorBanner({ code, onRetry, onDismiss }: ErrorBannerProps) {
       </div>
       <button
         type="button"
-        class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+        class="text-[var(--color-ink-faint)] hover:text-[var(--color-ink-strong)] transition-colors duration-[var(--duration-instant)]"
         aria-label={t('error_code_dismiss_label')}
         onClick={onDismiss}
         data-testid={`error-banner-${code}-dismiss`}

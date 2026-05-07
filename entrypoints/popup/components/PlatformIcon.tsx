@@ -9,14 +9,10 @@ interface PlatformIconProps {
 
 /**
  * Inline-SVG platform icon — 4 variants per UI-SPEC S-Iconography lines 488-499.
- * 'openclaw' uses the official pixel-lobster mascot (16x16 -> scaled 0.2x to 24x24).
- * 'discord' uses a simplified Clyde brand SVG (24x24 viewBox).
- * The 'mock' + 'unsupported' icons are final.
- *
- * Color discipline (UI-SPEC S-Color reserved-list):
- *   - DO NOT use `text-sky-*` here — sky-600 is reserved for Confirm + focus
- *     ring + inline accent span (NOT for platform icons).
- *   - OpenClaw uses hardcoded brand colors; other variants use currentColor.
+ * 'openclaw' uses the official pixel-lobster mascot — hardcoded brand gradient
+ * (NOT tokenized; brand colors should not adapt to UI theme).
+ * 'discord' uses simplified Clyde brand SVG with currentColor.
+ * 'mock' + 'unsupported' use the muted-ink token (theme-aware).
  */
 export function PlatformIcon({ variant, size = 24 }: PlatformIconProps) {
   const tooltip =
@@ -28,12 +24,13 @@ export function PlatformIcon({ variant, size = 24 }: PlatformIconProps) {
           ? t('platform_icon_discord')
           : t('platform_icon_unsupported');
 
+  // mock + unsupported: muted ink token (adapts to theme)
+  // openclaw: brand gradient (hardcoded, not tokenized)
+  // discord: ink-base (adapts; respects host text color via currentColor inheritance)
   const colorClass =
-    variant === 'unsupported'
-      ? 'text-slate-500 dark:text-slate-400'
-      : variant === 'mock'
-        ? 'text-slate-500 dark:text-slate-400'
-        : 'text-slate-700 dark:text-slate-300'; // placeholders for Phase 4/5
+    variant === 'unsupported' || variant === 'mock'
+      ? 'text-[var(--color-ink-muted)]'
+      : 'text-[var(--color-ink-base)]';
 
   return (
     <svg
@@ -43,7 +40,7 @@ export function PlatformIcon({ variant, size = 24 }: PlatformIconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      stroke-width="2"
+      stroke-width="1.75"
       stroke-linecap="round"
       stroke-linejoin="round"
       class={colorClass}

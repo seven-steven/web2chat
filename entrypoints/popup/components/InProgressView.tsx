@@ -12,11 +12,11 @@ const copiedSig = signal(false);
  * Dispatch in-progress placeholder (D-31, UI-SPEC S-In-progress placeholder).
  * Replaces SendForm + capture preview when storage.session.dispatch:active is in-flight.
  *
- * Visual hierarchy: 24x24 sky-600 spinner + heading is the primary anchor.
- * Cancel is the secondary affordance (red-600 outline, NOT filled).
+ * Editorial entrance: 5 children stagger-revealed at 0/60/120/180/240ms with
+ * a 320ms ease-quint translateY+opacity rise. The slow editorial spinner
+ * (1.6s linear rotation) replaces the conventional 1.0s anxious spin.
  *
- * dispatchId footer is intentionally surfaced (not hidden) so users can
- * copy-paste it into bug reports (debug aid, UI-SPEC line 475).
+ * dispatchId is rendered as a mono pill so users can copy it for bug reports.
  */
 export function InProgressView({ dispatchId, onCancel }: InProgressViewProps) {
   // Three-segment inline accent on "Cancel" word per Pattern S5 / PITFALLS S11
@@ -47,33 +47,35 @@ export function InProgressView({ dispatchId, onCancel }: InProgressViewProps) {
       aria-live="polite"
       data-testid="dispatch-in-progress"
     >
-      <Spinner />
+      <div class="[animation:w2c-editorial-rise_320ms_var(--ease-quint)_both]">
+        <Spinner />
+      </div>
       <h2
-        class="m-0 text-base leading-snug font-semibold text-slate-900 dark:text-slate-100"
+        class="m-0 font-serif text-base leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)] [animation:w2c-editorial-rise_320ms_var(--ease-quint)_both] [animation-delay:60ms]"
         data-testid="dispatch-in-progress-heading"
       >
         {t('dispatch_in_progress_heading')}
       </h2>
-      <p class="m-0 text-sm leading-normal font-normal text-slate-500 dark:text-slate-400">
+      <p class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)] [animation:w2c-editorial-rise_320ms_var(--ease-quint)_both] [animation-delay:120ms]">
         {before}
-        <span class="text-sky-600 dark:text-sky-400">{inlineCancel}</span>
+        <span class="text-[var(--color-accent)] font-semibold">{inlineCancel}</span>
         {after}
       </p>
       <button
         type="button"
-        class="border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 px-4 py-2 rounded-md text-sm font-semibold"
+        class="border border-[var(--color-danger)] text-[var(--color-danger)] hover:bg-[var(--color-danger-soft)] active:translate-y-[0.5px] transition-[background-color,transform] duration-[var(--duration-snap)] px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em] [animation:w2c-editorial-rise_320ms_var(--ease-quint)_both] [animation-delay:180ms]"
         onClick={onCancel}
         data-testid="dispatch-cancel"
       >
         {t('dispatch_cancel_label')}
       </button>
-      <div class="flex items-center gap-2">
-        <span class="text-xs leading-snug font-normal text-slate-400 dark:text-slate-500">
+      <div class="flex items-center gap-2 [animation:w2c-editorial-rise_320ms_var(--ease-quint)_both] [animation-delay:240ms]">
+        <span class="text-[10px] uppercase tracking-[0.06em] font-semibold text-[var(--color-ink-faint)]">
           {t('dispatch_in_progress_dispatchId_label')}
         </span>
         <button
           type="button"
-          class="text-xs leading-snug font-mono text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 underline-offset-2 hover:underline"
+          class="text-xs leading-snug font-mono text-[var(--color-ink-muted)] bg-[var(--color-surface-subtle)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] px-2 py-0.5 rounded-[var(--radius-sharp)] transition-colors duration-[var(--duration-instant)]"
           onClick={handleCopyDispatchId}
           aria-label={dispatchId}
           data-testid="dispatch-id-copy"
@@ -82,7 +84,7 @@ export function InProgressView({ dispatchId, onCancel }: InProgressViewProps) {
         </button>
       </div>
       {copiedSig.value && (
-        <p class="text-xs leading-snug font-normal text-slate-500 dark:text-slate-400">
+        <p class="text-xs leading-snug font-normal italic text-[var(--color-ink-muted)]">
           {t('dispatch_in_progress_copy_toast')}
         </p>
       )}
@@ -90,7 +92,10 @@ export function InProgressView({ dispatchId, onCancel }: InProgressViewProps) {
   );
 }
 
-/** Lucide loader-2 spinner — 24x24, sky-600, animate-spin (UI-SPEC line 471). */
+/**
+ * Editorial arc spinner — 24×24, 1.5px stroke in accent color, 1.6s linear
+ * rotation (calmer than typical 1.0s).
+ */
 function Spinner() {
   return (
     <svg
@@ -100,10 +105,10 @@ function Spinner() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      stroke-width="2"
+      stroke-width="1.5"
       stroke-linecap="round"
       stroke-linejoin="round"
-      class="text-sky-600 dark:text-sky-400 animate-spin"
+      class="text-[var(--color-accent)] [animation:w2c-editorial-spin_1.6s_linear_infinite]"
       aria-hidden="true"
     >
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />

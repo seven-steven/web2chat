@@ -1,66 +1,66 @@
 /**
- * Shared popup primitives — extracted from App.tsx (lines 280-299) during
- * Phase 3 Plan 05 so options page (Plan 07) can reuse the same focus-ring
- * chrome and label styling. App.tsx will be refactored in Plan 06 to import
- * from this module.
+ * Shared popup primitives — Editorial / data-dense token-aware classes.
  *
- * Surgical-changes principle (CLAUDE.md): textareaClass is reproduced
- * VERBATIM from App.tsx — do not modify spacing or color tokens. The Phase 2
- * inherited `px-3 py-2` (12px / 8px) padding stays unchanged inside this
- * extracted constant; new components MUST use {4,8,16,24,32,48,64} spacing
- * scale (UI-SPEC S-Spacing Scale) but the inherited textarea chrome is
- * exempt because Plan 06 keeps Phase 2 capture preview unchanged.
+ * inputClass:    bottom-border editorial style for single-line inputs (Combobox).
+ * textareaClass: 2px-radius full box for multi-line edits (CapturePreview fields).
+ *
+ * Both reach for tokens declared in entrypoints/_shared-tokens.css; do not
+ * hardcode slate/sky color names here.
  */
 import type { ComponentChildren } from 'preact';
 
 /**
- * Field label using Preact's native `for` attribute (NOT the React-compat
- * `htmlFor` alias). Visible 12px slate-500 text above textareas / comboboxes.
+ * Field label — 11px UPPERCASE / tracking-[0.06em] / weight-600 in muted ink.
+ * Print convention; the editorial signature for the entire UI.
+ *
+ * Uses Preact's native `for` attribute (not the React-compat `htmlFor` alias).
  */
 export function FieldLabel({ id, label }: { id: string; label: string }) {
   return (
-    <label for={id} class="text-xs leading-snug font-normal text-slate-500 dark:text-slate-400">
+    <label
+      for={id}
+      class="text-[11px] uppercase tracking-[0.06em] font-semibold text-[var(--color-ink-muted)]"
+    >
       {label}
     </label>
   );
 }
 
 /**
- * Textarea chrome — copied verbatim from popup/App.tsx (Phase 2). Used by
- * the editable Title / Description / Content fields in capture preview.
- * Phase 3 components import this for reuse; Plan 06 also imports it from
- * App.tsx (refactor) to avoid duplicating the focus-ring tokens.
+ * Multi-line textarea chrome — full-box border with 2px radius for the
+ * "manuscript box" feel. Used by Title / Description / Content textareas in
+ * CapturePreview where multi-line edit affordance matters.
  */
 export const textareaClass = [
-  'w-full px-3 py-2 rounded-md',
+  'w-full px-3 py-2 rounded-[var(--radius-sharp)]',
   'text-sm leading-normal font-normal',
-  'text-slate-900 dark:text-slate-100',
-  'bg-white dark:bg-slate-900',
-  'border border-slate-200 dark:border-slate-700',
+  'text-[var(--color-ink-strong)]',
+  'bg-transparent',
+  'border border-[var(--color-border-strong)]',
   'focus-visible:outline-none',
-  'focus-visible:ring-2 focus-visible:ring-sky-600 dark:focus-visible:ring-sky-400',
-  'focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900',
-  'focus-visible:border-sky-600 dark:focus-visible:border-sky-400',
+  'focus-visible:border-[var(--color-accent)]',
+  'focus-visible:ring-2 focus-visible:ring-[var(--color-accent-ring)]',
   'resize-none field-sizing-content',
+  'transition-[border-color,box-shadow] duration-[var(--duration-snap)]',
 ].join(' ');
 
 /**
- * Single-line input chrome — same focus-ring + border tokens as textareaClass,
- * minus the textarea-only `resize-none field-sizing-content`. Combobox `<input
- * role="combobox">` uses this. Phase 2 inherited `px-3 py-2` padding stays
- * because Combobox sits in the SendForm region whose vertical cadence (Plan 06
- * UI-SPEC) tolerates this pre-existing density.
+ * Single-line input chrome — bottom-border editorial style. No full box, no
+ * rounded corners. Used by Combobox `<input role="combobox">`.
  */
 export const inputClass = [
-  'w-full px-3 py-2 rounded-md',
+  'w-full px-3 py-1.5',
   'text-sm leading-normal font-normal',
-  'text-slate-900 dark:text-slate-100',
-  'bg-white dark:bg-slate-900',
-  'border border-slate-200 dark:border-slate-700',
+  'text-[var(--color-ink-strong)]',
+  'bg-transparent',
+  'border-0 border-b-[1.5px] border-[var(--color-border-strong)]',
+  'rounded-none',
+  'placeholder:text-[var(--color-ink-faint)]',
   'focus-visible:outline-none',
-  'focus-visible:ring-2 focus-visible:ring-sky-600 dark:focus-visible:ring-sky-400',
-  'focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900',
-  'focus-visible:border-sky-600 dark:focus-visible:border-sky-400',
+  'focus-visible:border-b-2 focus-visible:border-[var(--color-accent)]',
+  'hover:border-[var(--color-ink-faint)]',
+  'transition-[border-color] duration-[var(--duration-snap)]',
+  'disabled:opacity-50 disabled:cursor-not-allowed',
 ].join(' ');
 
 /** Re-export for downstream type consumers. */

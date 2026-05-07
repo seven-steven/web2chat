@@ -308,28 +308,28 @@ export function SendForm(props: SendFormProps) {
         />
       </div>
 
-      {/* Soft-overwrite hint (D-27) — three-segment inline accent on host (Pattern S5) */}
+      {/* Soft-overwrite hint (D-27) — sidenote style with rust stripe + italic mono host */}
       {showBindingHint && (
         <button
           type="button"
-          class="text-left text-xs leading-snug font-normal text-sky-600 dark:text-sky-400 hover:underline underline-offset-2"
+          class="text-left border-l-2 border-[var(--color-accent)] pl-3 py-1 text-xs leading-snug font-normal italic text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] hover:bg-[var(--color-accent-soft)] transition-colors duration-[var(--duration-instant)] [animation:w2c-margin-note-in_var(--duration-base)_var(--ease-quint)]"
           onClick={handleSoftOverwriteAccept}
           data-testid="binding-soft-overwrite"
         >
           {t('binding_use_bound_for_before')}
-          <span class="font-mono">{sendToHost}</span>
+          <span class="font-mono not-italic text-[var(--color-accent)]">{sendToHost}</span>
           {t('binding_use_bound_for_after')}
         </button>
       )}
 
-      {/* Confirm button */}
+      {/* Confirm button — press-style with rust accent */}
       <div class="flex justify-end">
         <button
           type="button"
           class={
             confirmEnabled
-              ? 'bg-sky-600 hover:bg-sky-700 active:bg-sky-800 dark:bg-sky-500 dark:hover:bg-sky-400 text-white px-4 py-2 rounded-md text-sm font-semibold'
-              : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed px-4 py-2 rounded-md text-sm font-semibold'
+              ? 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)] active:translate-y-[0.5px] active:brightness-95 text-white px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em] transition-[background-color,transform,filter] duration-[var(--duration-snap)]'
+              : 'bg-[var(--color-surface-subtle)] text-[var(--color-ink-faint)] cursor-not-allowed px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em]'
           }
           disabled={!confirmEnabled}
           title={confirmTooltip}
@@ -340,18 +340,21 @@ export function SendForm(props: SendFormProps) {
         </button>
       </div>
 
-      {/* Discord ToS warning footnote (D-59, D-61) */}
+      {/* Discord ToS warning footnote (D-59, D-61) — print footnote style with ¹ marker */}
       {platformId === 'discord' && (
         <p
-          class="mt-2 text-xs text-amber-600 dark:text-amber-400"
+          class="mt-2 text-xs leading-relaxed text-[var(--color-ink-muted)]"
           data-testid="discord-tos-footnote"
         >
+          <sup class="text-[var(--color-warn)] font-semibold mr-0.5 not-italic" aria-hidden="true">
+            ¹
+          </sup>
           {t('discord_tos_warning')}{' '}
           <a
             href="https://discord.com/terms"
             target="_blank"
             rel="noopener noreferrer"
-            class="underline ml-0.5"
+            class="text-[var(--color-warn)] underline underline-offset-2 hover:text-[var(--color-ink-strong)] transition-colors duration-[var(--duration-instant)] ml-0.5"
             data-testid="discord-tos-link"
           >
             {t('discord_tos_details')}
@@ -359,8 +362,8 @@ export function SendForm(props: SendFormProps) {
         </p>
       )}
 
-      {/* Divider before Phase 2 capture preview region */}
-      <hr class="border-slate-200 dark:border-slate-700" />
+      {/* Hairline divider before Phase 2 capture preview region */}
+      <hr class="border-0 border-t border-[var(--color-rule)]" />
 
       {/* Phase 2 capture preview — extracted verbatim into CapturePreview component.
           Spacing kept at gap-3 / px-3 py-2 (Phase 2 inheritance, surgical-changes principle).

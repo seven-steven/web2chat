@@ -325,35 +325,31 @@ export function App() {
 // ─── Loading Skeleton ─────────────────────────────────────────────────────────
 
 function LoadingSkeleton() {
+  // 5 horizontal rule lines with linear-gradient shimmer — typeset-line metaphor
+  // replaces the conventional pulsing-rectangle skeleton.
+  const shimmerBar =
+    'h-1.5 rounded-[var(--radius-sharp)] bg-gradient-to-r from-[var(--color-surface-subtle)] via-[var(--color-border-strong)] to-[var(--color-surface-subtle)] bg-[length:200%_100%] [animation:w2c-shimmer_1.6s_infinite_ease-in-out]';
   return (
     <main
-      class="flex flex-col gap-3 p-4 min-w-[360px] min-h-[240px] font-sans"
+      class="flex flex-col gap-4 p-4 min-w-[360px] min-h-[240px] font-sans"
       role="status"
       aria-busy="true"
       aria-live="polite"
       data-testid="capture-loading"
     >
       <span class="sr-only">{t('capture_loading_label')}</span>
-      {/* 5 skeleton rows approximate the success layout to prevent layout shift */}
-      <div class="flex flex-col gap-1">
-        <div class="h-4 w-1/3 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-        <div class="h-9 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+      <div class="flex flex-col gap-2">
+        <div class={`${shimmerBar} w-1/3`} />
+        <div class={`${shimmerBar} w-full`} />
       </div>
-      <div class="flex flex-col gap-1">
-        <div class="h-4 w-1/4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-        <div class="h-9 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+      <div class="flex flex-col gap-2">
+        <div class={`${shimmerBar} w-1/4`} />
+        <div class={`${shimmerBar} w-full`} />
       </div>
-      <div class="flex flex-col gap-1">
-        <div class="h-4 w-1/3 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-        <div class="h-9 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-      </div>
-      <div class="flex flex-col gap-1">
-        <div class="h-4 w-1/4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-        <div class="h-9 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-      </div>
-      <div class="flex flex-col gap-1">
-        <div class="h-4 w-1/4 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
-        <div class="h-24 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+      <div class="flex flex-col gap-2">
+        <div class={`${shimmerBar} w-1/3`} />
+        <div class={`${shimmerBar} w-full`} />
+        <div class={`${shimmerBar} w-5/6`} />
       </div>
     </main>
   );
@@ -385,20 +381,28 @@ function EmptyView({ code }: { code: 'RESTRICTED_URL' | 'EXTRACTION_EMPTY' }) {
 
   return (
     <main
-      class="flex flex-col items-center text-center p-4 py-8 gap-2 min-w-[360px] min-h-[240px] font-sans"
+      class="flex flex-col items-center text-center p-4 py-8 gap-3 min-w-[360px] min-h-[240px] font-sans"
       role="status"
       aria-live="polite"
       data-testid="capture-empty"
     >
-      <EmptyIcon variant={variant} />
-      <h2 class="m-0 text-base leading-snug font-semibold text-slate-900 dark:text-slate-100">
+      <div class="[animation:w2c-drift_4s_infinite_ease-in-out]">
+        <EmptyIcon variant={variant} />
+      </div>
+      <h2 class="m-0 font-serif text-base leading-snug font-semibold tracking-tight text-[var(--color-ink-strong)]">
         {heading}
       </h2>
-      <p class="m-0 text-sm leading-normal font-normal text-slate-500 dark:text-slate-400">
+      <p class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)] max-w-[280px]">
         {before}
-        <span class="text-sky-600 dark:text-sky-400">{icon}</span>
+        <span class="text-[var(--color-accent)] not-italic font-semibold">{icon}</span>
         {after}
       </p>
+      <div
+        class="mt-1 text-[var(--color-ink-faint)] tracking-[0.5em] text-sm select-none"
+        aria-hidden="true"
+      >
+        ∗ ∗ ∗
+      </div>
     </main>
   );
 }
@@ -408,22 +412,30 @@ function EmptyView({ code }: { code: 'RESTRICTED_URL' | 'EXTRACTION_EMPTY' }) {
 function ErrorView() {
   return (
     <main
-      class="flex flex-col items-center text-center p-4 py-8 gap-2 min-w-[360px] min-h-[240px] font-sans"
+      class="flex flex-col items-center text-center p-4 py-8 gap-3 min-w-[360px] min-h-[240px] font-sans"
       role="alert"
       aria-live="assertive"
       data-testid="capture-error"
     >
-      <AlertIcon />
-      <h2 class="m-0 text-base leading-snug font-semibold text-red-600 dark:text-red-400">
+      <div class="[animation:w2c-drift_4s_infinite_ease-in-out]">
+        <AlertIcon />
+      </div>
+      <h2 class="m-0 font-serif text-base leading-snug font-semibold tracking-tight text-[var(--color-danger)]">
         {t('capture_error_scriptFailed_heading')}
       </h2>
-      <p class="m-0 text-sm leading-normal font-normal text-slate-500 dark:text-slate-400">
+      <p class="m-0 text-sm leading-normal font-normal italic text-[var(--color-ink-muted)] max-w-[280px]">
         {t('capture_error_scriptFailed_body_before')}
-        <span class="text-sky-600 dark:text-sky-400">
+        <span class="text-[var(--color-accent)] not-italic font-semibold">
           {t('capture_error_scriptFailed_body_icon')}
         </span>
         {t('capture_error_scriptFailed_body_after')}
       </p>
+      <div
+        class="mt-1 text-[var(--color-ink-faint)] tracking-[0.5em] text-sm select-none"
+        aria-hidden="true"
+      >
+        ∗ ∗ ∗
+      </div>
     </main>
   );
 }
@@ -441,10 +453,10 @@ function EmptyIcon({ variant }: { variant: 'restricted' | 'noContent' }) {
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        stroke-width="2"
+        stroke-width="1.5"
         stroke-linecap="round"
         stroke-linejoin="round"
-        class="text-slate-500 dark:text-slate-400"
+        class="text-[var(--color-ink-muted)]"
         aria-hidden="true"
       >
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -460,10 +472,10 @@ function EmptyIcon({ variant }: { variant: 'restricted' | 'noContent' }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      stroke-width="2"
+      stroke-width="1.5"
       stroke-linecap="round"
       stroke-linejoin="round"
-      class="text-slate-500 dark:text-slate-400"
+      class="text-[var(--color-ink-muted)]"
       aria-hidden="true"
     >
       <circle cx="12" cy="12" r="10" />
@@ -483,10 +495,10 @@ function AlertIcon() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      stroke-width="2"
+      stroke-width="1.5"
       stroke-linecap="round"
       stroke-linejoin="round"
-      class="text-red-600 dark:text-red-400"
+      class="text-[var(--color-danger)]"
       aria-hidden="true"
     >
       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />

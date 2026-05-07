@@ -157,7 +157,7 @@ export function Combobox(props: ComboboxProps) {
           id={listboxId}
           role="listbox"
           aria-label={props.label}
-          class="absolute left-0 right-0 mt-1 max-h-64 overflow-y-auto rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg z-10"
+          class="absolute left-0 right-0 mt-1 max-h-64 overflow-y-auto rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] shadow-[0_1px_2px_rgb(0_0_0/0.04),0_12px_32px_rgb(0_0_0/0.06)] z-10 [animation:w2c-listbox-open_var(--duration-base)_var(--ease-quint)]"
         >
           {props.options.map((opt, i) => (
             <li
@@ -165,10 +165,10 @@ export function Combobox(props: ComboboxProps) {
               id={`${listboxId}-opt-${i}`}
               role="option"
               aria-selected={i === activeIdx}
-              class={`flex items-center gap-2 min-h-9 px-2 py-2 cursor-pointer ${
+              class={`flex items-center gap-2 min-h-9 px-2 py-2 cursor-pointer transition-colors duration-[var(--duration-instant)] ${
                 i === activeIdx
-                  ? 'bg-sky-50 dark:bg-sky-950 border-l-2 border-sky-600'
-                  : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                  ? 'bg-[var(--color-accent-soft)] border-l-2 border-[var(--color-accent)]'
+                  : 'hover:bg-[var(--color-surface-subtle)]'
               }`}
               onMouseDown={(e) => {
                 e.preventDefault();
@@ -180,7 +180,7 @@ export function Combobox(props: ComboboxProps) {
             >
               {opt.iconVariant !== 'none' && <PlatformIcon variant={opt.iconVariant} size={16} />}
               <span
-                class="flex-1 text-sm leading-snug font-normal text-slate-900 dark:text-slate-100 truncate"
+                class="flex-1 text-sm leading-snug font-mono font-normal text-[var(--color-ink-strong)] truncate"
                 title={opt.label}
               >
                 {opt.label}
@@ -188,7 +188,7 @@ export function Combobox(props: ComboboxProps) {
               {opt.removable && props.onDelete && (
                 <button
                   type="button"
-                  class="text-slate-400 hover:text-red-600 dark:hover:text-red-400"
+                  class="text-[var(--color-ink-faint)] hover:text-[var(--color-danger)] transition-colors duration-[var(--duration-instant)]"
                   aria-label={t('history_remove_button')}
                   onMouseDown={(e) => {
                     e.preventDefault();
@@ -222,7 +222,7 @@ export function Combobox(props: ComboboxProps) {
 
       {showEmptyState && (
         <div
-          class="absolute left-0 right-0 mt-1 px-2 py-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg text-xs leading-snug font-normal text-slate-400 dark:text-slate-500 z-10 pointer-events-none"
+          class="absolute left-0 right-0 mt-1 px-3 py-2 rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] shadow-[0_1px_2px_rgb(0_0_0/0.04),0_12px_32px_rgb(0_0_0/0.06)] text-xs leading-snug font-normal italic text-[var(--color-ink-faint)] z-10 pointer-events-none [animation:w2c-listbox-open_var(--duration-base)_var(--ease-quint)]"
           data-testid={`combobox-${props.id}-empty`}
         >
           {props.emptyStateText}
