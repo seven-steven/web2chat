@@ -259,7 +259,7 @@ Plans:
 **Wave 1** *(全并行 — 四个 plan 无文件重叠)*
 - [ ] 07-01-PLAN.md — Build verification tooling: verify-zip.ts + verify-readme-anchors.ts + wxt.config.ts zip.exclude + package.json scripts (DST-01, DST-03, DST-04)
 - [x] 07-02-PLAN.md — Privacy policy: PRIVACY.md (en) + PRIVACY.zh_CN.md (DST-02) ✓ Complete
-- [ ] 07-03-PLAN.md — Bilingual README: README.md (zh_CN rewrite) + README.en.md (DST-04)
+- [x] 07-03-PLAN.md — Bilingual README: README.md (zh_CN rewrite) + README.en.md (DST-04) ✓ Complete
 - [ ] 07-04-PLAN.md — CWS store listing: STORE-LISTING.md (zh_CN) + STORE-LISTING.en.md (DST-01)
 
 **UI hint**：no
@@ -277,7 +277,7 @@ Phase 按数字顺序执行：1 → 2 → 3 → 4 → 5 → 6 → 7。Phase 6 �
 | 4. OpenClaw 适配器     | 6/6            | Complete    | 2026-05-03 |
 | 5. Discord 适配器      | 6/6            | Complete    | 2026-05-06 |
 | 6. i18n 加固 + 打磨    | 6/6            | Executed    | 2026-05-07 |
-| 7. 分发上架            | 0/4            | Planned     | -          |
+| 7. 分发上架            | 3/4            | In progress | -          |
 
 ---
 
