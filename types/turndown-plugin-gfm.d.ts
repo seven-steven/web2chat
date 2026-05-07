@@ -1,6 +1,7 @@
 declare module 'turndown-plugin-gfm' {
-  export function gfm(service: any): void;
-  export function tables(service: any): void;
-  export function strikethrough(service: any): void;
-  export function taskListItems(service: any): void;
+  import type TurndownService from 'turndown';
+  export function gfm(service: TurndownService): void;
+  export function tables(service: TurndownService): void;
+  export function strikethrough(service: TurndownService): void;
+  export function taskListItems(service: TurndownService): void;
 }
