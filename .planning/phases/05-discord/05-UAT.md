@@ -41,8 +41,14 @@ result: pass
 
 ### 7. 速率限制（原 Test 7，被 Test 1 blocker 阻塞）
 expected: 同一频道 5 秒内重复发送时，第二次被限制（RATE_LIMITED），5 秒后可再次发送。
-result: skipped
-reason: "UI 投递流程期间显示投递中状态，无法手动快速重复触发；需自动化测试验证"
+result: pass
+note: |
+  Plan 05-04 自动化 E2E 2026-05-07 实跑通过：
+    - tests/e2e/discord-dispatch.spec.ts:85 — `rate limit -- second dispatch within 5s returns RATE_LIMITED` (1.7s)
+    - tests/e2e/discord-channel-switch.spec.ts:83 — `sequential dispatches to same channel succeed after rate limit expires` (10.1s)
+  代码侧节流逻辑：entrypoints/discord.content.ts:30,87,259-266（RATE_LIMIT_MS=5000，per-channel lastSendTime Map）。
+  人工 UI 快速二连点不可行（popup "投递中" 状态阻止），SW 层 chrome.tabs.sendMessage 直发 ADAPTER_DISPATCH 已绕开 UI 节流，覆盖 ROADMAP SC#4。
+  命令：`pnpm exec playwright test -g "rate limit"`，2/2 pass (12.7s)。
 
 ### 8. Discord ToS 提示重新验证（Gap 4: false negative re-verify）
 expected: 选择 Discord 作为目标平台时，SendForm 底部显示 Discord 服务条款提示脚注（i18n 本地化文字）。
@@ -55,13 +61,19 @@ result: pass
 ## Summary
 
 total: 9
-passed: 7
+passed: 9
 issues: 0
 pending: 0
-skipped: 1
+skipped: 0
 blocked: 0
 
 ## Gaps
+
+- truth: "同一频道 5 秒内重复发送时，第二次被限制（RATE_LIMITED）；5 秒后可再次发送（ROADMAP SC#4）"
+  status: resolved
+  resolved_by: "05-04"
+  test: 7
+  evidence: "2026-05-07 实跑 `pnpm exec playwright test -g 'rate limit'` 2/2 pass (12.7s)"
 
 - truth: "粘贴发送后 Discord 输入框应清空，不残留消息文本"
   status: resolved
