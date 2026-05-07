@@ -1,11 +1,11 @@
 extension_name:
-  message: 'Web2Chat'
+  message: 'web2chat'
 
 extension_description:
   message: '一键把当前网页投递到 IM 或 AI Agent 聊天会话'
 
 action_default_title:
-  message: 'Web2Chat — 投递当前页面'
+  message: 'web2chat — 投递当前页面'
 
 capture_loading_label:
   message: '正在抓取页面…'
@@ -29,7 +29,7 @@ capture_empty_restricted_heading:
   message: '无法抓取此页面'
 
 capture_empty_restricted_body_before:
-  message: 'Web2Chat 不能在浏览器内置页面上工作。请打开一个普通网页，然后再次点击'
+  message: 'web2chat 不能在浏览器内置页面上工作。请打开一个普通网页，然后再次点击'
 
 capture_empty_restricted_body_icon:
   message: '工具栏图标'
@@ -65,11 +65,11 @@ capture_error_scriptFailed_body_after:
 
 # Group A — manifest commands description
 command_open_popup:
-  message: '打开 Web2Chat 弹窗并抓取当前页面'
+  message: '打开 web2chat 弹窗并抓取当前页面'
 
 # Group B — popup chrome
 popup_chrome_title:
-  message: 'Web2Chat'
+  message: 'web2chat'
 popup_chrome_settings_tooltip:
   message: '设置'
 
@@ -79,7 +79,7 @@ dispatch_confirm_label:
 dispatch_in_progress_heading:
   message: '正在投递…'
 dispatch_in_progress_body_before:
-  message: 'Web2Chat 正在打开目标页面，点击'
+  message: 'web2chat 正在打开目标页面，点击'
 dispatch_in_progress_body_icon:
   message: '取消'
 dispatch_in_progress_body_after:
@@ -129,7 +129,7 @@ error_code_INTERNAL_retry:
 error_code_RESTRICTED_URL_heading:
   message: '受限页面'
 error_code_RESTRICTED_URL_body:
-  message: 'Web2Chat 无法抓取此页面，浏览器内置页面受限。'
+  message: 'web2chat 无法抓取此页面，浏览器内置页面受限。'
 error_code_EXTRACTION_EMPTY_heading:
   message: '未发现内容'
 error_code_EXTRACTION_EMPTY_body:
@@ -137,7 +137,7 @@ error_code_EXTRACTION_EMPTY_body:
 error_code_EXECUTE_SCRIPT_FAILED_heading:
   message: '无法访问页面'
 error_code_EXECUTE_SCRIPT_FAILED_body:
-  message: '页面无法加载 Web2Chat。请刷新页面后重试。'
+  message: '页面无法加载 web2chat。请刷新页面后重试。'
 error_code_EXECUTE_SCRIPT_FAILED_retry:
   message: '重试'
 error_code_dismiss_label:
@@ -191,9 +191,9 @@ combobox_prompt_placeholder:
 
 # Group I — options page
 options_page_title:
-  message: 'Web2Chat — 设置'
+  message: 'web2chat — 设置'
 options_page_heading:
-  message: 'Web2Chat — 设置'
+  message: 'web2chat — 设置'
 options_reset_heading:
   message: '重置历史'
 options_reset_explainer:

@@ -1,4 +1,4 @@
-# Requirements: Web2Chat
+# Requirements: web2chat
 
 **定义日期：** 2026-04-28
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。

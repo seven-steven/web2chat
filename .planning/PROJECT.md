@@ -1,8 +1,12 @@
-# Web2Chat
+# web2chat
 
 ## 这是什么 (What This Is)
 
 类似 Notion / Pocket / Obsidian Web Clipper 的 Chrome MV3 浏览器扩展。用户在任意网页点击图标后，扩展抓取页面结构化信息（title / url / description / create_at / content），结合用户预设的提示词（prompt），一键发送到目标 IM 会话或 AI Agent 会话。面向需要把"网上看到的内容"快速沉淀到知识库 / 团队聊天 / Agent 工作流的个人与小团队。
+
+### 设计初衷 (Design Intent)
+
+web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来源中渐进式构建持久化知识库，参见 https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f ）而设计。最初目标是通过常用的 IM 工具（Discord、Feishu、Lark、Google Chat、LINE、Microsoft Teams、Nextcloud Talk、Signal、Slack、Telegram、WhatsApp、Zalo、QQ、WeCom）便捷地将网页信息发送给 openclaw、hermes-agent 等承载 llm-wiki 的 AI Agent 平台进行知识沉淀。在实现过程中，项目演变为通用的网页到聊天投递工具，可向任意 IM 或 AI Agent 会话发送结构化信息。
 
 ## 核心价值 (Core Value)
 

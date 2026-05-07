@@ -1,13 +1,13 @@
 # CLAUDE.md
 
-> 给 Claude Code 在 Web2Chat 项目工作时的项目级指导。
+> 给 Claude Code 在 web2chat 项目工作时的项目级指导。
 > 下方的自动生成区段标记允许 `gsd-tools` 做定向更新。
 
 <!-- GSD:project-start source:PROJECT.md -->
 
 ## 项目 (Project)
 
-**Web2Chat** — Chrome MV3 web-clipper 扩展。抓取页面结构化元数据（`title` / `url` / `description` / `create_at` / `content`），与用户绑定的 prompt 一起，通过 content script 的 DOM 注入投递到目标 IM 或 AI Agent web 聊天会话中。
+**web2chat** — Chrome MV3 web-clipper 扩展。抓取页面结构化元数据（`title` / `url` / `description` / `create_at` / `content`），与用户绑定的 prompt 一起，通过 content script 的 DOM 注入投递到目标 IM 或 AI Agent web 聊天会话中。
 
 **核心价值（Core Value）：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话——主链路必须稳定可用。
 

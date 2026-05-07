@@ -1,8 +1,8 @@
-# Roadmap: Web2Chat
+# Roadmap: web2chat
 
 ## Overview
 
-Web2Chat 是一个 Chrome MV3 扩展，用于抓取结构化的页面元数据 + 内容，并将其与用户自定义的 prompt 一起，通过 content script DOM 注入投递到目标 IM / AI-Agent 聊天会话中。整体路线遵循 foundation-first 原则：先搭建一个正确连线的 MV3 骨架（从第一天起就内置 i18n + 存储 + 类型化消息），独立验证抓取一侧，然后叠加投递核心 + popup UX。两个适配器阶段（OpenClaw — 友好目标，然后 Discord — 最难目标）端到端验证完整链路。i18n 加固 + UX 打磨收拢散落项；分发阶段以 Web Store 就绪的安装包、隐私政策和双语 README 收尾。覆盖率为 7 个 phase 内 47/47 条 v1 需求。
+web2chat 是一个 Chrome MV3 扩展，用于抓取结构化的页面元数据 + 内容，并将其与用户自定义的 prompt 一起，通过 content script DOM 注入投递到目标 IM / AI-Agent 聊天会话中。整体路线遵循 foundation-first 原则：先搭建一个正确连线的 MV3 骨架（从第一天起就内置 i18n + 存储 + 类型化消息），独立验证抓取一侧，然后叠加投递核心 + popup UX。两个适配器阶段（OpenClaw — 友好目标，然后 Discord — 最难目标）端到端验证完整链路。i18n 加固 + UX 打磨收拢散落项；分发阶段以 Web Store 就绪的安装包、隐私政策和双语 README 收尾。覆盖率为 7 个 phase 内 47/47 条 v1 需求。
 
 ## Phases
 
@@ -242,7 +242,7 @@ Plans:
 
 ### Phase 7: 分发上架
 
-**目标 (Goal)**：评审者可以从一个打包好的 zip 安装 Web2Chat，阅读到与实际数据处理一致的隐私政策，看到收窄的静态 `host_permissions`（v2 平台和用户自部署 OpenClaw 走 `optional_host_permissions: ["<all_urls>"]` 运行时按需授权），并按双语 README 完成安装、使用、OpenClaw 设置以及 Discord ToS 注意事项的指引。
+**目标 (Goal)**：评审者可以从一个打包好的 zip 安装 web2chat，阅读到与实际数据处理一致的隐私政策，看到收窄的静态 `host_permissions`（v2 平台和用户自部署 OpenClaw 走 `optional_host_permissions: ["<all_urls>"]` 运行时按需授权），并按双语 README 完成安装、使用、OpenClaw 设置以及 Discord ToS 注意事项的指引。
 **依赖 (Depends on)**：Phase 4、Phase 5、Phase 6
 **Requirements**：DST-01, DST-02, DST-03, DST-04
 **成功标准**（必须为 TRUE 的条件）：

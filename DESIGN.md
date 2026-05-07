@@ -1,6 +1,6 @@
-# Design System for Web2Chat
+# Design System for web2chat
 
-> Charcoal + emerald design language for the Web2Chat Chrome extension.
+> Charcoal + emerald design language for the web2chat Chrome extension.
 > Inspired by the Obsidian Web Clipper Properties-panel layout — compact,
 > data-dense, console-leaning. Authoritative source for tokens, typography,
 > components, and motion across `popup` and `options` entrypoints.
@@ -8,7 +8,7 @@
 
 ## 1. Visual Theme & Atmosphere
 
-Web2Chat is a precision instrument for sending the current web page — title, URL, description, content, and a bound prompt — to an IM or AI agent in one click. The interface should feel less like a marketing landing page and more like a developer-grade utility panel: dense, ordered, and trustworthy.
+web2chat is a precision instrument for sending the current web page — title, URL, description, content, and a bound prompt — to an IM or AI agent in one click. The interface should feel less like a marketing landing page and more like a developer-grade utility panel: dense, ordered, and trustworthy.
 
 The canvas in dark mode is a calm charcoal (`#1e1e1e`) with surfaces stepping up by background luminance (`#262626` → `#2a2a2a`), the Linear / Obsidian convention for elevation on dark. In light mode the canvas is a near-white (`#fafafa`) with cool-gray neutrals (zinc), avoiding warm tones because warmth competes with the data-density signal — readers should feel like they're inspecting structured data, not reading a magazine.
 
@@ -383,7 +383,7 @@ In dark mode borders use semi-transparent white (`rgb(255 255 255 / 0.10)`) — 
 
 ## 8. Responsive Behavior
 
-Web2Chat is a Chrome MV3 extension. Popup runs at `min-w-[360px]` (Chrome's enforced popup minimum). Options pages are desktop-only.
+web2chat is a Chrome MV3 extension. Popup runs at `min-w-[360px]` (Chrome's enforced popup minimum). Options pages are desktop-only.
 
 | Surface | Width                                     | Behavior                                                   |
 | ------- | ----------------------------------------- | ---------------------------------------------------------- |

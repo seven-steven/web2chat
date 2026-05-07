@@ -1,12 +1,12 @@
 English | [简体中文](./PRIVACY.zh_CN.md)
 
-# Web2Chat Privacy Policy
+# web2chat Privacy Policy
 
 **Last updated:** 2026-05-07
 
 ## Data We Collect
 
-When you use Web2Chat to clip a web page, we process the following data fields from the active browser tab:
+When you use web2chat to clip a web page, we process the following data fields from the active browser tab:
 
 - `url` -- the URL of the page you clip
 - `title` -- the page title
@@ -38,7 +38,7 @@ No data is sent to any server, API endpoint, or third-party service at any time.
 
 ## Data We Do NOT Collect
 
-We want to be explicit about what Web2Chat does **not** do:
+We want to be explicit about what web2chat does **not** do:
 
 - We do not operate or communicate with any remote server
 - We do not use any third-party analytics, tracking, or telemetry SDK
@@ -50,11 +50,11 @@ We want to be explicit about what Web2Chat does **not** do:
 
 ## Third-Party Services
 
-Web2Chat does not integrate with any third-party services for data collection, analytics, or advertising. The extension operates entirely within your browser.
+web2chat does not integrate with any third-party services for data collection, analytics, or advertising. The extension operates entirely within your browser.
 
 ## Your Control Over Data
 
-You have full control over all data stored by Web2Chat:
+You have full control over all data stored by web2chat:
 
 - You can clear all stored data via the extension's Settings page ("Reset all history")
 - You can revoke granted permissions for specific origins via the Settings page
@@ -66,4 +66,4 @@ If this privacy policy changes, updates will be reflected in this file. The full
 
 ## Contact
 
-If you have questions or concerns about this privacy policy, please open an issue on the [Web2Chat GitHub repository](https://github.com/nicholaschenai/web2chat).
+If you have questions or concerns about this privacy policy, please open an issue on the [web2chat GitHub repository](https://github.com/nicholaschenai/web2chat).

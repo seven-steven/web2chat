@@ -1,11 +1,11 @@
 extension_name:
-  message: 'Web2Chat'
+  message: 'web2chat'
 
 extension_description:
   message: 'One-click clip-and-send to your favorite IM or AI agent chat.'
 
 action_default_title:
-  message: 'Web2Chat — clip current page'
+  message: 'web2chat — clip current page'
 
 capture_loading_label:
   message: 'Capturing page…'
@@ -29,7 +29,7 @@ capture_empty_restricted_heading:
   message: "Can't capture this page"
 
 capture_empty_restricted_body_before:
-  message: "Web2Chat doesn't run on browser-internal pages. Open a regular website, then click "
+  message: "web2chat doesn't run on browser-internal pages. Open a regular website, then click "
 
 capture_empty_restricted_body_icon:
   message: 'the toolbar icon'
@@ -65,11 +65,11 @@ capture_error_scriptFailed_body_after:
 
 # Group A — manifest commands description
 command_open_popup:
-  message: 'Open Web2Chat popup and capture the current page'
+  message: 'Open web2chat popup and capture the current page'
 
 # Group B — popup chrome
 popup_chrome_title:
-  message: 'Web2Chat'
+  message: 'web2chat'
 popup_chrome_settings_tooltip:
   message: 'Settings'
 
@@ -79,7 +79,7 @@ dispatch_confirm_label:
 dispatch_in_progress_heading:
   message: 'Sending…'
 dispatch_in_progress_body_before:
-  message: 'Web2Chat is opening the target tab. Click '
+  message: 'web2chat is opening the target tab. Click '
 dispatch_in_progress_body_icon:
   message: 'Cancel'
 dispatch_in_progress_body_after:
@@ -119,7 +119,7 @@ error_code_RATE_LIMITED_retry:
 error_code_PLATFORM_UNSUPPORTED_heading:
   message: 'Unsupported platform'
 error_code_PLATFORM_UNSUPPORTED_body:
-  message: 'Web2Chat supports Discord and OpenClaw in v1. Other platforms come later.'
+  message: 'web2chat supports Discord and OpenClaw in v1. Other platforms come later.'
 error_code_INTERNAL_heading:
   message: 'Something went wrong'
 error_code_INTERNAL_body:
@@ -129,7 +129,7 @@ error_code_INTERNAL_retry:
 error_code_RESTRICTED_URL_heading:
   message: 'Restricted page'
 error_code_RESTRICTED_URL_body:
-  message: 'Web2Chat cannot capture this page. Browser-internal pages are restricted.'
+  message: 'web2chat cannot capture this page. Browser-internal pages are restricted.'
 error_code_EXTRACTION_EMPTY_heading:
   message: 'No content found'
 error_code_EXTRACTION_EMPTY_body:
@@ -137,7 +137,7 @@ error_code_EXTRACTION_EMPTY_body:
 error_code_EXECUTE_SCRIPT_FAILED_heading:
   message: "Couldn't reach the page"
 error_code_EXECUTE_SCRIPT_FAILED_body:
-  message: 'The page could not load Web2Chat. Reload the page, then retry.'
+  message: 'The page could not load web2chat. Reload the page, then retry.'
 error_code_EXECUTE_SCRIPT_FAILED_retry:
   message: 'Retry'
 error_code_dismiss_label:
@@ -191,9 +191,9 @@ combobox_prompt_placeholder:
 
 # Group I — options page
 options_page_title:
-  message: 'Web2Chat — Settings'
+  message: 'web2chat — Settings'
 options_page_heading:
-  message: 'Web2Chat — Settings'
+  message: 'web2chat — Settings'
 options_reset_heading:
   message: 'Reset history'
 options_reset_explainer:

@@ -1,12 +1,12 @@
 [English](./README.en.md) | 简体中文
 
-# Web2Chat
+# web2chat
 
 > 一键抓取网页结构化信息 + 预设 prompt，投递到 IM / AI Agent 聊天会话。Chrome MV3 扩展。
 
 ## 简介
 
-Web2Chat 是一个 Chrome 浏览器扩展，帮助用户快速将当前网页的结构化信息投递到 IM 或 AI Agent 聊天会话。
+web2chat 是一个 Chrome 浏览器扩展，帮助用户快速将当前网页的结构化信息投递到 IM 或 AI Agent 聊天会话。
 
 **核心功能：**
 
@@ -17,6 +17,10 @@ Web2Chat 是一个 Chrome 浏览器扩展，帮助用户快速将当前网页的
 **支持平台：** OpenClaw Web UI、Discord
 
 **隐私：** 所有数据仅本地存储于 `chrome.storage.local`，不上传任何服务器。详见 [隐私](#隐私) 章节。
+
+## 设计初衷
+
+web2chat 最初为 [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 模式设计 — 通过常用 IM 工具（Discord、Feishu、Lark、Google Chat、LINE、Microsoft Teams、Nextcloud Talk、Signal、Slack、Telegram、WhatsApp、Zalo、QQ、WeCom）便捷地将网页信息发送给 openclaw、hermes-agent 等承载 llm-wiki 的 AI Agent 平台，沉淀为持久化知识库。在实现过程中，项目演变为通用的网页到聊天投递工具。
 
 ## 安装
 
@@ -40,7 +44,7 @@ Web2Chat 是一个 Chrome 浏览器扩展，帮助用户快速将当前网页的
    - 打开 `chrome://extensions`
    - 右上角开启 **开发者模式**
    - 点击 **加载已解压的扩展程序**，选择仓库的 `.output/chrome-mv3/` 目录
-4. 工具栏出现 Web2Chat 图标
+4. 工具栏出现 web2chat 图标
 
 ### Chrome Web Store
 
@@ -48,7 +52,7 @@ Web2Chat 是一个 Chrome 浏览器扩展，帮助用户快速将当前网页的
 
 ## 使用
 
-1. 点击工具栏 Web2Chat 图标（或快捷键 `Ctrl+Shift+S` / `Cmd+Shift+S`）
+1. 点击工具栏 web2chat 图标（或快捷键 `Ctrl+Shift+S` / `Cmd+Shift+S`）
 2. Popup 自动抓取当前页面信息并显示预览
 3. 可编辑 title、description、content
 4. 输入 `send_to` 目标 URL（支持历史下拉 + prompt 绑定）
@@ -69,7 +73,7 @@ Web2Chat 是一个 Chrome 浏览器扩展，帮助用户快速将当前网页的
 - URL 格式：`https://discord.com/channels/<server>/<channel>`
 - 要求已在同一浏览器 profile 登录 Discord
 
-**ToS 风险声明：** Web2Chat 通过 DOM 注入向 Discord 发送消息。这属于自动化操作，可能违反 [Discord 服务条款](https://discord.com/terms)。使用此功能即表示您理解并接受由此可能产生的账号风险（包括但不限于临时限制或封禁）。开发者不对因使用本扩展导致的 Discord 账号问题承担责任。
+**ToS 风险声明：** web2chat 通过 DOM 注入向 Discord 发送消息。这属于自动化操作，可能违反 [Discord 服务条款](https://discord.com/terms)。使用此功能即表示您理解并接受由此可能产生的账号风险（包括但不限于临时限制或封禁）。开发者不对因使用本扩展导致的 Discord 账号问题承担责任。
 
 ## Limitations
 
@@ -99,6 +103,6 @@ pnpm verify:zip       # zip 结构校验
 
 ## 隐私
 
-Web2Chat 不收集、不上传任何用户数据。所有抓取内容仅存储于本地浏览器，投递时通过浏览器标签页直接传递到目标会话。
+web2chat 不收集、不上传任何用户数据。所有抓取内容仅存储于本地浏览器，投递时通过浏览器标签页直接传递到目标会话。
 
 详见 [隐私政策](./PRIVACY.zh_CN.md)

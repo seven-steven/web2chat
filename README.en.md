@@ -1,12 +1,12 @@
 English | [简体中文](./README.md)
 
-# Web2Chat
+# web2chat
 
 > One-click clip and send structured web page info + custom prompt to IM / AI Agent chat sessions. Chrome MV3 extension.
 
 ## Introduction
 
-Web2Chat is a Chrome extension that helps users quickly deliver structured web page information to IM or AI Agent chat sessions.
+web2chat is a Chrome extension that helps users quickly deliver structured web page information to IM or AI Agent chat sessions.
 
 **Core features:**
 
@@ -17,6 +17,10 @@ Web2Chat is a Chrome extension that helps users quickly deliver structured web p
 **Supported platforms:** OpenClaw Web UI, Discord
 
 **Privacy:** All data is stored locally in `chrome.storage.local` only. Nothing is uploaded to any server. See [Privacy](#privacy) section.
+
+## Design Intent
+
+web2chat was originally designed for the [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern — conveniently sending web page information through common IM tools (Discord, Feishu, Lark, Google Chat, LINE, Microsoft Teams, Nextcloud Talk, Signal, Slack, Telegram, WhatsApp, Zalo, QQ, WeCom) to AI Agent platforms like openclaw and hermes-agent that host llm-wiki knowledge bases. During implementation, the project evolved into a general-purpose web-to-chat delivery tool.
 
 ## Installation
 
@@ -40,7 +44,7 @@ Web2Chat is a Chrome extension that helps users quickly deliver structured web p
    - Open `chrome://extensions`
    - Enable **Developer mode** in the top right
    - Click **Load unpacked** and select the `.output/chrome-mv3/` directory
-4. The Web2Chat icon appears in the toolbar
+4. The web2chat icon appears in the toolbar
 
 ### Chrome Web Store
 
@@ -48,7 +52,7 @@ Coming soon.
 
 ## Usage
 
-1. Click the Web2Chat toolbar icon (or press `Ctrl+Shift+S` / `Cmd+Shift+S`)
+1. Click the web2chat toolbar icon (or press `Ctrl+Shift+S` / `Cmd+Shift+S`)
 2. The popup automatically captures current page information and shows a preview
 3. Edit title, description, or content as needed
 4. Enter the `send_to` target URL (supports history dropdown with prompt binding)
@@ -69,7 +73,7 @@ Coming soon.
 - URL format: `https://discord.com/channels/<server>/<channel>`
 - Requires being logged into Discord in the same browser profile
 
-**ToS Risk Notice:** Web2Chat uses DOM injection to send messages to Discord. This constitutes automation and may violate the [Discord Terms of Service](https://discord.com/terms). By using this feature, you acknowledge and accept any associated account risks (including but not limited to temporary restrictions or bans). The developer assumes no responsibility for Discord account issues caused by use of this extension.
+**ToS Risk Notice:** web2chat uses DOM injection to send messages to Discord. This constitutes automation and may violate the [Discord Terms of Service](https://discord.com/terms). By using this feature, you acknowledge and accept any associated account risks (including but not limited to temporary restrictions or bans). The developer assumes no responsibility for Discord account issues caused by use of this extension.
 
 ## Limitations
 
@@ -99,6 +103,6 @@ Tech stack: WXT 0.20 + Preact + TypeScript + Tailwind v4 + Vitest + Playwright
 
 ## Privacy
 
-Web2Chat does not collect or upload any user data. All captured content is stored locally in the browser and delivered to target sessions directly through browser tabs.
+web2chat does not collect or upload any user data. All captured content is stored locally in the browser and delivered to target sessions directly through browser tabs.
 
 See [Privacy Policy](./PRIVACY.md)

@@ -1,6 +1,6 @@
 English | [简体中文](./STORE-LISTING.md)
 
-# Web2Chat -- Chrome Web Store Listing
+# web2chat -- Chrome Web Store Listing
 
 ## Short Description
 
@@ -12,9 +12,11 @@ This field is the `manifest.json` `description`, already set via i18n locale. Cu
 
 ## Detailed Description
 
-Web2Chat is a Chrome extension built for AI Agent collaboration and automated IM delivery.
+web2chat is a Chrome extension built for llm-wiki knowledge building, AI Agent collaboration, and automated IM delivery.
 
-With a single click, Web2Chat captures structured page information (title, URL, description, body content), converts it to clean Markdown, pairs it with your custom prompt, and delivers it to a target IM or AI Agent chat session.
+Inspired by Karpathy's llm-wiki pattern — using an LLM to incrementally build a persistent wiki from web sources. web2chat lets you send web page information through common IM tools like Discord, Slack, and Telegram to AI Agent platforms such as openclaw and hermes-agent, enabling one-click knowledge ingestion.
+
+With a single click, web2chat captures structured page information (title, URL, description, body content), converts it to clean Markdown, pairs it with your custom prompt, and delivers it to a target IM or AI Agent chat session.
 
 ### How It Works
 
@@ -24,7 +26,7 @@ With a single click, Web2Chat captures structured page information (title, URL, 
 
 ### Supported Platforms
 
-- **OpenClaw Web UI** -- Self-hosted AI Agent platform. Configure your instance URL and start using it
+- **OpenClaw Web UI** -- Self-hosted AI Agent platform (hosts llm-wiki / hermes-agent). Configure your instance URL and start using it
 - **Discord** -- Deliver messages to channels. Paste a channel URL to get started
 
 ### Key Features
@@ -38,7 +40,7 @@ With a single click, Web2Chat captures structured page information (title, URL, 
 
 ### Privacy
 
-Web2Chat does not upload any data to remote servers. Captured page information and user settings are stored only in the browser's local storage (chrome.storage.local / .session). Delivery happens through direct browser tab navigation to the target session.
+web2chat does not upload any data to remote servers. Captured page information and user settings are stored only in the browser's local storage (chrome.storage.local / .session). Delivery happens through direct browser tab navigation to the target session.
 
 ## Dashboard Fields Reference (Manual)
 
