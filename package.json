@@ -4,7 +4,7 @@
   "description": "Chrome MV3 web-clipper extension that delivers structured page metadata + a user-defined prompt into a target IM / AI Agent web chat session.",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.33.3",
+  "packageManager": "pnpm@10.33.4",
   "engines": {
     "node": ">=20.19"
   },
