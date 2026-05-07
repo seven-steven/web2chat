@@ -19,6 +19,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export type Manifest = {
   name?: string | undefined;
@@ -152,30 +153,37 @@ export function assertManifest(manifest: Manifest, errors: string[]): void {
 }
 
 // ─── Main script entry ─────────────────────────────────────────────────────
+// Guard so importing this module from tests does not run the CLI side-effects
+// (CI fails otherwise — `.output/chrome-mv3/manifest.json` is absent before `pnpm build`).
 
-const manifestPath = resolve(process.cwd(), '.output/chrome-mv3/manifest.json');
-if (!existsSync(manifestPath)) {
-  console.error(`[verify-manifest] FAIL: ${manifestPath} not found. Run \`pnpm build\` first.`);
-  process.exit(1);
+const isDirectInvocation =
+  !!process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+
+if (isDirectInvocation) {
+  const manifestPath = resolve(process.cwd(), '.output/chrome-mv3/manifest.json');
+  if (!existsSync(manifestPath)) {
+    console.error(`[verify-manifest] FAIL: ${manifestPath} not found. Run \`pnpm build\` first.`);
+    process.exit(1);
+  }
+
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as Manifest;
+  const errors: string[] = [];
+  assertManifest(manifest, errors);
+
+  if (errors.length) {
+    console.error('[verify-manifest] FAIL:');
+    for (const e of errors) console.error('  -', e);
+    process.exit(1);
+  }
+
+  // ─── I18N-04: explicit success logging for manifest __MSG_*__ fields ────────
+  const i18nFields: Array<{ path: string; value: string | undefined }> = [
+    { path: 'name', value: manifest.name },
+    { path: 'description', value: manifest.description },
+    { path: 'action.default_title', value: manifest.action?.default_title },
+  ];
+  for (const check of i18nFields) {
+    console.log(`OK   [I18N-04] manifest.${check.path} = "${check.value}"`);
+  }
+  console.log('[verify-manifest] OK — all assertions passed');
 }
-
-const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as Manifest;
-const errors: string[] = [];
-assertManifest(manifest, errors);
-
-if (errors.length) {
-  console.error('[verify-manifest] FAIL:');
-  for (const e of errors) console.error('  -', e);
-  process.exit(1);
-}
-
-// ─── I18N-04: explicit success logging for manifest __MSG_*__ fields ────────
-const i18nFields: Array<{ path: string; value: string | undefined }> = [
-  { path: 'name', value: manifest.name },
-  { path: 'description', value: manifest.description },
-  { path: 'action.default_title', value: manifest.action?.default_title },
-];
-for (const check of i18nFields) {
-  console.log(`OK   [I18N-04] manifest.${check.path} = "${check.value}"`);
-}
-console.log('[verify-manifest] OK — all assertions passed');
