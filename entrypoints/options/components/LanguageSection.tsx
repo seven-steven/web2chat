@@ -31,14 +31,14 @@ export function LanguageSection() {
 
   return (
     <section
-      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-6 flex flex-col gap-4"
+      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-4 flex flex-col gap-3"
       data-testid="options-language-section"
     >
-      <header class="flex flex-col gap-2">
-        <h2 class="m-0 text-[14px] leading-snug font-semibold text-[var(--color-ink-strong)]">
+      <header class="flex flex-col gap-1">
+        <h2 class="m-0 text-[13px] leading-snug font-semibold text-[var(--color-ink-strong)]">
           {t('options_language_heading')}
         </h2>
-        <p class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)]">
+        <p class="m-0 text-[12px] leading-normal font-normal text-[var(--color-ink-muted)]">
           {t('options_language_explainer')}
         </p>
       </header>
@@ -51,7 +51,7 @@ export function LanguageSection() {
           data-testid="options-language-select"
           value={selected.value}
           onChange={handleChange}
-          class="w-full bg-transparent border-0 border-b-[1.5px] border-[var(--color-border-strong)] rounded-none px-3 py-2 pr-8 text-sm leading-normal font-normal text-[var(--color-ink-strong)] hover:border-[var(--color-ink-faint)] focus-visible:outline-none focus-visible:border-b-2 focus-visible:border-[var(--color-accent)] transition-[border-color] duration-[var(--duration-snap)] appearance-none"
+          class="w-full bg-transparent border-0 border-b-[1.5px] border-[var(--color-border-strong)] rounded-none px-2 py-1.5 pr-8 text-[13px] leading-normal font-normal text-[var(--color-ink-strong)] hover:border-[var(--color-ink-faint)] focus-visible:outline-none focus-visible:border-b-2 focus-visible:border-[var(--color-accent)] transition-[border-color] duration-[var(--duration-snap)] appearance-none"
         >
           <option value="">{t('options_language_auto')}</option>
           {/* eslint-disable-next-line local/no-hardcoded-strings */}

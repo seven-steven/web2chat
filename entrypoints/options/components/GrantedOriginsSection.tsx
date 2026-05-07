@@ -44,20 +44,20 @@ export function GrantedOriginsSection() {
 
   return (
     <section
-      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-6 flex flex-col gap-4"
+      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-4 flex flex-col gap-3"
       data-testid="options-origins-section"
     >
-      <header class="flex flex-col gap-2">
-        <h2 class="m-0 text-[14px] leading-snug font-semibold text-[var(--color-ink-strong)]">
+      <header class="flex flex-col gap-1">
+        <h2 class="m-0 text-[13px] leading-snug font-semibold text-[var(--color-ink-strong)]">
           {t('options_origins_heading')}
         </h2>
-        <p class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)]">
+        <p class="m-0 text-[12px] leading-normal font-normal text-[var(--color-ink-muted)]">
           {t('options_origins_explainer')}
         </p>
       </header>
       {origins.length === 0 ? (
         <p
-          class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)]"
+          class="m-0 text-[12px] leading-normal font-normal text-[var(--color-ink-muted)]"
           data-testid="options-origins-empty"
         >
           {t('options_origins_empty')}
@@ -67,18 +67,18 @@ export function GrantedOriginsSection() {
           {origins.map((origin, idx) => (
             <li
               key={origin}
-              class="flex items-center gap-3 px-1 py-2 border-b border-[var(--color-rule)] last:border-b-0"
+              class="flex items-center gap-3 px-1 py-1.5 border-b border-[var(--color-rule)] last:border-b-0"
               data-testid={`options-origin-item-${origin}`}
             >
               <span class="font-mono text-[10px] uppercase tracking-[0.06em] font-semibold text-[var(--color-ink-faint)] tabular-nums">
                 {String(idx + 1).padStart(2, '0')}
               </span>
-              <span class="flex-1 font-mono text-sm text-[var(--color-ink-base)] truncate">
+              <span class="flex-1 font-mono text-[12px] text-[var(--color-ink-base)] truncate">
                 {origin}
               </span>
               <button
                 type="button"
-                class="text-[var(--color-danger)] hover:underline underline-offset-2 text-sm font-semibold shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-[var(--duration-instant)]"
+                class="text-[var(--color-danger)] hover:underline underline-offset-2 text-[12px] font-semibold shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-[var(--duration-instant)]"
                 disabled={removingOrigin === origin}
                 onClick={() => {
                   pendingOriginSig.value = origin;

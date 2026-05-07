@@ -53,21 +53,21 @@ export function ResetSection() {
 
   return (
     <section
-      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-6 flex flex-col gap-4"
+      class="bg-transparent border border-[var(--color-border-strong)] rounded-[var(--radius-card)] p-4 flex flex-col gap-3"
       data-testid="options-reset-section"
     >
-      <header class="flex flex-col gap-2">
-        <h2 class="m-0 text-[14px] leading-snug font-semibold text-[var(--color-ink-strong)]">
+      <header class="flex flex-col gap-1">
+        <h2 class="m-0 text-[13px] leading-snug font-semibold text-[var(--color-ink-strong)]">
           {t('options_reset_heading')}
         </h2>
-        <p class="m-0 text-sm leading-normal font-normal text-[var(--color-ink-muted)]">
+        <p class="m-0 text-[12px] leading-normal font-normal text-[var(--color-ink-muted)]">
           {t('options_reset_explainer')}
         </p>
       </header>
       <div class="flex justify-end">
         <button
           type="button"
-          class="border border-[var(--color-danger)] text-[var(--color-danger)] bg-transparent hover:bg-[var(--color-danger)] hover:text-white active:translate-y-[0.5px] transition-[background-color,color,transform] duration-[var(--duration-snap)] px-4 py-2 rounded-[var(--radius-soft)] text-sm font-semibold tracking-[0.04em]"
+          class="border border-[var(--color-danger)] text-[var(--color-danger)] bg-transparent hover:bg-[var(--color-danger)] hover:text-white active:translate-y-[0.5px] transition-[background-color,color,transform] duration-[var(--duration-snap)] px-3 py-1.5 rounded-[var(--radius-soft)] text-[13px] font-semibold tracking-[0.02em]"
           onClick={() => {
             showConfirmSig.value = true;
             errorSig.value = null;
@@ -97,7 +97,7 @@ export function ResetSection() {
       )}
       {showToastSig.value && (
         <p
-          class="text-sm leading-normal font-normal text-[var(--color-ink-muted)]"
+          class="text-[12px] leading-normal font-normal text-[var(--color-ink-muted)]"
           role="status"
           aria-live="polite"
           data-testid="options-reset-toast"
