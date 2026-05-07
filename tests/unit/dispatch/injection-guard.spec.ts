@@ -12,17 +12,27 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
  * listener registration so only one handleDispatch runs per message.
  */
 
+type TestMessage = { type?: string; payload?: unknown };
+type TestMessageListener = (
+  msg: TestMessage | undefined,
+  sender: unknown,
+  sendResponse: (response?: unknown) => void,
+) => boolean;
+type TestGlobal = Record<string, unknown> & {
+  __web2chat_discord_registered?: boolean;
+};
+
 function createMockChrome() {
-  const listeners: Array<(msg: any, sender: any, sendResponse: any) => boolean> = [];
+  const listeners: TestMessageListener[] = [];
   return {
     onMessage: {
-      addListener: vi.fn((fn: (msg: any, sender: any, sendResponse: any) => boolean) => {
+      addListener: vi.fn((fn: TestMessageListener) => {
         listeners.push(fn);
       }),
     },
     runtime: {
       onMessage: {
-        addListener: vi.fn((fn: (msg: any, sender: any, sendResponse: any) => boolean) => {
+        addListener: vi.fn((fn: TestMessageListener) => {
           listeners.push(fn);
         }),
       },
@@ -36,10 +46,7 @@ function createMockChrome() {
  * Simulates the guard pattern used in content scripts.
  * This mirrors the actual code in each adapter's main() function.
  */
-function simulateMain(
-  globalThis: Record<string, any>,
-  chrome: ReturnType<typeof createMockChrome>,
-) {
+function simulateMain(globalThis: TestGlobal, chrome: ReturnType<typeof createMockChrome>) {
   const GUARD = '__web2chat_discord_registered';
   if (globalThis[GUARD]) return;
   globalThis[GUARD] = true;
@@ -53,7 +60,7 @@ function simulateMain(
 }
 
 describe('content script injection guard', () => {
-  let mockGlobalThis: Record<string, any>;
+  let mockGlobalThis: TestGlobal;
   let mockChrome: ReturnType<typeof createMockChrome>;
 
   beforeEach(() => {
@@ -90,8 +97,8 @@ describe('content script injection guard', () => {
   it('only ONE handleDispatch fires per ADAPTER_DISPATCH message', () => {
     simulateMain(mockGlobalThis, mockChrome);
 
-    const responses: any[] = [];
-    const sendResponse = (resp: any) => responses.push(resp);
+    const responses: unknown[] = [];
+    const sendResponse = (resp?: unknown) => responses.push(resp);
 
     // Dispatch the message to all registered listeners
     for (const listener of mockChrome._listeners) {
@@ -112,8 +119,8 @@ describe('content script injection guard', () => {
       });
     }
 
-    const responses: any[] = [];
-    const sendResponse = (resp: any) => responses.push(resp);
+    const responses: unknown[] = [];
+    const sendResponse = (resp?: unknown) => responses.push(resp);
 
     for (const listener of mockChrome._listeners) {
       listener({ type: 'ADAPTER_DISPATCH', payload: {} }, {}, sendResponse);
