@@ -1,18 +1,19 @@
 /**
- * Popup chrome — title bar with settings gear (D-37).
+ * Popup chrome — title bar with settings gear toggle (D-37).
  *
  * Editorial typography: `Web2Chat` wordmark in serif display weight.
- * Settings gear: 60deg rotation on hover (signature micro-interaction).
+ * Settings gear: 60deg rotation on hover; when settings view active, stays rotated
+ * and changes to accent color. Clicking toggles between send ↔ settings views.
  * Bottom rule: stone-200 hairline + 1px inset rule above for double-line print feel.
  */
 import { t } from '@/shared/i18n';
 
-export function PopupChrome() {
-  function handleSettingsClick() {
-    chrome.runtime.openOptionsPage().catch((err) => {
-      console.error('[popup] openOptionsPage failed:', err);
-    });
-  }
+interface PopupChromeProps {
+  showSettings?: boolean;
+  onToggleSettings?: () => void;
+}
+
+export function PopupChrome({ showSettings = false, onToggleSettings }: PopupChromeProps) {
   return (
     <div
       class="flex items-center justify-between px-3 pt-3 pb-2 border-b border-[var(--color-border-strong)]"
@@ -23,10 +24,14 @@ export function PopupChrome() {
       </h1>
       <button
         type="button"
-        class="size-6 text-[var(--color-ink-muted)] hover:text-[var(--color-ink-strong)] transition-transform duration-[var(--duration-base)] ease-[var(--ease-snap)] hover:rotate-[60deg]"
+        class={`size-6 transition-[color,transform] duration-[var(--duration-base)] ease-[var(--ease-snap)] ${
+          showSettings
+            ? 'rotate-[60deg] text-[var(--color-accent)]'
+            : 'text-[var(--color-ink-muted)] hover:text-[var(--color-ink-strong)] hover:rotate-[60deg]'
+        }`}
         aria-label={t('popup_chrome_settings_tooltip')}
         title={t('popup_chrome_settings_tooltip')}
-        onClick={handleSettingsClick}
+        onClick={onToggleSettings}
         data-testid="popup-chrome-settings"
       >
         {/* Lucide settings gear — 24x24 */}

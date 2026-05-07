@@ -38,6 +38,9 @@ import { PopupChrome } from './components/PopupChrome';
 import { SendForm } from './components/SendForm';
 import { InProgressView } from './components/InProgressView';
 import { ErrorBanner } from './components/ErrorBanner';
+import { LanguageSection } from '../options/components/LanguageSection';
+import { ResetSection } from '../options/components/ResetSection';
+import { GrantedOriginsSection } from '../options/components/GrantedOriginsSection';
 
 // ─── Module-level signals (D-22: editing values live only here; cleared on popup close) ─────
 
@@ -56,6 +59,9 @@ const promptSig = signal('');
 const promptDirtySig = signal(false);
 const dispatchInFlightSig = signal<DispatchRecord | null>(null);
 const dispatchErrorSig = signal<{ code: ErrorCode; message: string } | null>(null);
+
+// Settings toggle
+const viewModeSig = signal<'send' | 'settings'>('send');
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -194,6 +200,10 @@ export function App() {
   const snapshot = snapshotSig.value;
   const error = errorSig.value;
   const dispatchInFlight = dispatchInFlightSig.value;
+  const showSettings = viewModeSig.value === 'settings';
+  const toggleSettings = () => {
+    viewModeSig.value = viewModeSig.value === 'settings' ? 'send' : 'settings';
+  };
 
   // ─── Real-time dispatch state listener ─────────────────────────
   // When InProgressView is shown, poll storage for dispatch state changes.
@@ -225,7 +235,7 @@ export function App() {
   if (dispatchInFlight !== null) {
     return (
       <>
-        <PopupChrome />
+        <PopupChrome showSettings={showSettings} onToggleSettings={toggleSettings} />
         <InProgressView
           dispatchId={dispatchInFlight.dispatchId}
           onCancel={async () => {
@@ -239,11 +249,33 @@ export function App() {
       </>
     );
   }
+  if (showSettings) {
+    return (
+      <>
+        <PopupChrome showSettings={showSettings} onToggleSettings={toggleSettings} />
+        <main
+          class="flex flex-col gap-3 p-3 min-w-[360px] max-h-[460px] overflow-y-auto font-sans"
+          data-testid="popup-settings"
+        >
+          <div class="relative z-20">
+            <LanguageSection />
+          </div>
+          <div>
+            <GrantedOriginsSection />
+          </div>
+          <div>
+            <ResetSection />
+          </div>
+        </main>
+      </>
+    );
+  }
+
   if (snapshot === null && error === null) {
     const dErr = dispatchErrorSig.value;
     return (
       <>
-        <PopupChrome />
+        <PopupChrome showSettings={showSettings} onToggleSettings={toggleSettings} />
         <main class="flex flex-col p-4 gap-4 min-w-[360px] font-sans" data-testid="popup-loading">
           {dErr && (
             <ErrorBanner
@@ -262,7 +294,7 @@ export function App() {
   if (snapshot !== null) {
     return (
       <>
-        <PopupChrome />
+        <PopupChrome showSettings={showSettings} onToggleSettings={toggleSettings} />
         <SendForm
           snapshot={snapshot}
           titleValue={titleSig.value}
@@ -309,14 +341,14 @@ export function App() {
   if (error?.code === 'RESTRICTED_URL' || error?.code === 'EXTRACTION_EMPTY') {
     return (
       <>
-        <PopupChrome />
+        <PopupChrome showSettings={showSettings} onToggleSettings={toggleSettings} />
         <EmptyView code={error.code} />
       </>
     );
   }
   return (
     <>
-      <PopupChrome />
+      <PopupChrome showSettings={showSettings} onToggleSettings={toggleSettings} />
       <ErrorView />
     </>
   );
