@@ -1,6 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Web2Chat">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Web2Chat" fill="none" stroke="#10b981" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
   <title>Web2Chat</title>
-  <desc>A green chat bubble with a white right-pointing arrow inside, representing web content being dispatched into a chat session.</desc>
-  <path d="M 32 56 Q 32 32 56 32 L 200 32 Q 224 32 224 56 L 224 168 Q 224 192 200 192 L 116 192 L 76 226 L 84 192 L 56 192 Q 32 192 32 168 Z" fill="#10b981"/>
-  <path d="M 96 112 L 144 112 L 144 88 L 188 128 L 144 168 L 144 144 L 96 144 Z" fill="#ffffff"/>
+  <desc>A browser window with two panels of text lines, representing web content dispatched into a chat session.</desc>
+  <rect x="32" y="48" width="192" height="160" rx="16"></rect>
+  <path d="M32 92 H224"></path>
+  <path d="M128 92 V208"></path>
+  <g stroke-width="10">
+    <path d="M60 128 H108"></path>
+    <path d="M60 152 H108"></path>
+    <path d="M60 176 H96"></path>
+    <path d="M148 128 H196"></path>
+    <path d="M148 152 H196"></path>
+    <path d="M148 176 H184"></path>
+  </g>
+  <circle cx="56" cy="70" r="5" fill="#10b981" stroke="none"></circle>
+  <circle cx="78" cy="70" r="5" fill="#10b981" stroke="none"></circle>
+  <circle cx="100" cy="70" r="5" fill="#10b981" stroke="none"></circle>
 </svg>
