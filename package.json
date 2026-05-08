@@ -25,6 +25,7 @@
     "verify:manifest": "wxt build && tsx scripts/verify-manifest.ts",
     "verify:zip": "wxt build && wxt zip && tsx scripts/verify-zip.ts",
     "verify:readme": "tsx scripts/verify-readme-anchors.ts",
+    "assets:screenshot": "node scripts/screenshot-assets.mjs",
     "postinstall": "wxt prepare && husky",
     "prepare": "husky"
   },
