@@ -91,6 +91,9 @@ describe('Select', () => {
     await new Promise((r) => setTimeout(r, 0));
     expect(container.querySelector('[role="listbox"]')).toBeTruthy();
 
+    // Yield one more tick so the useEffect-registered mousedown listener is attached
+    await new Promise((r) => setTimeout(r, 0));
+
     // Dispatch mousedown on the container element (not on button or listbox)
     // This should bubble up to document and trigger the outside-click handler
     const outsideEl = document.createElement('div');
