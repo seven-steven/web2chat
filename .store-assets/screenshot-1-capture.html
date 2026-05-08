@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280" />
+    <title>Screenshot 1 — Capture Preview</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        width: 1280px;
+        height: 800px;
+        background: #0f0f0f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* Subtle grid background */
+      body::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+
+      /* Ambient glow */
+      .glow {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.12;
+        pointer-events: none;
+      }
+      .glow-1 {
+        top: -200px;
+        right: -100px;
+        background: #10b981;
+      }
+      .glow-2 {
+        bottom: -200px;
+        left: -100px;
+        background: #059669;
+      }
+
+      .scene {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 40px;
+        z-index: 1;
+      }
+
+      /* Browser mockup with toolbar icon highlighted */
+      .browser {
+        width: 1000px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.08),
+          0 24px 80px -12px rgba(0, 0, 0, 0.6),
+          0 0 60px rgba(16, 185, 129, 0.08);
+      }
+      .browser-toolbar {
+        height: 44px;
+        background: #1e1e1e;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        gap: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .browser-dots {
+        display: flex;
+        gap: 6px;
+      }
+      .browser-dots span {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .browser-url {
+        flex: 1;
+        height: 28px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .browser-toolbar-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+      }
+      .browser-toolbar-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+      .browser-content {
+        height: 500px;
+        background: #262626;
+        display: flex;
+        position: relative;
+      }
+      .browser-page {
+        flex: 1;
+        padding: 32px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+      .browser-page h2 {
+        font-size: 20px;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 16px;
+      }
+      .browser-page p {
+        margin-bottom: 12px;
+      }
+
+      /* Popup overlay */
+      .popup {
+        position: absolute;
+        right: 24px;
+        top: 16px;
+        width: 360px;
+        background: #1e1e1e;
+        border-radius: 8px;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.08),
+          0 12px 40px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        z-index: 10;
+      }
+      .popup-chrome {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .popup-chrome h1 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #e7e7e7;
+        margin: 0;
+      }
+      .popup-chrome button {
+        width: 24px;
+        height: 24px;
+        background: none;
+        border: none;
+        color: #71717a;
+        cursor: pointer;
+      }
+      .popup-body {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      /* Capture Preview fields */
+      .capture-props {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .prop-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 4px 0;
+      }
+      .prop-icon {
+        width: 14px;
+        height: 14px;
+        margin-top: 2px;
+        color: #52525b;
+        flex-shrink: 0;
+      }
+      .prop-label {
+        font-size: 12px;
+        color: #71717a;
+        white-space: nowrap;
+        min-width: 72px;
+        line-height: 1.5;
+        padding-top: 1px;
+      }
+      .prop-value {
+        font-size: 13px;
+        color: #e7e7e7;
+        line-height: 1.5;
+        flex: 1;
+        min-width: 0;
+      }
+      .prop-value.mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12px;
+        color: #a8a8a8;
+        word-break: break-all;
+      }
+      .prop-value.serif {
+        font-family: ui-serif, Georgia, serif;
+        font-size: 14px;
+        letter-spacing: -0.01em;
+      }
+      .prop-divider {
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        margin: 8px 0;
+      }
+      .content-block-label {
+        font-size: 11px;
+        color: #71717a;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .content-block {
+        font-size: 12px;
+        color: #a8a8a8;
+        line-height: 1.6;
+        max-height: 120px;
+        overflow: hidden;
+      }
+      .content-block em {
+        color: #52525b;
+      }
+
+      /* Annotation */
+      .annotation {
+        position: absolute;
+        font-size: 13px;
+        color: #34d399;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+      }
+      .annotation::before {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 1px;
+        background: #34d399;
+        vertical-align: middle;
+        margin-right: 8px;
+      }
+      .ann-1 {
+        right: 404px;
+        top: 60px;
+      }
+      .ann-2 {
+        right: 404px;
+        top: 160px;
+      }
+      .ann-3 {
+        right: 404px;
+        top: 290px;
+      }
+
+      .tagline {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="scene">
+      <div class="browser">
+        <div class="browser-toolbar">
+          <div class="browser-dots"><span></span><span></span><span></span></div>
+          <div class="browser-url">https://example.com/articles/building-llm-apps</div>
+          <div class="browser-toolbar-icon">
+            <svg viewBox="0 0 256 256" fill="none" stroke="#10b981" stroke-width="16">
+              <rect x="32" y="48" width="192" height="160" rx="16" />
+              <path d="M32 92 H224" />
+              <path d="M128 92 V208" />
+            </svg>
+          </div>
+        </div>
+        <div class="browser-content">
+          <div class="browser-page">
+            <h2>Building LLM Applications: A Practical Guide</h2>
+            <p>
+              Large language models have transformed the way developers approach natural language
+              processing tasks. From chatbots to code generation, the applications are vast and
+              growing.
+            </p>
+            <p>
+              In this guide, we explore the key architectural patterns for building production-ready
+              LLM applications, including prompt engineering, retrieval-augmented generation (RAG),
+              and fine-tuning strategies.
+            </p>
+            <p>
+              The emergence of open-source models has democratized access to powerful AI
+              capabilities, enabling developers to build sophisticated applications without relying
+              on proprietary APIs.
+            </p>
+            <p>
+              One particularly promising pattern is the llm-wiki approach, where an LLM
+              incrementally builds a persistent knowledge base from curated web sources. This
+              combines the breadth of web information with the reliability of human curation.
+            </p>
+          </div>
+
+          <div class="annotation ann-1">Capture</div>
+          <div class="annotation ann-2">Preview</div>
+          <div class="annotation ann-3">Edit</div>
+
+          <div class="popup">
+            <div class="popup-chrome">
+              <h1>web2chat</h1>
+              <button>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div class="popup-body">
+              <div class="capture-props">
+                <div class="prop-row">
+                  <svg
+                    class="prop-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <polyline points="4 7 4 4 20 4 20 7" />
+                    <line x1="9" y1="20" x2="15" y2="20" />
+                    <line x1="12" y1="4" x2="12" y2="20" />
+                  </svg>
+                  <span class="prop-label">Title</span>
+                  <span class="prop-value serif">Building LLM Applications: A Practical Guide</span>
+                </div>
+                <div class="prop-row">
+                  <svg
+                    class="prop-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                  </svg>
+                  <span class="prop-label">Source</span>
+                  <span class="prop-value mono"
+                    >https://example.com/articles/building-llm-apps</span
+                  >
+                </div>
+                <div class="prop-row">
+                  <svg
+                    class="prop-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <line x1="17" y1="10" x2="3" y2="10" />
+                    <line x1="21" y1="6" x2="3" y2="6" />
+                    <line x1="21" y1="14" x2="3" y2="14" />
+                    <line x1="17" y1="18" x2="3" y2="18" />
+                  </svg>
+                  <span class="prop-label">Description</span>
+                  <span class="prop-value"
+                    >A comprehensive guide to building production-ready LLM applications with key
+                    architectural patterns.</span
+                  >
+                </div>
+                <div class="prop-row">
+                  <svg
+                    class="prop-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                  <span class="prop-label">Captured</span>
+                  <span class="prop-value mono">May 8, 2026, 2:30 PM · just now</span>
+                </div>
+                <hr class="prop-divider" />
+                <div class="content-block-label">Content</div>
+                <div class="content-block">
+                  Large language models have transformed the way developers approach natural
+                  language processing tasks. From chatbots to code generation, the applications are
+                  vast and growing.<br /><br />
+                  In this guide, we explore the key architectural patterns for building
+                  production-ready LLM applications<em>...</em>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tagline">Step 1 of 3 — Capture &amp; Preview</div>
+    </div>
+  </body>
+</html>

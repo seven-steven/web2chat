@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280" />
+    <title>Screenshot 4 — Settings &amp; Languages</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        width: 1280px;
+        height: 800px;
+        background: #0f0f0f;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        overflow: hidden;
+        position: relative;
+      }
+      body::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+      .glow {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.1;
+        pointer-events: none;
+      }
+      .glow-1 {
+        top: -200px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #10b981;
+      }
+
+      .scene {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 48px;
+        z-index: 1;
+      }
+
+      .popup-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .popup {
+        width: 380px;
+        background: #1e1e1e;
+        border-radius: 8px;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.08),
+          0 12px 40px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+      }
+      .popup-chrome {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .popup-chrome h1 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #e7e7e7;
+        margin: 0;
+      }
+      .popup-chrome button {
+        width: 24px;
+        height: 24px;
+        background: none;
+        border: none;
+        color: #e7e7e7;
+      }
+      .popup-body {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      /* Section */
+      .section-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #e7e7e7;
+        margin-bottom: 8px;
+      }
+      .section-desc {
+        font-size: 12px;
+        color: #71717a;
+        line-height: 1.5;
+        margin-bottom: 8px;
+      }
+
+      /* Language selector */
+      .lang-select {
+        display: flex;
+        gap: 6px;
+      }
+      .lang-option {
+        padding: 6px 14px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: transparent;
+        color: #a8a8a8;
+      }
+      .lang-option.active {
+        background: rgba(16, 185, 129, 0.12);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: #34d399;
+      }
+      .lang-option.auto {
+        font-style: italic;
+      }
+
+      /* Origins */
+      .origin-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 4px;
+        font-size: 12px;
+      }
+      .origin-url {
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        color: #a8a8a8;
+      }
+      .origin-remove {
+        background: none;
+        border: none;
+        color: #52525b;
+        cursor: pointer;
+        font-size: 11px;
+      }
+      .origin-remove:hover {
+        color: #f87171;
+      }
+
+      /* Reset */
+      .reset-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        border: 1px solid rgba(220, 38, 38, 0.3);
+        background: transparent;
+        color: #f87171;
+      }
+
+      /* Right side: feature cards */
+      .features {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding-top: 8px;
+      }
+      .feature-card {
+        width: 340px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 16px 20px;
+      }
+      .feature-card h3 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #e7e7e7;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .feature-card h3 svg {
+        color: #34d399;
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+      .feature-card p {
+        font-size: 12px;
+        color: #71717a;
+        line-height: 1.5;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        margin: 4px 0;
+      }
+
+      /* Locale indicator */
+      .locale-badge {
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.25);
+        font-size: 13px;
+      }
+      .locale-flag {
+        font-size: 24px;
+      }
+      .locale-switch {
+        color: #34d399;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow glow-1"></div>
+
+    <div class="scene">
+      <div class="popup-container">
+        <!-- Settings popup (English) -->
+        <div class="popup">
+          <div class="popup-chrome">
+            <h1>web2chat</h1>
+            <button>
+              <svg
+                viewBox="0 0 24 24"
+                width="24"
+                height="24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          </div>
+          <div class="popup-body">
+            <!-- Language -->
+            <div>
+              <div class="section-title">Language</div>
+              <div class="section-desc">
+                Choose the extension interface language. Page content extraction is not affected.
+              </div>
+              <div class="lang-select">
+                <div class="lang-option auto">Auto</div>
+                <div class="lang-option active">English</div>
+                <div class="lang-option">中文</div>
+              </div>
+            </div>
+
+            <hr class="divider" />
+
+            <!-- Origins -->
+            <div>
+              <div class="section-title">Granted Origins</div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div class="origin-item">
+                  <span class="origin-url">http://localhost:18789</span>
+                  <button class="origin-remove">Remove</button>
+                </div>
+                <div class="origin-item">
+                  <span class="origin-url">https://openclaw.example.com</span>
+                  <button class="origin-remove">Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <hr class="divider" />
+
+            <!-- Reset -->
+            <div>
+              <div class="section-title">Reset</div>
+              <button class="reset-btn">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+                Reset all history
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature cards -->
+      <div class="features">
+        <div class="feature-card">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M5 8l6 6" />
+              <path d="M4 14l6-6 2-3" />
+              <path d="M2 5h12" />
+              <path d="M14 5h8" />
+              <path d="M14 8h8" />
+            </svg>
+            Bilingual Interface
+          </h3>
+          <p>
+            Full English and Simplified Chinese support. Language switch takes effect instantly with
+            no reload required.
+          </p>
+        </div>
+        <div class="feature-card">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Privacy First
+          </h3>
+          <p>
+            All data stays in your browser. No cloud services, no telemetry, no third-party
+            analytics. Zero network calls.
+          </p>
+        </div>
+        <div class="feature-card">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            Minimal Permissions
+          </h3>
+          <p>
+            Only activeTab + scripting for capture and delivery. Optional host permissions requested
+            per-origin when you configure custom instances.
+          </p>
+        </div>
+        <div class="feature-card">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Draft Recovery
+          </h3>
+          <p>
+            Close the popup mid-edit? No problem. Your edits, target URL, and prompt are
+            automatically restored on next open.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

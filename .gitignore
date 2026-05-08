@@ -27,6 +27,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Store assets — generated PNGs (HTML templates are tracked)
+.store-assets/*.png
+
 # Env (keep .env.example tracked)
 .env
 .env.*
