@@ -23,13 +23,13 @@
     "ui_phase": true,
     "ui_safety_gate": true,
     "ai_integration_phase": true,
-    "tdd_mode": false,
+    "tdd_mode": true,
     "text_mode": false,
-    "research_before_questions": false,
+    "research_before_questions": true,
     "discuss_mode": "discuss",
-    "skip_discuss": false,
+    "skip_discuss": true,
     "code_review": true,
-    "code_review_depth": "standard",
+    "code_review_depth": "deep",
     "code_review_command": null,
     "pattern_mapper": true,
     "plan_bounce": false,
@@ -39,10 +39,18 @@
     "post_planning_gaps": true,
     "security_enforcement": true,
     "security_asvs_level": 1,
-    "security_block_on": "high"
+    "security_block_on": "high",
+    "ui_review": true,
+    "use_worktrees": true
   },
   "hooks": {
     "context_warnings": true
+  },
+  "intel": {
+    "enabled": true
+  },
+  "graphify": {
+    "enabled": true
   },
   "project_code": null,
   "phase_naming": "sequential",
