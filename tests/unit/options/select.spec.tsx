@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from 'preact';
+import { act } from 'preact/test-utils';
 
 vi.mock('@/shared/i18n', () => ({
   t: (key: string, ..._args: unknown[]) => key,
@@ -42,17 +43,19 @@ describe('Select', () => {
       { value: 'en', label: 'English' },
       { value: 'zh_CN', label: 'Chinese' },
     ];
-    render(
-      <Select
-        id={props?.id ?? 'test-select'}
-        value={props?.value ?? ''}
-        onChange={onChange}
-        options={options}
-        ariaLabel={props?.ariaLabel ?? 'Test select'}
-        testId={props?.testId ?? 'test-select'}
-      />,
-      container,
-    );
+    await act(async () => {
+      render(
+        <Select
+          id={props?.id ?? 'test-select'}
+          value={props?.value ?? ''}
+          onChange={onChange}
+          options={options}
+          ariaLabel={props?.ariaLabel ?? 'Test select'}
+          testId={props?.testId ?? 'test-select'}
+        />,
+        container,
+      );
+    });
     await flush();
     return { onChange, options };
   }
@@ -94,13 +97,17 @@ describe('Select', () => {
     await renderSelect();
 
     const button = container.querySelector('[data-testid="test-select"]') as HTMLButtonElement;
-    button.click();
+    await act(async () => {
+      button.click();
+    });
     await flush();
     expect(container.querySelector('[role="listbox"]')).toBeTruthy();
 
     const outsideEl = document.createElement('div');
     document.body.appendChild(outsideEl);
-    outsideEl.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    await act(async () => {
+      outsideEl.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    });
     await flush();
 
     expect(container.querySelector('[role="listbox"]')).toBeFalsy();
