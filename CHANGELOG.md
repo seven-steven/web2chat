@@ -4,15 +4,25 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+
 ### Documentation
 
 - **260509-ocg:** Pre-dispatch plan for changelog体系 ([5f717f1](https://github.com/seven/web2chat/commit/5f717f15b93f7b957957fb36ec8bb675ff381d86))
 
+
+### Features
+
+- **260509-ocg:** Add changelog generation ([3e40f2d](https://github.com/seven/web2chat/commit/3e40f2d0d6e723ccf45778be3026234dae705902))
+
+- **260509-ocg:** Gate releases on changelog entries ([da3be2e](https://github.com/seven/web2chat/commit/da3be2eec4a919be78ae92cb8088836450aa650a))
+
 ## [v1.0.1] - 2026-05-09
+
 
 ### Bug Fixes
 
 - **readme,tests:** Remove duplicate CWS link and stabilize Select test ([022f041](https://github.com/seven/web2chat/commit/022f041acc79fce0c1bfb287a80318bf25d52cdd))
+
 
 ### Documentation
 
@@ -26,11 +36,13 @@ All notable changes to this project are documented in this file.
 
 - **planning:** Update v1.1 FEATURES and PITFALLS research ([c2c9abf](https://github.com/seven/web2chat/commit/c2c9abf3f697a88e9e648973ce04a6abb98ae1b3))
 
+
 ### Tests
 
 - **options:** Stabilize Select outside-click test ([a3c4ed9](https://github.com/seven/web2chat/commit/a3c4ed90f70136fa36267c8c79871d949e0fba87))
 
 ## [v1.0] - 2026-05-09
+
 
 ### Bug Fixes
 
@@ -54,7 +66,7 @@ All notable changes to this project are documented in this file.
 
 - **02-WR-03:** Validate extractor result with zod, drop unsafe cast ([7986f0d](https://github.com/seven/web2chat/commit/7986f0d8caa4ea3b8acfaea78d0dee31676b7fa9))
 
-- **02-WR-04:** Pin runCapturePipeline directly with chrome.\* stubs ([fefcf5e](https://github.com/seven/web2chat/commit/fefcf5e9b06f8cdada2d4364e3d521d09c87ff98))
+- **02-WR-04:** Pin runCapturePipeline directly with chrome.* stubs ([fefcf5e](https://github.com/seven/web2chat/commit/fefcf5e9b06f8cdada2d4364e3d521d09c87ff98))
 
 - **02-WR-05:** Cap ArticleSnapshot field lengths to prevent oversize payloads ([f3f66d3](https://github.com/seven/web2chat/commit/f3f66d3e56e49423d4132974488f8c000ffbad63))
 
@@ -130,6 +142,7 @@ All notable changes to this project are documented in this file.
 
 - **test:** Yield extra tick for useEffect flush in outside-click test ([596d644](https://github.com/seven/web2chat/commit/596d6445d08c51f9ed42e2108ebe24ff57a8fb57))
 
+
 ### Chores
 
 - Add project config .planning/config.json ([bdce8ab](https://github.com/seven/web2chat/commit/bdce8ab569714a13294add9060a4cbd5d8027e75))
@@ -163,6 +176,7 @@ All notable changes to this project are documented in this file.
 - Remove REQUIREMENTS.md — archived to milestones/v1.0-REQUIREMENTS.md ([e734422](https://github.com/seven/web2chat/commit/e7344228b5723103b35c2fa67979c75d2172dbd2))
 
 - Archive v1.0 phase directories to milestones/v1.0-phases/ ([ae56193](https://github.com/seven/web2chat/commit/ae5619318403bd20550022f9811dac1cb34464a9))
+
 
 ### Documentation
 
@@ -464,6 +478,7 @@ All notable changes to this project are documented in this file.
 
 - **readme:** Add Chrome Web Store link ([8f0a765](https://github.com/seven/web2chat/commit/8f0a765e112b4ee65292f05f2e4efa4f8f951eff))
 
+
 ### Features
 
 - **01-1:** Bootstrap WXT 0.20.x scaffold + manifest shape (FND-01, FND-05) ([263ed18](https://github.com/seven/web2chat/commit/263ed1856052df6d045158b51c8ece2c4d3fefbf))
@@ -484,7 +499,7 @@ All notable changes to this project are documented in this file.
 
 - **02-05:** 创建 SW capture-pipeline 编排核心 ([fd87257](https://github.com/seven/web2chat/commit/fd87257e659e831cf5a4f27eb48ee516f67e1622))
 
-- **02-05:** 注册 capture.run 顶层路由 + 补齐 capture.\* locale 键 ([f18929e](https://github.com/seven/web2chat/commit/f18929eff8f565c2c28798855b26bfa3db688f1a))
+- **02-05:** 注册 capture.run 顶层路由 + 补齐 capture.* locale 键 ([f18929e](https://github.com/seven/web2chat/commit/f18929eff8f565c2c28798855b26bfa3db688f1a))
 
 - **02-06:** Popup 演化为 capture 4-state UI ([9540aac](https://github.com/seven/web2chat/commit/9540aac91c5518a02a5d56b23246cbd98725160c))
 
@@ -500,7 +515,7 @@ All notable changes to this project are documented in this file.
 
 - **03-02:** Add history + binding repos with hybrid score + dedupe ([98bb79b](https://github.com/seven/web2chat/commit/98bb79b910936260379561989827f35cf0d6314c))
 
-- **03-03:** Add commands.\_execute_action keyboard shortcut to manifest ([be61e0a](https://github.com/seven/web2chat/commit/be61e0a6ef40696fc791f5e2cbfc80396b50da4d))
+- **03-03:** Add commands._execute_action keyboard shortcut to manifest ([be61e0a](https://github.com/seven/web2chat/commit/be61e0a6ef40696fc791f5e2cbfc80396b50da4d))
 
 - **03-03:** Extend verify-manifest with Phase 3 assertions + unit tests + DEVIATIONS ([cfa04c2](https://github.com/seven/web2chat/commit/cfa04c2fbd177a4df06e396f6d5417f7fe311802))
 
@@ -560,7 +575,7 @@ All notable changes to this project are documented in this file.
 
 - **06-1b:** Async locale init in popup/options to prevent first-frame flash ([ebc033b](https://github.com/seven/web2chat/commit/ebc033bfd52e002bc6e9b36023d1d3bd1b8c71c3))
 
-- **06-3:** Add I18N-04 manifest **MSG\_\*** verification with explicit logging ([609d684](https://github.com/seven/web2chat/commit/609d6848b3a199fafd21c6784d997e6d58b6aad5))
+- **06-3:** Add I18N-04 manifest __MSG_*__ verification with explicit logging ([609d684](https://github.com/seven/web2chat/commit/609d6848b3a199fafd21c6784d997e6d58b6aad5))
 
 - **06-2:** Replace no-restricted-syntax with inline no-hardcoded-strings ESLint plugin ([c1d73fe](https://github.com/seven/web2chat/commit/c1d73fe0185ae0011a4eecf30a0e22ffce434725))
 
@@ -590,6 +605,7 @@ All notable changes to this project are documented in this file.
 
 - **popup:** Add back arrow in settings mode for clear navigation ([9226437](https://github.com/seven/web2chat/commit/922643704ac7d0d568af19a4eeeb6e46efbffe34))
 
+
 ### Other
 
 - **gsd:** Init gsg ([a1c8f66](https://github.com/seven/web2chat/commit/a1c8f66d0ad20d90faac82c6daebd6da70ece715))
@@ -604,6 +620,7 @@ All notable changes to this project are documented in this file.
 
 - **release:** Add tag-triggered release workflow and installation docs ([5ddd2c4](https://github.com/seven/web2chat/commit/5ddd2c4f68b68843a44e55b757957ed67b63c460))
 
+
 ### Refactoring
 
 - **e2e:** Extract shared helper + fix tautological timing test ([85ef121](https://github.com/seven/web2chat/commit/85ef121f901f973a6c28fa96eea38e2fa7cb416b))
@@ -613,6 +630,7 @@ All notable changes to this project are documented in this file.
 - **types:** Use TurndownService in turndown-plugin-gfm shim ([16ac7b2](https://github.com/seven/web2chat/commit/16ac7b2ec34bc5c681d890c1fe9e84a05599e10a))
 
 - **design:** Pivot to Obsidian-style charcoal + emerald ([dc13a0e](https://github.com/seven/web2chat/commit/dc13a0e723632f091214a87a592fb31d5e653af4))
+
 
 ### Tests
 
@@ -677,3 +695,4 @@ All notable changes to this project are documented in this file.
 - **06:** Complete UAT - 6 passed, 0 issues ([08bca37](https://github.com/seven/web2chat/commit/08bca3790a7d05f649f786719197ce513ea25f25))
 
 - **07:** Complete UAT - 3 passed, 0 issues ([d1c36bb](https://github.com/seven/web2chat/commit/d1c36bb1ba4649ef77096b975dc49d61293e1693))
+
