@@ -60,6 +60,8 @@ _(v1 全部需求已验证，无 Active 项)_
 - **关键参考**：OpenClaw Web UI 是用户自建的 Agent 平台，URL pattern 已知；Discord 使用 React + 自研富文本编辑器
 - **本地化**：作者母语 zh_CN，目标用户至少覆盖 zh / en
 - **存储**：所有持久化配置仅写入 `chrome.storage.local`（无云端、无后端）
+- **已交付 v1.0**：313 commits, 11,399 LOC TypeScript/TSX, 225 单元测试, 7 phases / 41 plans
+- **技术栈**：WXT 0.20.x + Preact 10.29 + @preact/signals + Tailwind v4 + Vitest 3 + Playwright 1.58
 
 ## 约束 (Constraints)
 
@@ -103,4 +105,4 @@ _(v1 全部需求已验证，无 Active 项)_
 
 ---
 
-_最近更新：2026-05-07，Phase 7 (分发上架) ✓ Complete — v1.0 milestone 全部 7 个 phase 完成。47/47 需求全部 Validated。构建验证脚本、双语 PRIVACY.md、双语 README、CWS Store Listing（`seven-steven/web2chat`）均已就绪。_
+_最近更新：2026-05-09，v1.0 milestone 归档完成。47/47 需求全部 Validated。详见 .planning/milestones/v1.0-ROADMAP.md。_
