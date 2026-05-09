@@ -492,22 +492,25 @@ export function onSpaHistoryStateUpdated(
 | A2 | Keeping ErrorCode in `result.ts` with comment sections is sufficient at current scale (vs. `as const` aggregation) | Pattern 4 / Recommendation | Medium -- if platform count exceeds 5, the monolithic file becomes unwieldy; but migration to split approach is straightforward |
 | A3 | Moving `discordMainWorldPaste` to `background/injectors/discord.ts` and overlaying onto registry at SW startup avoids popup bundle contamination | Pitfall 1 | Medium -- needs verification that WXT/Vite tree-shakes properly; if not, fallback to registry split approach |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **mainWorldInjector bundle isolation: overlay vs split**
    - What we know: Registry is imported by popup and SW. MAIN world injectors use DOM APIs. Popup must not bundle injector code.
    - What's unclear: Whether WXT/Vite reliably tree-shakes `mainWorldInjector` when it's `undefined` on the registry entry and only assigned in the SW-side import.
    - Recommendation: Start with the overlay approach (registry has `mainWorldInjector?: undefined`, SW code imports and attaches injectors). If build output analysis shows contamination, fall back to split registry.
+   - **RESOLVED:** Using SW-local runtime registry module (`background/main-world-registry.ts`) that imports injector functions and builds the Map from `adapterRegistry`. background.ts imports this module; popup does not. New platforms add injector to registry entry; the SW module auto-discovers it. No per-platform Map editing in background.ts.
 
 2. **PlatformId comparison in port name routing**
    - What we know: `port.name.slice(PREFIX.length)` yields a raw `string`. Registry entry `id` is branded `PlatformId`. `===` comparison works at runtime.
    - What's unclear: Whether TypeScript will accept `===` comparison between `PlatformId` and `string` without complaint. Need to verify.
    - Recommendation: TypeScript should allow it since `PlatformId extends string`. If not, a simple helper `isPlatformId(raw: string, id: PlatformId): boolean` resolves it.
+   - **RESOLVED:** Branded `PlatformId extends string`; TypeScript allows `===` comparison between branded string and raw string. Confirmed by TypeScript spec: branded types use intersection with string base, so all string operations including `===` work without complaint.
 
 3. **ErrorBanner default case pattern**
    - What we know: Current ErrorBanner has exhaustive switch cases for all 11 error codes. Phase 8 changes ErrorCode to be extensible.
    - What's unclear: Whether the i18n key pattern `error_code_${code}_heading` should be added in Phase 8 or deferred to the platform phases.
    - Recommendation: Add default case in Phase 8 to prevent future breakage. The actual i18n keys for new platform codes will be added when those phases land.
+   - **RESOLVED:** Default case added in Plan 08-04 Task 2. ErrorBanner falls back to `t('error_code_INTERNAL_heading')` / `t('error_code_INTERNAL_body')`. Actual i18n keys for new platform codes will be added when those platform phases land.
 
 ## Validation Architecture
 
