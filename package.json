@@ -13,6 +13,7 @@
     "build": "wxt build",
     "build:firefox": "echo 'firefox build deferred to v2' && exit 0",
     "zip": "wxt zip",
+    "changelog": "pnpm dlx git-cliff@2.13.1 -o CHANGELOG.md",
     "compile": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
