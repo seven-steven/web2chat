@@ -1,627 +1,651 @@
-# 架构调研
+# 架构调研 — v1.1 多渠道适配 + 投递鲁棒性
 
 **领域：** Chrome MV3 浏览器扩展 — Web Clipper + 多 IM 投递自动化
-**调研时间：** 2026-04-28
-**置信度：** HIGH（Chrome.\* API、manifest、消息传递）/ MEDIUM（各平台 IM 注入机制 — DOM 契约存在差异且会随时间漂移）
-
-## 标准架构
-
-### 系统概览
-
-Web2Chat 是一个 Manifest V3 扩展。MV3 强制使用非持久化的 **service worker** 作为唯一的特权事件中心；所有其他界面（popup、content script）都是隔离的、临时的进程，通过 `chrome.runtime` / `chrome.tabs` 消息机制与其通信。三条逻辑流水线必须共存于这一接缝之上：
-
-1. **Capture 流水线** — popup 请求 SW 从当前活动 tab 抓取元数据 + 可读内容。
-2. **Dispatch 流水线** — popup 确认目标，SW 打开/激活 IM tab，等待其加载完成，注入对应平台的适配器，并往返确认成功。
-3. **持久化 + i18n 流水线** — `chrome.storage.local` 与 `chrome.i18n` 可在任何界面中访问。
-
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                           USER SURFACES (UI)                             │
-├──────────────────────────────────────────────────────────────────────────┤
-│  ┌──────────────────┐                          ┌──────────────────────┐  │
-│  │  popup/index.html│                          │  options/index.html  │  │
-│  │  (React SPA)     │                          │  (deferred, v2)      │  │
-│  │  - SendForm      │                          └──────────────────────┘  │
-│  │  - HistoryDrop   │                                                    │
-│  │  - PromptPicker  │                                                    │
-│  └────────┬─────────┘                                                    │
-│           │ chrome.runtime.connect({name:"popup"})  (long-lived port)    │
-│           │ chrome.runtime.sendMessage (one-shot RPCs)                   │
-├───────────┼──────────────────────────────────────────────────────────────┤
-│           ▼                  EXTENSION CORE (privileged)                 │
-│  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │              background/service-worker.ts                          │  │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │  │
-│  │  │ MessageRouter│  │CapturePipeln │  │ DispatchPipeline         │  │  │
-│  │  │ (port + RPC) │  │              │  │  - tab open/activate     │  │  │
-│  │  │              │  │              │  │  - tabs.onUpdated wait   │  │  │
-│  │  │              │  │              │  │  - adapter selection     │  │  │
-│  │  │              │  │              │  │  - executeScript inject  │  │  │
-│  │  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────────┘  │  │
-│  │         │                 │                     │                  │  │
-│  │  ┌──────┴────────┐ ┌──────┴────────┐    ┌───────┴──────────┐       │  │
-│  │  │ StorageRepo   │ │ AdapterRegistry│   │ PlatformDetector │       │  │
-│  │  │ (typed)       │ │  match(url)    │   │ url → platformId │       │  │
-│  │  └───────────────┘ └────────────────┘   └──────────────────┘       │  │
-│  └─────────────┬────────────────────────────────────┬─────────────────┘  │
-│                │ chrome.scripting.executeScript     │ chrome.tabs.*      │
-├────────────────┼────────────────────────────────────┼────────────────────┤
-│                ▼                                    ▼                    │
-│         CONTENT SCRIPTS (page-isolated, ephemeral, per-tab)              │
-│  ┌──────────────────────────────┐    ┌─────────────────────────────────┐ │
-│  │ content/extractor.ts         │    │ content/adapters/<platform>.ts  │ │
-│  │ (injected on source tab,     │    │ (injected on target IM tab,     │ │
-│  │  programmatically, ad-hoc)   │    │  one of N adapters)             │ │
-│  │  - DOM scrape                │    │  - waitForReady()               │ │
-│  │  - Readability.parse()       │    │  - compose(message)             │ │
-│  │  - return ArticleSnapshot    │    │  - send()                       │ │
-│  └──────────────────────────────┘    └─────────────────────────────────┘ │
-├──────────────────────────────────────────────────────────────────────────┤
-│                         BROWSER-PROVIDED STORES                          │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────────┐     │
-│  │chrome.storage    │  │ chrome.i18n      │  │ chrome.tabs /      │     │
-│  │  .local          │  │  _locales/{zh,en}│  │  chrome.scripting  │     │
-│  └──────────────────┘  └──────────────────┘  └────────────────────┘     │
-└──────────────────────────────────────────────────────────────────────────┘
-```
-
-### 组件职责
-
-| Component                          | Responsibility                                                                                                                                                                                              | Typical Implementation                                                                       |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **popup/** (React SPA)             | 所有面向用户的表单（send_to、prompt、history）。渲染抓取快照的预览。**仅持有瞬时 UI 状态** — popup DOM 在关闭时即被销毁。                                                                                   | Vite + React + TypeScript, `chrome-extension://<id>/popup.html`                              |
-| **background/service-worker.ts**   | 唯一的事实来源。负责 capture 编排、dispatch 编排、适配器注册表、存储仓库、平台探测。跨 SW 重启无状态 — 所有状态都存放在 `chrome.storage` 中。                                                               | ES module service worker (`"type": "module"`), top-level listener registration               |
-| **content/extractor.ts**           | 运行在源页面的隔离世界中。抓取 `title`、`url`、`description`（meta og/twitter）、`create_at`（article:published_time、JSON-LD），并通过 Readability 抽取主体文章内容。将 `ArticleSnapshot` JSON 返回给 SW。 | 通过 `chrome.scripting.executeScript({ files: [...] })` 按需以编程方式注入。不进行静态注册。 |
-| **content/adapters/<platform>.ts** | 运行在目标 IM 页面的隔离世界中。实现 `IMAdapter` 契约：`waitForReady`、`compose`、`send`。每个平台对应一个适配器。                                                                                          | 在 `tabs.onUpdated.status === 'complete'` 之后由 SW 按每次投递以编程方式注入。               |
-| **shared/types**                   | 用于 message、snapshot、target、adapter 契约的 TypeScript 类型。被其他每一层引用；**绝不能以错误方向打包到包含 DOM 依赖代码的 bundle 中**。                                                                 | Pure `.d.ts` / no runtime                                                                    |
-| **shared/messaging**               | 对 `chrome.runtime.sendMessage` 与 `chrome.tabs.sendMessage` 的类型化封装。判别联合（discriminated-union）消息类型。                                                                                        | Plain TS module, used by popup, SW, content scripts                                          |
-| **shared/storage**                 | 在 `chrome.storage.local` 之上的类型化仓库。schema 版本化、迁移钩子、监听器。                                                                                                                               | Plain TS module                                                                              |
-| **shared/i18n**                    | 在 `chrome.i18n.getMessage` 之上的 `t(key, ...subs)` 封装。来源为 `_locales/{zh_CN,en}/messages.json`。                                                                                                     | Plain TS module + locale JSON                                                                |
-
-## 推荐项目结构
-
-```
-web2chat/
-├── public/
-│   ├── icons/                          # 16/32/48/128 PNG, plus per-IM platform icons
-│   ├── _locales/
-│   │   ├── zh_CN/messages.json         # default_locale
-│   │   └── en/messages.json
-│   └── manifest.json                   # MV3 manifest (or generated by CRXJS)
-├── src/
-│   ├── shared/                         # ← built FIRST; no chrome.* runtime calls allowed at module top-level
-│   │   ├── types/
-│   │   │   ├── snapshot.ts             # ArticleSnapshot
-│   │   │   ├── target.ts               # SendTarget, TargetKey, PlatformId
-│   │   │   ├── messages.ts             # discriminated-union message protocol
-│   │   │   └── storage.ts              # StorageSchema (versioned)
-│   │   ├── messaging/
-│   │   │   ├── rpc.ts                  # typed sendMessage / onMessage wrapper
-│   │   │   └── port.ts                 # typed chrome.runtime.connect wrapper
-│   │   ├── storage/
-│   │   │   ├── repo.ts                 # typed get/set/onChanged
-│   │   │   └── migrations.ts
-│   │   ├── i18n/
-│   │   │   └── t.ts                    # chrome.i18n.getMessage facade
-│   │   └── platform/
-│   │       ├── detect.ts               # url → PlatformId
-│   │       └── registry.ts             # PlatformId → manifest entry (icon, label, host_perm)
-│   │
-│   ├── background/                     # ← built second; depends on shared/
-│   │   ├── service-worker.ts           # entry; top-level listener registration only
-│   │   ├── capture-pipeline.ts
-│   │   ├── dispatch-pipeline.ts
-│   │   ├── adapter-registry.ts         # AdapterRegistry: PlatformId → file path + match
-│   │   └── tab-utils.ts                # openOrActivate, waitForComplete
-│   │
-│   ├── popup/                          # ← built third; depends on shared/
-│   │   ├── index.html
-│   │   ├── main.tsx                    # React mount
-│   │   ├── App.tsx
-│   │   ├── components/
-│   │   │   ├── SendForm.tsx
-│   │   │   ├── HistoryDropdown.tsx
-│   │   │   ├── PromptPicker.tsx
-│   │   │   └── PlatformBadge.tsx
-│   │   └── hooks/
-│   │       ├── useCapture.ts           # SW RPC: REQUEST_CAPTURE
-│   │       ├── useDispatch.ts          # SW RPC: REQUEST_DISPATCH
-│   │       └── useStorage.ts           # subscribes via chrome.storage.onChanged
-│   │
-│   ├── content/                        # ← built fourth; depends on shared/
-│   │   ├── extractor.ts                # standalone IIFE-style entry; runs once per injection
-│   │   └── adapters/
-│   │       ├── _base.ts                # IMAdapter interface + helpers (waitForSelector, simulatePaste)
-│   │       ├── openclaw.ts             # MVP
-│   │       ├── discord.ts              # MVP
-│   │       └── README.md               # how to add a new adapter (v2 platforms)
-│   │
-│   └── manifest.config.ts              # generates manifest.json (CRXJS) — or kept static
-│
-├── tests/
-│   ├── unit/
-│   │   ├── platform-detect.spec.ts
-│   │   ├── storage-repo.spec.ts
-│   │   └── adapters/
-│   │       ├── discord.fixture.html    # captured DOM snapshot
-│   │       ├── discord.spec.ts         # JSDOM-based adapter unit test
-│   │       └── openclaw.spec.ts
-│   └── e2e/
-│       ├── fixtures.ts                 # Playwright launchPersistentContext + extensionId
-│       ├── capture.spec.ts
-│       └── dispatch-discord.spec.ts
-│
-├── vite.config.ts                      # multi-entry: popup, background, content scripts
-├── tsconfig.json
-├── package.json
-└── playwright.config.ts
-```
-
-### 结构理由
-
-- **`shared/` 优先，不允许在顶层调用 `chrome.*`。** 在 shared 模块顶层调用 `chrome.*` 会在测试（JSDOM）中抛错，并可能卡死 SW 生命周期。保持 shared 模块纯净；让调用方仅在函数内部传入 `chrome.storage.local`。
-- **`background/` 与 `shared/` 分离** — 只有 SW 入口注册监听器。流水线被分解为接收依赖作为参数的模块（无需启动真实 SW 即可测试）。
-- **`content/extractor.ts` 与 `content/adapters/*.ts` 是独立的 bundle** — Vite 必须为每个 content script 产出一个独立的输出文件（不能共享运行时 chunk；它们各自被注入到不同的页面世界中）。
-- **`adapters/` 是 v2 平台的唯一扩展点。** 每个适配器都是一个实现单一接口的自包含文件。新增 LINE / Slack / Telegram = 添加一个文件 + 一个注册表条目 + 一个 host_permission。
-- **`tests/e2e/fixtures.ts`** 通过 `chromium.launchPersistentContext` 加载已构建的 `dist/` 目录，使用 headed 模式（或 `channel: 'chromium'` headless 模式）；从 SW URL 中解析 `extensionId`。
-
-## 架构模式
-
-### 模式 1：单一特权中心（Service Worker 作为协调者）
-
-**含义：** popup 永远不直接与 content script 通信。所有跨上下文的通信都走 popup → SW → content script（通过 `chrome.tabs.sendMessage` 或 `chrome.scripting.executeScript`）。
-
-**何时使用：** MV3 下始终如此。popup 在关闭时即被销毁；如果由它持有 `chrome.tabs.sendMessage` 的往返，响应将落到一个已死的监听器上。
-
-**取舍：**
-
-- ✅ 经得起 popup 关闭、SW 重启、tab 导航
-- ✅ 在单一位置统一执行权限与限速
-- ❌ 每条消息多一跳（可接受；这是约定俗成的做法）
-
-**示例：**
-
-```ts
-// popup/hooks/useDispatch.ts
-const result = await rpc.send({
-  type: "REQUEST_DISPATCH",
-  target,
-  snapshot,
-  prompt,
-});
-// rpc.send wraps chrome.runtime.sendMessage with typed responses
-
-// background/service-worker.ts (top level — MUST be top level for MV3)
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === "REQUEST_DISPATCH") {
-    dispatchPipeline.run(msg).then(sendResponse);
-    return true; // keep channel open for async response
-  }
-});
-```
-
-### 模式 2：多 IM 支持的适配器模式
-
-**含义：** 每个 IM 平台都实现统一的 `IMAdapter` 接口。SW 按 URL 选择适配器，将其注入目标 tab，并调用稳定的 RPC 接口。
-
-**何时使用：** 当项目需支持多个具有相似动作但 DOM/UI 各异的外部界面时。v1 有 2 个适配器；v2 有 ~14 个。这一接缝从第一天起就是必备的。
-
-**取舍：**
-
-- ✅ 新平台 = 一个新文件，无需改动 capture/dispatch 核心
-- ✅ 每个适配器都可针对抓取到的 DOM 固件（fixture）进行单元测试（JSDOM）
-- ❌ 每个适配器都是维护负担 — IM 厂商会发布 UI 更改（尤其 Discord、Slack）
-- ❌ 适配器之间无法完全共享运行时代码（每个都是独立的 content-script bundle）
-
-**适配器契约（规范的 TS 接口）：**
-
-```ts
-// shared/types/adapter.ts
-export interface IMAdapter {
-  /** Stable identifier matching PlatformId in the registry. */
-  readonly id: PlatformId;
-
-  /** URL test. Returns true if this adapter handles the given target URL. */
-  match(url: string): boolean;
-
-  /**
-   * Resolve when the chat UI is ready to accept input
-   * (composer mounted, channel/agent context loaded).
-   * Reject after timeout. Implemented with MutationObserver + waitForSelector.
-   */
-  waitForReady(timeoutMs?: number): Promise<void>;
-
-  /**
-   * Place the formatted message into the composer.
-   * MUST handle React-controlled editors (Slate/Lexical) via simulated
-   * paste / InputEvent — direct .value assignment is silently overwritten.
-   */
-  compose(message: string): Promise<void>;
-
-  /** Submit the composed message (Enter keydown, send-button click, etc.). */
-  send(): Promise<void>;
-}
-
-// content/adapters/_base.ts — execution glue (each adapter file is its own bundle)
-export async function runAdapter(adapter: IMAdapter, message: string) {
-  await adapter.waitForReady();
-  await adapter.compose(message);
-  await adapter.send();
-}
-```
-
-SW 在构建时**不**导入适配器模块（它们位于不同的 bundle / 不同的页面世界中）。它持有的是一份 _文件路径与 `match` 谓词的注册表_：
-
-```ts
-// background/adapter-registry.ts
-type AdapterEntry = {
-  id: PlatformId;
-  match: (url: string) => boolean; // runs in SW
-  scriptFile: string; // path relative to extension root
-  hostMatches: string[]; // for manifest host_permissions
-};
-
-export const ADAPTERS: AdapterEntry[] = [
-  {
-    id: "openclaw",
-    match: (u) => u.includes("localhost:18789/chat"),
-    scriptFile: "content/adapters/openclaw.js",
-    hostMatches: ["http://localhost:18789/*"],
-  },
-  {
-    id: "discord",
-    match: (u) => /^https:\/\/discord\.com\/channels\//.test(u),
-    scriptFile: "content/adapters/discord.js",
-    hostMatches: ["https://discord.com/*"],
-  },
-];
-```
-
-### 模式 3：以编程注入取代静态 `content_scripts`
-
-**含义：** 使用 `chrome.scripting.executeScript({ target: { tabId }, files: [...] })`，而不是在 `manifest.json` 的 `content_scripts` 中声明适配器。
-
-**何时使用：** 当脚本只应在 _用户触发投递时_ 才运行（而非每次访问 Discord 时），且 host_permissions 集合应在每个平台粒度上保持可审计时。
-
-**取舍：**
-
-- ✅ 零页面级开销 — 适配器只在用户实际发送时才加载
-- ✅ 用户看到的是 `permissions: ["scripting"]` + 具名 host，从不会出现 `<all_urls>`
-- ✅ 调试更简单：每次调用都是一个离散事件
-- ❌ 比 `run_at: document_idle` 静态注入略晚 — 必须保护性地 `waitForReady`
-- ❌ 需要 `scripting` 权限（无论如何我们都需要）
-
-**示例：**
-
-```ts
-// background/dispatch-pipeline.ts
-async function injectAdapter(
-  tabId: number,
-  entry: AdapterEntry,
-  message: string,
-) {
-  await chrome.scripting.executeScript({
-    target: { tabId },
-    files: [entry.scriptFile],
-    world: "ISOLATED", // default; explicit for clarity
-  });
-  // Adapter file self-registers a one-shot listener; we then send the payload:
-  return chrome.tabs.sendMessage(tabId, { type: "ADAPTER_RUN", message });
-}
-```
-
-### 模式 4：在 Service Worker 中进行顶层监听器注册
-
-**含义：** 所有 `chrome.*.on*.addListener` 调用都位于 SW 模块的顶层。在监听器注册之前不要有 `await` 或回调。
-
-**何时使用：** 始终如此。MV3 service worker 在大约 30 秒不活动后会被杀死，并在事件触发时被 _重新启动_。如果监听器没有在顶层同步注册，事件就会被丢弃。
-
-**取舍：**
-
-- ✅ 与 SW 重启正确协作
-- ❌ 强制了"在注册前不做异步工作"的纪律 — 在引导阶段有时令人头疼
-
-```ts
-// background/service-worker.ts — CORRECT
-chrome.runtime.onMessage.addListener(handleMessage);
-chrome.tabs.onUpdated.addListener(handleTabUpdate);
-chrome.runtime.onInstalled.addListener(handleInstall);
-
-// then async setup:
-storage.bootstrap(); // does its own awaits internally; doesn't block listener registration
-```
-
-### 模式 5：popup ↔ SW 的长生命周期 port（可选）
-
-**含义：** 在单次 popup 会话期间，使用 `chrome.runtime.connect({ name: 'popup' })` 作为 popup 与 SW 之间的通道；对于一次性 RPC 则回退到 `sendMessage`。
-
-**何时使用：** 当 popup 需要从一次长时间运行的投递中接收流式进度更新时（`opening tab → waiting → injecting → sending → done`）。一次性 `sendMessage` 无法推送中间状态。
-
-**取舍：**
-
-- ✅ 无需轮询即可呈现进度 UI
-- ✅ 自动检测 popup 关闭（`port.onDisconnect`），便于 SW 取消任务
-- ❌ 比 `sendMessage` 略多样板代码
-
-## 数据流
-
-### Capture 数据流
-
-```
-User clicks toolbar icon
-        │
-        ▼
-popup.html mounts, React renders SendForm
-        │
-        │ rpc.send({ type: 'REQUEST_CAPTURE' })
-        ▼
-SW: capture-pipeline.run()
-   1. tabs.query({ active: true, lastFocusedWindow: true }) → activeTab
-   2. scripting.executeScript({ target: { tabId }, files: ['content/extractor.js'] })
-   3. tabs.sendMessage(tabId, { type: 'CAPTURE_REQUEST' }) → ArticleSnapshot
-        │
-        ▼
-content/extractor.ts (in active tab, isolated world)
-   - reads document.title, og:* meta, article:published_time, JSON-LD
-   - runs new Readability(document.cloneNode(true)).parse()
-   - returns { title, url, description, createdAt, content, excerpt }
-        │
-        ▼
-SW returns ArticleSnapshot to popup
-        │
-        ▼
-popup renders preview; user fills/picks send_to + prompt
-```
-
-### Dispatch 数据流
-
-```
-popup: user clicks "Confirm"
-        │
-        │ rpc.send({ type: 'REQUEST_DISPATCH', target, snapshot, prompt })
-        ▼
-SW: dispatch-pipeline.run()
-   1. PlatformDetector(target.url) → platformId
-   2. AdapterRegistry.lookup(platformId) → entry
-   3. tabs.query for existing tab matching target.url
-       3a. if found → tabs.update({ tabId, active: true })
-       3b. else    → tabs.create({ url: target.url, active: true })
-   4. await waitForComplete(tabId):
-        new Promise(resolve =>
-          chrome.tabs.onUpdated.addListener(function fn(id, info, tab) {
-            if (id === tabId && info.status === 'complete') {
-              chrome.tabs.onUpdated.removeListener(fn);
-              resolve(tab);
-            }
-          })
-        )
-   5. scripting.executeScript({ target:{tabId}, files:[entry.scriptFile] })
-   6. tabs.sendMessage(tabId, { type: 'ADAPTER_RUN', message: format(snapshot, prompt) })
-        │
-        ▼
-content/adapters/<platform>.ts (in target tab)
-   - adapter.waitForReady()  // MutationObserver on composer
-   - adapter.compose(message) // simulated paste / InputEvent dispatch
-   - adapter.send()          // dispatchEvent('keydown', { key:'Enter' }) or click send btn
-   - sendResponse({ ok: true })
-        │
-        ▼
-SW relays { ok, error? } to popup → popup shows toast → close
-```
-
-### 状态管理
-
-Web2Chat **没有** 跨 SW 生命周期存活的内存共享状态。所有与用户相关的内容都存放在 `chrome.storage.local` 中。各组件通过 `chrome.storage.onChanged` 订阅变更。
-
-```
-chrome.storage.local (single source of truth)
-    │
-    │  onChanged event
-    ▼
-[popup hooks]   [SW pipelines]   [adapter content scripts read on demand]
-    │
-    ↓ (dispatch via SW RPC)
-SW writes back via shared/storage/repo.ts
-    │
-    ↓
-chrome.storage.local
-```
-
-**StorageSchema（类型化、版本化）：**
-
-```ts
-// shared/types/storage.ts
-export interface StorageSchema {
-  schemaVersion: 1;
-  history: SendTarget[]; // recent send_to entries (LRU)
-  promptsByTarget: Record<TargetKey, string[]>; // prompt history scoped per target
-  settings: {
-    locale: "zh_CN" | "en" | "auto";
-    defaultPlatformId?: PlatformId;
-  };
-}
-
-export type TargetKey = string; // canonicalized URL or platform-specific key
-export interface SendTarget {
-  key: TargetKey;
-  url: string;
-  platformId: PlatformId;
-  label?: string; // optional user-friendly name
-  lastUsedAt: number;
-}
-```
-
-### 关键数据流
-
-1. **Capture 数据流：** `popup → SW → executeScript(extractor) → tabs.sendMessage → ArticleSnapshot → popup`
-2. **Dispatch 数据流：** `popup → SW → tabs.create/update → wait onUpdated complete → executeScript(adapter) → tabs.sendMessage → adapter compose+send → result → popup`
-3. **History/prompt 持久化：** `popup → SW → storage.local.set`；popup 通过 `storage.onChanged` 订阅重新读取
-4. **平台探测：** 同步、纯函数，位于 `shared/platform/detect.ts`；popup（用于图标预览）和 SW（用于适配器选择）都会调用
-5. **i18n：** 每个 UI 界面调用 `t('key')` → `chrome.i18n.getMessage('key')` → `_locales/<browser_locale>/messages.json`。v1 不支持运行时切换 locale（locale 在扩展加载时由浏览器决定）。
-
-## 构建顺序的影响
-
-**构建顺序 = 依赖顺序** = 各阶段应当出货的顺序。
-
-```
-1. shared/types          ──┐
-2. shared/messaging       ─┼─ pure TS, no chrome.* at module top level
-3. shared/storage          │  (testable in JSDOM, no extension context)
-4. shared/i18n             │
-5. shared/platform        ─┘
-              │
-              ▼
-6. background/             (depends on all of shared/)
-              │
-              ▼
-7. popup/                  (depends on shared/, talks to background via RPC)
-              │
-              ▼
-8. content/extractor.ts    (depends on shared/types only — kept tiny)
-              │
-              ▼
-9. content/adapters/_base.ts
-10. content/adapters/openclaw.ts   ──┐  parallel; each adapter is independent
-11. content/adapters/discord.ts    ──┘
-              │
-              ▼
-12. _locales/{zh_CN,en}/messages.json   (driven by t() call sites in 6+7)
-              │
-              ▼
-13. e2e tests              (must run against built dist/, not src/)
-```
-
-**对阶段路线图的影响：**
-
-- 阶段 1（基础设施）：第 1–5 项 + manifest 骨架 + 一个能成功向 SW 发起 RPC 的 hello-world popup。这是最小的端到端外壳。
-- 阶段 2（capture）：第 6 项（仅 capture 流水线）+ 第 8 项 + 接通 popup 以展示 snapshot。落地核心价值的 capture 一半。
-- 阶段 3（dispatch + 首个适配器）：第 6 项（dispatch 流水线）+ 第 9、10 项（OpenClaw 是较简单的目标 — 已知的纯输入契约）+ popup 确认流程。落地 OpenClaw 的 MVP。
-- 阶段 4（Discord 适配器）：第 11 项 — 单独成一个阶段，因为 Discord/Slate 是最难的 DOM 目标，需要独立的调研 + 固件。
-- 阶段 5（i18n 加固 + 打磨）：第 12 项 + 可访问性 + history/prompt 用户体验。
-- 阶段 6+（v2 平台）：每新增一个适配器 = +1 个文件 + +1 个 host_permission + +1 套固件。
-
-## 权限：最小特权原则
-
-**必需（v1 MVP）：**
-
-```json
-{
-  "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": ["http://localhost:18789/*", "https://discord.com/*"]
-}
-```
-
-- **`activeTab`** — 在用户手势（点击工具栏）下授予对当前活动 tab 的临时 host 访问权限。让 `executeScript(extractor)` 能在用户对其调用扩展的 _任意_ 页面上运行，无需 `<all_urls>`。窍门：`activeTab` 对 **capture** 一半已经足够，因为用户点击了工具栏图标（即手势）。
-- **`scripting`** — `chrome.scripting.executeScript` 所需（MV3）。
-- **`storage`** — `chrome.storage.local` 所需。
-- **每个 IM 的 `host_permissions`** — **dispatch** 一半所需，因为我们要在用户 _未_ 在其上点击图标的 tab 中导航/注入。每新增一个 v2 平台都恰好新增此处的一条。务必避免使用 `<all_urls>`（Web Store 审核摩擦、用户信任摩擦）。
-
-**不需要：**
-
-- ❌ `tabs`（完整 Tab 对象访问） — `activeTab` + `host_permissions` 已经覆盖我们的需求
-- ❌ `<all_urls>`
-- ❌ `webNavigation` — `tabs.onUpdated` 已足以检测"导航完成"
-- ❌ `nativeMessaging`、`cookies`、`downloads`、`notifications`
-
-**`i18n` 权限：** 无需声明（`chrome.i18n` 始终可用；manifest 中的 `default_locale` 是触发器）。
-
-## 扩展性考量
-
-这是一个单用户、单设备的扩展；这里的"扩展性"指 _代码库规模_（平台数量、locale 数量、适配器复杂度），而非用户规模。
-
-| Scale                                    | Architecture Adjustments                                                                                                                   |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1 user, 2 IM platforms (MVP)             | 静态适配器注册表数组。手工维护的 `host_permissions`。                                                                                      |
-| 1 user, ~14 IM platforms (v2)            | 仍是同一份注册表数组。考虑在文档中按类别对 `host_permissions` 分组。对不太常用的平台添加 `optional_host_permissions`，在首次使用时再请求。 |
-| Future power-user (custom URL templates) | 适配器注册表变为数据驱动（从存储中读取）。用户自定义 target = 一个仅基于选择器进行组合的通用适配器。                                       |
-
-### 扩展性优先事项
-
-1. **首要瓶颈：适配器维护流失。** 随着 IM 厂商发布 UI 更新，适配器会悄无声息地坏掉。缓解措施：每个适配器都附带一份抓取的 DOM 固件，位于 `tests/unit/adapters/<id>.fixture.html`。CI 运行适配器单元测试。在 popup 中加入"测试适配器"诊断功能，以在线上捕获故障。
-2. **次要瓶颈：popup 包体积。** 每新增一种 locale、每新增一个平台图标都会吃掉若干 KB。缓解措施：按需懒加载 locale；使用 SVG 雪碧图承载平台图标；激进地进行 tree-shake（Vite 默认行为）。
-3. **第三瓶颈：SW 冷启动延迟。** 浏览器空闲后第一次点击会唤醒 SW（约 200ms）。缓解措施：保持 SW 入口的导入图最小 — 通过动态 `import()` 延迟加载流水线。仅在测量显示存在用户可见的延迟时才进行预热。
-
-## 反模式
-
-### 反模式 1：在 popup 中直接调用 `chrome.tabs.sendMessage`
-
-**人们的做法：** popup 查询当前活动 tab，并直接 ping content script 来抓取内容。
-**为什么错：** popup 在另一窗口获得焦点或用户点击其外部任何地方时立刻关闭。长时间运行的 tab 消息往返将落到一个已死的监听器上。这同时也破坏了安全边界（popup 最终需要了解 content-script 的生命周期）。
-**正确做法：** popup → SW（RPC）→ SW 再做 `tabs.sendMessage`。SW 是 `tabs.*` 的唯一特权调用方。
-
-### 反模式 2：对 React 管理的 composer 设置 `value` / `textContent`
-
-**人们的做法：** `document.querySelector('[role=textbox]').textContent = msg`。
-**为什么错：** Discord（Slate）、Slack（Lexical）以及大多数现代 IM 都通过 React state 控制 composer。直接的 DOM 修改会在下一次渲染时被覆盖，更糟的是会在视觉上被接受却在发送时被丢弃。
-**正确做法：** 模拟用户输入。两种可靠技巧：
-
-1. **剪贴板 + 粘贴：** `navigator.clipboard.writeText(msg)` 然后 `editor.dispatchEvent(new ClipboardEvent('paste', { clipboardData, bubbles: true }))`。
-2. **原生输入 setter + InputEvent：** 对 `<textarea>` 后端的编辑器，使用描述符技巧 — `Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(el, msg)`，然后派发 `new InputEvent('input', { bubbles: true })`。
-   每个适配器选择适合该平台编辑器的技术（在 `content/adapters/_base.ts` 中按适配器记录）。
-
-### 反模式 3：为"图省事"而声明 `<all_urls>` host 权限
-
-**人们的做法：** 声明 `"host_permissions": ["<all_urls>"]`，开发者就再也不必考虑扩展会触及哪些站点。
-**为什么错：** 会带来 Chrome Web Store 审核摩擦；安装时的警告会列出"读取你在所有网站上的所有数据"，这会重创安装率；并且违背 MV3 的最小特权理念。
-**正确做法：** 用 `activeTab` 来做 capture（用户手势作用域）+ 为每个 IM 显式声明 `host_permissions` 来做 dispatch。每新增一个平台 = 用户显式批准的一条新 host 条目。
-
-### 反模式 4：在注册 SW 监听器 _之前_ 做异步工作
-
-**人们的做法：** `await storage.bootstrap(); chrome.runtime.onMessage.addListener(...)`。
-**为什么错：** 会话中途的 SW 重启会丢失监听器注册；派发的事件被静默丢弃。难以复现，难以调试。
-**正确做法：** 在模块顶层同步注册所有监听器。在监听器内部进行引导（懒加载），或在另一个独立的 fire-and-forget 异步块中进行。
-
-### 反模式 5：把 popup 当作长生命周期的状态容器
-
-**人们的做法：** 把 send 历史、prompt 缓存等保存在 popup 的 React state 中，并在卸载时序列化。
-**为什么错：** popup 卸载可能十分突然（焦点丢失、tab 切换）。state 更新可能来不及刷新。重新打开 popup 会产生一个全新的上下文。
-**正确做法：** popup 只是 `chrome.storage.local` 之上的薄视图。每个有意义的用户操作要么 RPC 到 SW，要么立即写入存储。通过 `storage.onChanged` 进行订阅。
-
-### 反模式 6：用一个庞大的 content-script bundle 共享所有适配器
-
-**人们的做法：** 发布单一的 `content.js`，包含所有适配器并通过 `if (location.host === 'discord.com') ...` 来判断。
-**为什么错：** 每次访问 _任一_ 14 个平台都会加载其他 13 个平台的代码。会让你的 `host_permissions` 翻倍，因为该 bundle 在所有 host 上都被注册。破坏 tree-shaking。让适配器互相耦合（一个失效的适配器会让所有适配器都失效）。
-**正确做法：** 每个适配器一个 bundle，仅在投递时按匹配的 host 编程注入。
-
-## 集成点
-
-### 外部服务（每个 IM 的 web 目标）
-
-| Service                                                         | Integration Pattern                                        | Notes                                                                                                                                                                                    |
-| --------------------------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OpenClaw Web UI (`http://localhost:18789/chat?session=...`)     | 编程方式 `executeScript` → 适配器 → composer DOM           | 仅本地；用户自有 UI；预计是最简单的目标。Composer 很可能是普通 `<textarea>` 或一个稳定的 React 表单。                                                                                    |
-| Discord Web (`https://discord.com/channels/<server>/<channel>`) | 编程方式 `executeScript` → 适配器 → 基于 Slate 的 composer | 困难目标。Slate 会拦截直接 DOM 写入。使用剪贴板粘贴模拟；通过 Enter `keydown` 事件提交。UI 在 Discord 重设计中并不稳定 — 适配器必须使用语义选择器（`role`、`aria-label`）而非 class 名。 |
-| (v2: Slack, Telegram, Lark, Feishu, Teams, …)                   | 同样的模式，每个平台一个适配器文件                         | 各自会有自己的编辑器框架（Lexical、ProseMirror、Quill、原生 textarea）。在 `content/adapters/<id>.ts` 文件头注释中记录每个适配器的策略。                                                 |
-
-### 内部边界
-
-| Boundary                        | Communication                                                                                              | Notes                                                                                                                           |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| popup ↔ SW                      | `chrome.runtime.sendMessage`（一次性 RPC）**或** `chrome.runtime.connect`（用于流式进度的长生命周期 port） | 由 `shared/types/messages.ts` 中的 `Message` 判别联合类型化。绝不可在 popup 中使用 `chrome.tabs.sendMessage`。                  |
-| SW ↔ content script (extractor) | 使用 `chrome.scripting.executeScript` 注入；使用 `chrome.tabs.sendMessage` 完成数据往返                    | extractor 是一次性的；按需注入；回复一次后脚本上下文进入空闲，直至下次注入。                                                    |
-| SW ↔ content script (adapter)   | 同 extractor：先 `executeScript`，再 `tabs.sendMessage(tabId, { type: 'ADAPTER_RUN', message })`           | 适配器仅监听一条消息，执行 `compose+send`，回复后退出。                                                                         |
-| popup → storage                 | 间接：popup RPC 给 SW；由 SW 拥有 `chrome.storage.local` 的写入                                            | 读侧：popup 可以直接从 `chrome.storage.local` 读取（无权限边界），但**写**统一汇集到 SW 以维护不变量（LRU 历史、schema 版本）。 |
-| any layer → i18n                | 直接调用 `chrome.i18n.getMessage`（同步、随处可用）                                                        | 在 `shared/i18n/t.ts` 中封装以保证 message key 的类型安全。                                                                     |
-
-## 来源
-
-- [Chrome Extensions Docs — Service Worker Events (top-level listener registration)](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/events) — HIGH
-- [Chrome Extensions Docs — Messaging (sendMessage, ports, content-script communication)](https://developer.chrome.com/docs/extensions/develop/concepts/messaging) — HIGH
-- [Chrome Extensions Docs — chrome.scripting API](https://developer.chrome.com/docs/extensions/reference/api/scripting) — HIGH
-- [Chrome Extensions Docs — chrome.tabs API (onUpdated, query, create, update)](https://developer.chrome.com/docs/extensions/reference/api/tabs) — HIGH
-- [Chrome Extensions Docs — chrome.storage API](https://developer.chrome.com/docs/extensions/reference/api/storage) — HIGH
-- [Chrome Extensions Docs — chrome.i18n API](https://developer.chrome.com/docs/extensions/reference/api/i18n) — HIGH
-- [Chrome Extensions Docs — Content Scripts manifest configuration (worlds, run_at)](https://developer.chrome.com/docs/extensions/reference/manifest/content-scripts) — HIGH
-- [Chrome Extensions Docs — activeTab permission](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab) — HIGH
-- [Mozilla Readability.js (`@mozilla/readability`)](https://github.com/mozilla/readability) — HIGH
-- [Slate Editor Discussion #5721 — programmatic text insertion via clipboard simulation](https://github.com/ianstormtaylor/slate/discussions/5721) — MEDIUM (community solution; technique is canonical but adapter-specific)
-- [Discord's Slate fork](https://github.com/discord/slate) — MEDIUM (confirms editor framework, informs Discord adapter strategy)
-- [Playwright Docs — Chrome extensions testing](https://playwright.dev/docs/chrome-extensions) — HIGH
-- [DEV — E2E tests for Chrome extensions with Playwright + CDP](https://dev.to/corrupt952/how-i-built-e2e-tests-for-chrome-extensions-using-playwright-and-cdp-11fl) — MEDIUM (community write-up; technique aligns with official docs)
-- [CRXJS Vite plugin — multi-entry bundling for MV3](https://github.com/crxjs/chrome-extension-tools) — MEDIUM (recommended tooling; not strictly required)
-- [Chrome Extensions Docs — Migrating to Service Workers](https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers) — HIGH
+**覆盖范围：** v1.1 milestone（多适配器架构扩展 + 投递链路加固）
+**调研时间：** 2026-05-09
+**置信度：** HIGH（基于已交付的 v1.0 代码库进行增量架构分析）
+
+> 本文档是 v1.0 架构调研的增量更新。v1.0 的完整架构描述（系统概览、组件职责、数据流、构建顺序、权限模型、反模式等）仍然有效且不再重复。本文聚焦 v1.1 三大焦点：
+> 1. 多适配器架构扩展
+> 2. 投递链路鲁棒性提升
+> 3. 多平台动态权限管理
 
 ---
 
-_面向以下项目的架构调研：Chrome MV3 Web Clipper + 多 IM 投递扩展_
-_调研时间：2026-04-28_
+## v1.0 架构现状评估
+
+v1.0 已交付的架构为 v1.1 提供了坚实的扩展基础：
+
+**已经做对的部分（不需要改动）：**
+- `IMAdapter` 接口和 `AdapterRegistryEntry` 描述符设计已验证可扩展
+- `shared/adapters/registry.ts` 的纯函数注册表模式（popup + SW 双端消费）正确
+- 投递状态机（`pending → opening → awaiting_complete → awaiting_adapter → done/error/cancelled`）覆盖了 SW 重启场景
+- `chrome.storage.session` 逐键隔离（`dispatch:<id>`）避免了并发竞态
+- 适配器 content script 的 `registration: 'runtime'` + 全局守卫模式防止重注入
+- MAIN world paste 桥接（Discord）建立了处理富文本编辑器的标准路径
+- `shared/dom-injector.ts` 的 property-descriptor setter 是所有 `<input>`/`<textarea>` 适配器的基础工具
+- `optional_host_permissions: ["<all_urls>"]` + 运行时 `chrome.permissions.request` 已为 OpenClaw 验证
+
+**需要在 v1.1 改进的部分：**
+
+| 问题 | 现状 | v1.1 目标 |
+|------|------|-----------|
+| `PlatformId` 是硬编码联合类型 | `'mock' \| 'openclaw' \| 'discord'` | 需要为每个新平台扩展 |
+| `ErrorCode` 是硬编码联合类型 | 含 10 个错误码 | 新平台可能引入新错误码 |
+| SPA 路由检测仅覆盖 Discord | `webNavigation.onHistoryStateUpdated` 硬编码 `discord.com` | 需要泛化为多平台 |
+| MAIN world paste 仅服务 Discord | `DISCORD_MAIN_WORLD_PASTE_PORT` 硬编码 | Slack/Telegram 等平台也需要 MAIN world 注入 |
+| 投递无重试机制 | 失败后用户需手动重新操作 | 可重试的错误应支持自动/半自动重试 |
+| 适配器选择器无运行时健康检查 | 依赖 fixture 测试 | 运行时 canary 验证选择器唯一性 |
+| 登录检测逻辑分散 | Discord 特定函数在 content script 中 | 可泛化为适配器契约的一部分 |
+
+---
+
+## 焦点 1：多适配器架构扩展
+
+### 当前适配器注册表机制
+
+```
+shared/adapters/registry.ts
+  ├── adapterRegistry: readonly AdapterRegistryEntry[]
+  ├── findAdapter(url) → AdapterRegistryEntry | undefined
+  └── detectPlatformId(url) → PlatformId | null
+
+shared/adapters/types.ts
+  ├── PlatformId = 'mock' | 'openclaw' | 'discord'
+  ├── IMAdapter (interface) — content script 端契约
+  └── AdapterRegistryEntry (interface) — SW/popup 端描述符
+```
+
+新平台适配器加入 = 以下文件的改动：
+
+| 改动 | 文件 | 内容 |
+|------|------|------|
+| 1. 新增 PlatformId | `shared/adapters/types.ts` | 扩展联合类型 |
+| 2. 新增注册表条目 | `shared/adapters/registry.ts` | `{ id, match(), scriptFile, hostMatches, iconKey }` |
+| 3. 新增 content script | `entrypoints/<platform>.content.ts` | 实现 `ADAPTER_DISPATCH` 消息处理器 |
+| 4. 新增格式化工具 | `shared/adapters/<platform>-format.ts` | 消息格式化（markdown/纯文本） |
+| 5. 新增登录检测（可选） | `shared/adapters/<platform>-login-detect.ts` | DOM 登录墙探测 |
+| 6. 新增 fixture + 测试 | `tests/unit/adapters/<platform>.*` | DOM fixture + 单元测试 |
+| 7. 新增 i18n key | `locales/*.yml` | `platform_icon_<platform>` |
+| 8. 新增平台图标 | `public/icon/` | SVG 或 PNG 图标 |
+
+### 架构变更建议
+
+#### 变更 A：`PlatformId` 从硬编码联合转为 `string` + 运行时校验
+
+**问题：** 每个 `PlatformId` 新增都涉及修改 `types.ts` 的联合类型，这会在 v1.1 多平台并行开发时造成合并冲突。
+
+**方案：** 保持 `PlatformId` 为 `string` 的 branded type，通过注册表条目的 `id` 字段约束合法值：
+
+```typescript
+// shared/adapters/types.ts
+export type PlatformId = string & { readonly __brand: unique symbol };
+
+// shared/adapters/registry.ts — 注册表是唯一合法 PlatformId 来源
+function asPlatformId(id: string): PlatformId { return id as PlatformId; }
+
+export const adapterRegistry = [
+  { id: asPlatformId('mock'), ... },
+  { id: asPlatformId('openclaw'), ... },
+  { id: asPlatformId('discord'), ... },
+  // v1.1: 新平台在此追加
+  { id: asPlatformId('slack'), ... },
+] as const;
+```
+
+**取舍：** 失去 switch 语句的穷举检查；通过注册表唯一性约束（`Set<PlatformId>` 检查）补偿。这是正确的取舍——switch 穷举检查在 2 个平台时有用，在 10+ 个平台时反而阻碍了并行开发。
+
+#### 变更 B：MAIN world paste 桥接从 Discord 专用泛化为通用
+
+**问题：** 当前 `entrypoints/background.ts` 的 `DISCORD_MAIN_WORLD_PASTE_PORT` 和 `discordMainWorldPaste` 函数是 Discord 专用。Slack（Quill）、Telegram（自定义 contenteditable）等平台同样需要 MAIN world 注入。
+
+**方案：** 将 MAIN world 桥接泛化为基于 `port.name` 前缀的路由：
+
+```typescript
+// entrypoints/background.ts
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name.startsWith('WEB2CHAT_MAIN_WORLD_INJECT:')) {
+    const platformId = port.name.split(':')[1];
+    handleMainWorldInject(port, platformId);
+  }
+});
+
+async function handleMainWorldInject(port, platformId) {
+  const adapter = findAdapterById(platformId);
+  if (!adapter) { port.postMessage({ ok: false }); return; }
+
+  const { tabId } = port.sender.tab;
+  const { text } = port.onMessage;
+
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    world: 'MAIN',
+    func: adapter.mainWorldInjector,  // 每个适配器提供自己的 MAIN world 函数
+    args: [text],
+  });
+}
+```
+
+**取舍：** 每个适配器需要提供自己的 `mainWorldInjector` 函数。SW 负责调度，但不硬编码任何平台 DOM 逻辑。这比当前的 Discord 硬编码方式更符合 CLAUDE.md 的适配器模式约定（"投递核心绝不硬编码任何平台特定逻辑"）。
+
+#### 变更 C：ErrorCode 扩展机制
+
+**问题：** `ErrorCode` 是硬编码联合类型，每个新平台可能引入特定错误码。
+
+**方案：** 保持显式联合类型，但按平台命名空间组织：
+
+```typescript
+// shared/messaging/result.ts
+export type ErrorCode =
+  // 通用错误（SW/pipeline 层）
+  | 'INTERNAL'
+  | 'PLATFORM_UNSUPPORTED'
+  | 'EXECUTE_SCRIPT_FAILED'
+  | 'TIMEOUT'
+  // 适配器通用（所有适配器可能返回）
+  | 'NOT_LOGGED_IN'
+  | 'INPUT_NOT_FOUND'
+  | 'RATE_LIMITED'
+  // 平台特定（前缀区分）
+  | 'OPENCLAW_OFFLINE'
+  | 'OPENCLAW_PERMISSION_DENIED';
+  // v1.1: 按需追加，如 'SLACK_WORKSPACE_MISMATCH'
+```
+
+保留显式联合（而非 `string`）是因为 `Result<T, E>` 的类型推导依赖它，且错误码是面向 popup UI 的用户可见标识——需要 exhaustiveness。
+
+#### 变更 D：新增适配器的模板与规范
+
+每个新适配器必须遵循以下模板（基于 Discord/OpenClaw 已验证的模式）：
+
+```
+entrypoints/<platform>.content.ts  — 标准结构：
+  1. defineContentScript({ matches: [], registration: 'runtime', main() { ... } })
+  2. 全局守卫：__web2chat_<platform>_registered
+  3. onMessage listener → handleDispatch(payload) → AdapterDispatchResponse
+  4. handleDispatch 内部流程：
+     a. 登录墙预检（路径 + DOM 双重检测）
+     b. URL 参数校验（channelId/workspaceId 等）
+     c. 限流检查（per-channel/per-workspace，5s 窗口）
+     d. waitForReady（MutationObserver 竞速登录墙探测）
+     e. compose（消息格式化 + DOM 注入）
+     f. send（Enter keydown 或发送按钮点击）
+     g. confirm（MutationObserver 等待新消息节点出现）
+     h. 返回 { ok: true } 或 { ok: false, code, message, retriable }
+```
+
+### 集成点：新适配器与现有组件的连接
+
+```
+新增适配器的代码流：
+
+用户在 popup 输入 send_to URL
+       │
+       ▼
+popup → findAdapter(url)  ← registry.ts 新增条目自动被发现
+       │
+       ▼
+popup 显示平台图标        ← iconKey 指向新 i18n key
+       │
+       ▼
+用户点击 Confirm
+       │
+       ▼
+SW → startDispatch()
+       │
+       ├─ findAdapter(url)                ← 同一注册表
+       ├─ openOrActivateTab(send_to)
+       ├─ onTabComplete 等待
+       ├─ advanceToAdapterInjection()     ← 注入新适配器的 scriptFile
+       └─ tabs.sendMessage(ADAPTER_DISPATCH)
+              │
+              ▼
+       新适配器 content script 处理
+              │
+              ▼
+       返回 { ok, code?, message?, retriable? }
+              │
+              ▼
+       SW → succeedDispatch / failDispatch
+              │
+              ▼
+       popup 通过 storage.onChanged 更新 UI
+```
+
+**关键发现：** 新增一个适配器 **不需要改动** `dispatch-pipeline.ts`、`background.ts`（MAIN world 桥接泛化后）或 popup 任何代码。注册表 + 新 content script 文件 + 新测试 = 全部改动。这验证了 v1.0 适配器模式的可扩展性设计。
+
+---
+
+## 焦点 2：投递链路鲁棒性提升
+
+### 2.1 SPA 路由检测泛化
+
+**v1.0 现状：** `background.ts` 为 Discord 硬编码了 `webNavigation.onHistoryStateUpdated`：
+
+```typescript
+chrome.webNavigation.onHistoryStateUpdated.addListener(
+  (details) => {
+    void onTabComplete(details.tabId, { status: 'complete' }, ...);
+  },
+  { url: [{ hostSuffix: 'discord.com' }] },
+);
+```
+
+**问题：** 每个新 SPA 平台（Slack、Telegram、Feishu）都需要在此处添加新的 filter 条件。这是违反适配器模式的硬编码。
+
+**方案：** 从注册表动态构建 `webNavigation` filter：
+
+```typescript
+// entrypoints/background.ts — 泛化 SPA 路由检测
+function buildSpaHostFilters(): chrome.events.UrlFilter[] {
+  return adapterRegistry
+    .filter(entry => entry.hostMatches.length > 0)
+    .flatMap(entry => entry.hostMatches.map(pattern => {
+      try {
+        const host = new URL(pattern.replace('/*', '').replace('*', 'x')).hostname;
+        return { hostSuffix: host };
+      } catch { return null; }
+    }))
+    .filter(Boolean);
+}
+
+// 顶层注册（保持 MV3 SW 生命周期安全）
+chrome.webNavigation.onHistoryStateUpdated.addListener(
+  (details) => {
+    void onTabComplete(details.tabId, { status: 'complete' }, {
+      url: details.url,
+    } as chrome.tabs.Tab);
+  },
+  { url: buildSpaHostFilters() },
+);
+```
+
+**注意：** `buildSpaHostFilters()` 在模块顶层调用是安全的——`adapterRegistry` 是静态数组，不依赖 `chrome.*` API。filter 在 SW 生命周期内构建一次，重启时重建。
+
+**取舍：** `webNavigation` 权限已经是 manifest 中的必需权限（v1.0 已声明），所以这里没有新增权限负担。但如果某平台不是 SPA（如 OpenClaw 用的普通导航），它不应该出现在 filter 中——通过 `hostMatches` 的存在性区分：只有 `hostMatches.length > 0` 的公共平台需要 SPA 检测。
+
+### 2.2 投递重试机制
+
+**v1.0 现状：** 投递失败后用户需要手动回到 popup 重新操作。`retriable: true` 的错误标记了哪些可以重试，但没有自动重试。
+
+**方案：** 分层重试策略——不在 SW 内自动重试（SW 生命周期不可靠），而是在 popup 端提供重试 UI：
+
+```
+投递失败
+    │
+    ├─ retriable: true
+    │     │
+    │     ▼
+    │   popup 显示错误横幅 + "重试" 按钮
+    │   重试 = 新的 dispatchId，但复用 send_to + prompt + snapshot
+    │   snapshot 从 dispatch:<id> record 读取（仍在 session storage 中）
+    │     │
+    │     ▼
+    │   用户点击"重试" → dispatch.start（新 UUID，同 payload）
+    │
+    └─ retriable: false
+          │
+          ▼
+        popup 显示错误横幅 + 不可重试提示
+        （如 PLATFORM_UNSUPPORTED）
+```
+
+**不在 SW 内自动重试的理由：**
+1. MV3 SW 可能在重试等待期间被终止
+2. 自动重试对 Discord/Slack 等平台有 ToS 风险（触发垃圾检测）
+3. 用户应看到失败原因并决定是否重试
+
+**popup 端重试的数据流：**
+
+```
+popup 检测到 dispatch state === 'error' && retriable === true
+    │
+    ▼
+显示"重试"按钮
+    │
+    ▼
+用户点击 → 从 dispatch:<id> record 读取 snapshot + send_to + prompt
+    │
+    ▼
+生成新 UUID → dispatch.start({ dispatchId: newUuid, ... })
+```
+
+**不需要的改动：** `dispatch-pipeline.ts` 本身不需要重试逻辑。重试只是 popup UI 层的新操作——复用完全相同的 `dispatch.start` 路径。幂等性由新的 `dispatchId` 保证。
+
+### 2.3 适配器选择器运行时健康检查
+
+**问题：** IM 厂商频繁更新 DOM。当前依赖开发时的 fixture 测试，但用户在线上遇到的 DOM 变化无法提前发现。
+
+**方案：** 在适配器的 `findEditor()` 函数中添加 canary 验证：
+
+```typescript
+// 适配器 content script 中的 canary 模式
+function findEditor(): { el: HTMLElement; confidence: 'high' | 'low' } | null {
+  // Tier 1: ARIA selector（最稳定）
+  const tier1 = document.querySelector('[role="textbox"][aria-label*="Message"]');
+  if (tier1) return { el: tier1, confidence: 'high' };
+
+  // Tier 2: data attribute
+  const tier2 = document.querySelector('[data-slate-editor="true"]');
+  if (tier2) return { el: tier2, confidence: 'medium' };
+
+  // Tier 3: class fragment（最不稳定）
+  const tier3 = document.querySelector('div[class*="textArea"] [contenteditable="true"]');
+  if (tier3) return { el: tier3, confidence: 'low' };
+
+  return null;
+}
+```
+
+当 `confidence === 'low'` 时，适配器仍然尝试注入，但在响应中附加警告：
+
+```typescript
+return {
+  ok: true,
+  warning: 'SELECTOR_LOW_CONFIDENCE',  // 可选字段
+  message: 'Editor found via fallback selector — may break on next update',
+};
+```
+
+popup 端可以显示这个警告为非阻断提示："检测到编辑器使用备用选择器，请确认消息已发送成功。"
+
+### 2.4 投递超时分层
+
+**v1.0 现状：** 两层超时——
+- 全局 30s alarm（`DISPATCH_TIMEOUT_MINUTES = 0.5`）
+- 适配器响应 20s（`ADAPTER_RESPONSE_TIMEOUT_MS = 20_000`）
+
+**问题：** 不同平台的加载特性差异大。Discord 冷启动可达 15s；OpenClaw 本地通常 <2s。统一 30s 太慢（快速平台白白等待）又可能太快（复杂 SPA）。
+
+**方案：** 将超时参数移入 `AdapterRegistryEntry`：
+
+```typescript
+// shared/adapters/types.ts — 扩展 AdapterRegistryEntry
+export interface AdapterRegistryEntry {
+  readonly id: PlatformId;
+  match(url: string): boolean;
+  readonly scriptFile: string;
+  readonly hostMatches: readonly string[];
+  readonly iconKey: string;
+  /** 最大等待时间（ms），tab 从 opening 到 done。默认 30_000。 */
+  readonly dispatchTimeoutMs?: number;
+  /** 适配器响应超时（ms），从 executeScript 到 ADAPTER_DISPATCH 响应。默认 20_000。 */
+  readonly adapterResponseTimeoutMs?: number;
+  /** 该平台是否为 SPA（需要 webNavigation SPA 路由检测）。默认 false。 */
+  readonly isSpa?: boolean;
+}
+```
+
+注册表示例：
+
+```typescript
+{ id: asPlatformId('openclaw'), dispatchTimeoutMs: 10_000, adapterResponseTimeoutMs: 8_000 },
+{ id: asPlatformId('discord'), dispatchTimeoutMs: 30_000, adapterResponseTimeoutMs: 20_000, isSpa: true },
+{ id: asPlatformId('slack'),   dispatchTimeoutMs: 25_000, adapterResponseTimeoutMs: 15_000, isSpa: true },
+```
+
+`dispatch-pipeline.ts` 读取这些值而非使用硬编码常量。
+
+### 2.5 登录检测泛化
+
+**v1.0 现状：** Discord 的登录检测分散在三个位置：
+1. `dispatch-pipeline.ts`：`isOnAdapterHost()` + URL 对比
+2. `discord.content.ts`：`isLoggedOutPath()` + `detectLoginWall()` + waitForReady 竞速
+3. `shared/adapters/discord-login-detect.ts`：DOM 探测
+
+**方案：** 将登录检测泛化为 `AdapterRegistryEntry` 的可选配置：
+
+```typescript
+export interface AdapterRegistryEntry {
+  // ... 现有字段 ...
+  /** 该适配器的登录/登出 URL 特征。用于 pipeline 层的 URL 对比检测。 */
+  readonly loggedOutPathPatterns?: readonly RegExp[];
+}
+```
+
+注册表示例：
+
+```typescript
+{
+  id: asPlatformId('discord'),
+  loggedOutPathPatterns: [/^\/$/, /^\/login/, /^\/register/],
+},
+{
+  id: asPlatformId('slack'),
+  loggedOutPathPatterns: [/\/signin\//, /^\/$/],
+},
+```
+
+`dispatch-pipeline.ts` 的 `onTabComplete` 中使用此配置替代当前的 Discord 硬编码检查：
+
+```typescript
+// 泛化后的登录检测
+if (adapter.loggedOutPathPatterns?.some(p => p.test(new URL(actualUrl).pathname))) {
+  await failDispatch(record, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
+}
+```
+
+**注意：** DOM 层面的登录墙检测（如 `detectLoginWall()`）仍留在各适配器的 content script 中，因为 DOM 结构因平台而异。注册表的 `loggedOutPathPatterns` 只覆盖 URL 层面的检测——这部分可以在 SW 端（无需注入 content script）完成。
+
+---
+
+## 焦点 3：多平台动态权限管理
+
+### v1.0 权限架构回顾
+
+```
+manifest.json:
+  permissions:              ['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation']
+  host_permissions:         ['https://discord.com/*']         ← Discord 静态声明
+  optional_host_permissions: ['<all_urls>']                   ← OpenClaw 动态授权
+```
+
+**v1.0 的权限流程：**
+
+| 平台 | host_permissions 来源 | 授权时机 |
+|------|----------------------|----------|
+| Discord | 静态 `host_permissions` | 安装时自动授予 |
+| OpenClaw | `optional_host_permissions` + 运行时 `chrome.permissions.request` | 用户首次配置实例 URL 时 |
+
+### v1.1 新增平台的权限策略
+
+**分类：**
+
+| 类别 | 平台 | 权限策略 |
+|------|------|----------|
+| 公共 IM（已知域名） | Discord, Slack, Telegram | 静态 `host_permissions` — 域名固定且公开 |
+| 用户自管（未知域名） | OpenClaw, Mattermost, Rocket.Chat, Nextcloud Talk | `optional_host_permissions` + 运行时请求 |
+| 混合（公共域名 + 可能有自管部署） | Zalo, Feishu/Lark | 静态 + 可选扩展 |
+
+**方案：** 新增的公共 IM 直接添加到 `host_permissions`；用户自管的继续走 `optional_host_permissions`。
+
+```typescript
+// wxt.config.ts — v1.1 manifest
+host_permissions:
+  mode === 'development'
+    ? ['https://discord.com/*', 'https://app.slack.com/*', '<all_urls>']
+    : ['https://discord.com/*', 'https://app.slack.com/*'],
+optional_host_permissions: ['<all_urls>'],  // 不变
+```
+
+**每个注册表条目声明自己的 hostMatches：**
+
+```typescript
+// shared/adapters/registry.ts
+{ id: asPlatformId('discord'), hostMatches: ['https://discord.com/*'] },
+{ id: asPlatformId('slack'),   hostMatches: ['https://app.slack.com/*'] },
+{ id: asPlatformId('openclaw'), hostMatches: [] },  // 动态权限
+```
+
+`hostMatches.length === 0` 是 "需要运行时权限" 的信号——`dispatch-pipeline.ts` 已经处理了这个分支。
+
+### 权限授予的用户流程
+
+**公共 IM（host_permissions）：**
+- 安装时一次性授予
+- 用户只需在 popup 输入 URL 即可使用
+- 无额外交互
+
+**用户自管平台（optional_host_permissions）：**
+- 保持与 v1.0 OpenClaw 相同的流程
+- 用户在 popup 的 send_to 输入中填入 URL
+- popup 检测到 `hostMatches.length === 0` → 在用户点击 Confirm 时调用 `chrome.permissions.request`
+- 授权后 origin 记录到 `grantedOrigins` repo
+- 下次使用同一 origin 不再弹授权对话框
+
+**v1.1 改进：** `grantedOrigins` repo 可以关联到具体适配器：
+
+```typescript
+// shared/storage/repos/grantedOrigins.ts — v1.1 扩展
+export interface GrantedOrigin {
+  origin: string;        // "http://localhost:18789"
+  platformId: PlatformId; // "openclaw"
+  grantedAt: string;     // ISO timestamp
+}
+```
+
+这让 options 页面可以按平台分组展示已授权的 origin。
+
+### 权限校验的安全边界
+
+**`dispatch-pipeline.ts` 已有的防御：**
+1. `hostMatches.length === 0` → 检查 `chrome.permissions.contains`
+2. `chrome.scripting.executeScript` 失败 → 映射为 `INPUT_NOT_FOUND`
+
+**v1.1 需要的额外防御：** 新增公共 IM 平台时，如果用户未更新扩展（旧版本 manifest 没有 `https://app.slack.com/*` 的 host_permissions），`executeScript` 会失败。pipeline 已有的 `executeScript` 错误映射（`Cannot access|manifest must request permission` → `INPUT_NOT_FOUND`）会正确捕获此情况。无需额外代码。
+
+---
+
+## 构建顺序（v1.1 增量）
+
+v1.0 的构建顺序仍然有效。v1.1 的改动是增量叠加：
+
+```
+v1.0 构建（不变）：
+1-5. shared/ 基础
+6.   background/
+7.   popup/
+8.   content/extractor.ts
+9-11. content/adapters/（mock + openclaw + discord）
+
+v1.1 增量（按依赖顺序）：
+12. shared/adapters/types.ts     — PlatformId branded type + AdapterRegistryEntry 扩展
+13. shared/adapters/registry.ts  — 新增条目 + 泛化 host filter builder
+14. shared/messaging/result.ts   — ErrorCode 扩展（如需新错误码）
+15. entrypoints/background.ts    — MAIN world 桥接泛化 + webNavigation filter 泛化
+16. background/dispatch-pipeline.ts — 从 registry 读取超时参数 + 泛化登录检测
+17. entrypoints/<new-platform>.content.ts — 新适配器（每个平台独立）
+18. shared/adapters/<new-platform>-format.ts — 消息格式化
+19. popup/ — 重试 UI + 适配器低置信度警告显示
+20. locales/*.yml — 新平台 i18n key
+21. tests/ — 新适配器 fixture + 测试 + SPA 路由测试
+```
+
+**对阶段划分的影响：**
+
+| Phase | 内容 | 依赖 |
+|-------|------|------|
+| Phase A | 架构泛化（变更 A-D） | 仅依赖 shared/ 层 |
+| Phase B | 投递鲁棒性（超时分层 + 登录检测泛化 + SPA 路由泛化） | 依赖 Phase A |
+| Phase C | 第一个新适配器 | 依赖 Phase B（使用新的超时/登录/SPA 配置） |
+| Phase D | popup 重试 UI | 可与 Phase C 并行 |
+| Phase E | 后续适配器 | 每个 = Phase C 的缩小版，可并行 |
+
+---
+
+## 修改与新增组件清单
+
+### 需要修改的现有文件
+
+| 文件 | 改动范围 | 风险 |
+|------|----------|------|
+| `shared/adapters/types.ts` | PlatformId branded type + AdapterRegistryEntry 扩展 | LOW — 类型变更，编译器保护 |
+| `shared/adapters/registry.ts` | 新增条目 + host filter builder | LOW — 纯数据追加 |
+| `shared/messaging/result.ts` | ErrorCode 扩展 | LOW — 联合类型追加 |
+| `entrypoints/background.ts` | MAIN world 桥接泛化 + webNavigation filter 泛化 | MEDIUM — 核心 SW 入口变更 |
+| `background/dispatch-pipeline.ts` | 从 registry 读超时 + 泛化登录检测 | MEDIUM — 核心投递逻辑变更 |
+| `entrypoints/popup/components/SendForm.tsx` | 重试 UI + 适配器警告 | LOW — UI 变更 |
+| `wxt.config.ts` | 新增 host_permissions | LOW — manifest 配置 |
+| `locales/en.yml` + `locales/zh_CN.yml` | 新平台 i18n key | LOW — 纯数据 |
+
+### 需要新增的文件（每个新适配器）
+
+| 文件 | 用途 |
+|------|------|
+| `entrypoints/<platform>.content.ts` | 适配器 content script |
+| `shared/adapters/<platform>-format.ts` | 消息格式化 |
+| `shared/adapters/<platform>-login-detect.ts` | 登录墙探测（如需要） |
+| `tests/unit/adapters/<platform>-match.spec.ts` | URL 匹配测试 |
+| `tests/unit/adapters/<platform>-compose.spec.ts` | 消息组合测试 |
+| `tests/unit/adapters/<platform>-selector.spec.ts` | 选择器测试 |
+| `tests/unit/adapters/<platform>.fixture.html` | DOM fixture |
+| `public/icon/<platform>.svg` | 平台图标 |
+
+---
+
+## 反模式（v1.1 特定）
+
+### 反模式 1：在 background.ts 中硬编码新平台的 SPA 路由检测
+
+**做法：** 为每个新平台添加一个独立的 `chrome.webNavigation.onHistoryStateUpdated.addListener(...)` 调用。
+**为什么错：** 违反适配器模式；新平台需要改动 SW 入口；无法按平台独立测试。
+**正确做法：** 从注册表动态构建 filter，如 2.1 节所述。
+
+### 反模式 2：在新适配器中复制 Discord 的 MAIN world paste 逻辑
+
+**做法：** 在每个需要 MAIN world 注入的适配器中复制 `injectMainWorldPaste` 函数和 port 通信逻辑。
+**为什么错：** 代码重复；port 协议不一致；修复一个平台的问题不会自动修复其他平台。
+**正确做法：** 使用泛化的 MAIN world 桥接（变更 B），每个适配器只提供自己的 `mainWorldInjector` 函数。
+
+### 反模式 3：将新平台错误码硬编码为通用 INTERNAL
+
+**做法：** 新适配器返回 `{ ok: false, code: 'INTERNAL', ... }` 而不是特定错误码。
+**为什么错：** 用户无法得到可操作的错误信息；重试逻辑无法区分临时故障和永久错误。
+**正确做法：** 为每个新错误场景定义专用 ErrorCode。`INTERNAL` 保留给未预期的异常。
+
+### 反模式 4：在 dispatch-pipeline 中为新平台添加 if/else 分支
+
+**做法：** `if (adapter.id === 'slack') { ... } else if (adapter.id === 'telegram') { ... }`。
+**为什么错：** pipeline 是平台无关的协调器。平台特定逻辑属于 content script 适配器。
+**正确做法：** 通过 `AdapterRegistryEntry` 的声明式字段（`dispatchTimeoutMs`、`isSpa`、`loggedOutPathPatterns`）驱动差异化行为。
+
+---
+
+## 扩展性矩阵
+
+| 适配器数量 | 架构调整 |
+|------------|----------|
+| 2-3（v1.0） | 静态注册表数组；手工维护 host_permissions；per-adapter MAIN world 函数 |
+| 5-7（v1.1） | 同一注册表；泛化 SPA/filter/MAIN world 桥接；可复用的超时/登录配置 |
+| 10+（v2） | 考虑注册表拆分为 `adapters/core.ts` + `adapters/community.ts`；options 页面管理已授权 origin；适配器健康度仪表盘 |
+
+### 扩展性瓶颈排序
+
+1. **适配器 DOM 维护流失（仍然是最主要瓶颈）。** 每个 IM 平台的 DOM 都会随版本更新变化。缓解：每个适配器的 fixture + canary + 低置信度警告。
+2. **MAIN world 注入函数膨胀。** SW background.ts 中的 `mainWorldInjector` 需要为每个富文本编辑器平台提供特定函数。缓解：将各平台的 MAIN world 注入逻辑封装为独立的、可在 `chrome.scripting.executeScript` 中传递的函数。
+3. **host_permissions 列表增长。** 每新增一个公共 IM = manifest 中新增一条。缓解：Chrome Web Store 审核员能理解逐条列举；只要不用 `<all_urls>` 就不会触发拒审。
+4. **测试矩阵膨胀。** 每个适配器需要 fixture + 单元测试 + E2E 测试。缓解：共享测试工具（`waitForElement` 测试 helper、`assertDispatchResponse` 断言 helper）。
+
+---
+
+## 来源
+
+### v1.0 来源（仍然有效）
+- Chrome Extensions Docs — Service Worker Events, Messaging, scripting API, tabs API, storage API, i18n API, activeTab
+- WXT 文档 — Content Scripts（runtime registration、SPA detection、MAIN world injection）
+- Slate/Lexical 编辑器注入 — InputEvent + ClipboardEvent 模式
+- Playwright — Chrome extensions testing
+
+### v1.1 新增来源
+- [chrome.webNavigation API](https://developer.chrome.com/docs/extensions/reference/api/webNavigation) — `onHistoryStateUpdated` 多域名 filter — HIGH
+- [chrome.permissions API](https://developer.chrome.com/docs/extensions/reference/api/permissions) — `optional_host_permissions` 运行时请求 — HIGH
+- [WXT Content Scripts SPA Handling](https://wxt.dev/guide/essentials/content-scripts) — `wxt:locationchange` 事件 — HIGH
+- [WXT Scripting API](https://wxt.dev/guide/essentials/scripting) — `registration: 'runtime'` + 返回值 — HIGH
+- [MDN webNavigation.onHistoryStateUpdated](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webNavigation/onHistoryStateUpdated) — SPA 路由检测 — HIGH
+- [optional_host_permissions — MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/optional_host_permissions) — 动态权限声明 — HIGH
+
+---
+
+_架构调研增量更新：Chrome MV3 Web Clipper v1.1 多渠道适配 + 投递鲁棒性_
+_基于已交付 v1.0 代码库（313 commits, 225 单元测试）进行增量分析_
+_调研时间：2026-05-09_
