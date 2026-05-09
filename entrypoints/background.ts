@@ -8,9 +8,13 @@ import {
   cancelDispatch,
   onTabComplete,
   onAlarmFired,
+  onSpaHistoryStateUpdated,
 } from '@/background/dispatch-pipeline';
 import { historyList, historyDelete } from '@/background/handlers/history';
 import { bindingUpsert, bindingGet } from '@/background/handlers/binding';
+// ─── Phase 8 imports: registry-driven MAIN bridge + SPA filter ───────────
+import { adapterRegistry, buildSpaUrlFilters } from '@/shared/adapters/registry';
+import { mainWorldInjectors } from '@/background/main-world-registry';
 
 /**
  * Service Worker entrypoint.
@@ -35,78 +39,11 @@ import { bindingUpsert, bindingGet } from '@/background/handlers/binding';
  * is NOT valid on 0.20.25 and will fail at build time.
  */
 
-const DISCORD_MAIN_WORLD_PASTE_PORT = 'WEB2CHAT_DISCORD_MAIN_WORLD_PASTE';
+/** Port name prefix for generic MAIN world bridge (D-101). */
+const MAIN_WORLD_PORT_PREFIX = 'WEB2CHAT_MAIN_WORLD:';
 
-async function discordMainWorldPaste(text: string): Promise<boolean> {
-  const active = document.activeElement;
-  const editor =
-    (active instanceof HTMLElement &&
-    (active.matches('[role="textbox"][aria-label*="Message"]') ||
-      active.matches('[data-slate-editor="true"]') ||
-      active.matches('[contenteditable="true"]'))
-      ? active
-      : null) ??
-    document.querySelector<HTMLElement>('[role="textbox"][aria-label*="Message"]') ??
-    document.querySelector<HTMLElement>('[data-slate-editor="true"]') ??
-    document.querySelector<HTMLElement>('div[class*="textArea"] [contenteditable="true"]');
-
-  if (!editor) return false;
-
-  editor.focus();
-
-  // Defensive pre-paste cleanup (UAT regression fix, debug session
-  // discord-uat-regression): if the editor still holds residual text from a
-  // prior (failed) dispatch, clear it via beforeinput[deleteContent] BEFORE
-  // pasting new content. Routes through Slate's native editing pipeline so
-  // model and DOM stay in sync; idempotent on already-empty editors.
-  if ((editor.textContent ?? '').length > 0) {
-    editor.dispatchEvent(
-      new InputEvent('beforeinput', {
-        inputType: 'deleteContent',
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
-  }
-
-  const dt = new DataTransfer();
-  dt.setData('text/plain', text);
-  editor.dispatchEvent(
-    new ClipboardEvent('paste', {
-      clipboardData: dt,
-      bubbles: true,
-      cancelable: true,
-    }),
-  );
-  editor.dispatchEvent(
-    new KeyboardEvent('keydown', {
-      key: 'Enter',
-      bubbles: true,
-      cancelable: true,
-    }),
-  );
-
-  // Post-Enter clear (UAT regression fix, replaces 05-06 Escape-keydown):
-  // wait 200ms then dispatch beforeinput[deleteContent] ONLY if residual text
-  // is still present. The previous Escape approach polluted Slate's internal
-  // editor state across dispatches (collapsed selection, blurred composer);
-  // the next dispatch then failed silently. beforeinput[deleteContent] uses
-  // the same path Backspace/Delete take, so it doesn't desync Slate.
-  // discordMainWorldPaste runs in MAIN world via executeScript which awaits
-  // Promise resolution, so this delay does NOT cause Port message ordering
-  // issues.
-  await new Promise<void>((resolve) => setTimeout(resolve, 200));
-  if ((editor.textContent ?? '').length > 0) {
-    editor.dispatchEvent(
-      new InputEvent('beforeinput', {
-        inputType: 'deleteContent',
-        bubbles: true,
-        cancelable: true,
-      }),
-    );
-  }
-  return true;
-}
+/** SPA URL filters built from registry (D-103, D-104, D-105). */
+const spaFilters = buildSpaUrlFilters(adapterRegistry);
 
 /**
  * Wraps a handler so any thrown error becomes an Err('INTERNAL', ...).
@@ -163,8 +100,13 @@ export default defineBackground(() => {
     }),
   );
 
+  // ───────── Phase 8: Generic MAIN world bridge (D-99..D-102) ─────────
+  // Routes by WEB2CHAT_MAIN_WORLD:<platformId> prefix. Injector function
+  // looked up from registry-driven mainWorldInjectors map.
   chrome.runtime.onConnect.addListener((port) => {
-    if (port.name !== DISCORD_MAIN_WORLD_PASTE_PORT) return;
+    if (!port.name.startsWith(MAIN_WORLD_PORT_PREFIX)) return;
+    const platformId = port.name.slice(MAIN_WORLD_PORT_PREFIX.length);
+
     port.onMessage.addListener((msg, senderPort) => {
       const tabId = senderPort.sender?.tab?.id;
       const text = typeof msg?.text === 'string' ? msg.text : null;
@@ -179,11 +121,19 @@ export default defineBackground(() => {
         return;
       }
 
+      // Look up injector from registry-driven map (D-100)
+      const injector = mainWorldInjectors.get(platformId);
+      if (!injector) {
+        port.postMessage({ ok: false, message: `No injector for platform: ${platformId}` });
+        port.disconnect();
+        return;
+      }
+
       void chrome.scripting
         .executeScript({
           target: { tabId },
           world: 'MAIN',
-          func: discordMainWorldPaste,
+          func: injector,
           args: [text],
         })
         .then((results) => {
@@ -242,18 +192,13 @@ export default defineBackground(() => {
   chrome.tabs.onUpdated.addListener(onTabComplete);
   chrome.alarms.onAlarm.addListener(onAlarmFired);
 
-  // ───────── Phase 5: Discord SPA routing (D-66) ─────────
-  // Discord is a SPA — channel switches use history.pushState, not full navigation.
-  // This listener fires for pushState on discord.com, allowing the dispatch pipeline
-  // to detect that the target channel has loaded after a SPA transition.
-  chrome.webNavigation.onHistoryStateUpdated.addListener(
-    (details) => {
-      // Re-use the same handler as tabs.onUpdated — it reads dispatch state from
-      // storage.session and checks if the tab + URL match a pending dispatch.
-      void onTabComplete(details.tabId, { status: 'complete' }, {
-        url: details.url,
-      } as chrome.tabs.Tab);
-    },
-    { url: [{ hostSuffix: 'discord.com' }] },
-  );
+  // ───────── Phase 8: Dynamic SPA routing from registry (D-103..D-106) ─────────
+  // SPA filter dynamically built from adapterRegistry entries with spaNavigationHosts.
+  // Uses dedicated onSpaHistoryStateUpdated handler (D-106), not direct onTabComplete reuse.
+  if (spaFilters.length > 0) {
+    chrome.webNavigation.onHistoryStateUpdated.addListener(
+      onSpaHistoryStateUpdated,
+      { url: spaFilters },
+    );
+  }
 });

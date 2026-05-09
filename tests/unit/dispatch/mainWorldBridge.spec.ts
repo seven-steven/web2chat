@@ -9,7 +9,6 @@
  */
 import { describe, it, expect } from 'vitest';
 import { adapterRegistry } from '@/shared/adapters/registry';
-// @ts-expect-error -- RED phase: module does not exist yet (created in GREEN)
 import { mainWorldInjectors } from '@/background/main-world-registry';
 
 const MAIN_WORLD_PORT_PREFIX = 'WEB2CHAT_MAIN_WORLD:';

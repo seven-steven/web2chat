@@ -28,7 +28,8 @@ import { detectLoginWall } from '@/shared/adapters/discord-login-detect';
 const WAIT_TIMEOUT_MS = 5000;
 const LOGIN_WALL_PROBE_MS = 1500;
 const RATE_LIMIT_MS = 5000;
-const DISCORD_MAIN_WORLD_PASTE_PORT = 'WEB2CHAT_DISCORD_MAIN_WORLD_PASTE';
+const PLATFORM_ID = 'discord';
+const MAIN_WORLD_PORT = `WEB2CHAT_MAIN_WORLD:${PLATFORM_ID}`;
 
 // Module-scope rate limit map (content script lifetime = tab lifetime)
 const lastSendTime = new Map<string, number>();
@@ -171,7 +172,7 @@ function waitForReady(
 async function injectMainWorldPaste(editor: HTMLElement, text: string): Promise<boolean> {
   editor.focus();
   const response = await new Promise<{ ok: boolean; message?: string }>((resolve) => {
-    const port = chrome.runtime.connect({ name: DISCORD_MAIN_WORLD_PASTE_PORT });
+    const port = chrome.runtime.connect({ name: MAIN_WORLD_PORT });
     port.onMessage.addListener((msg: { ok?: unknown; message?: unknown }) => {
       const message = typeof msg.message === 'string' ? msg.message : undefined;
       resolve(message ? { ok: msg.ok === true, message } : { ok: msg.ok === true });
