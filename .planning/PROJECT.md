@@ -30,9 +30,10 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ### 进行中 (Active)
 
-<!-- v1 假设。当前在朝这些目标推进。 -->
+<!-- v1.1 假设。当前在朝这些目标推进。 -->
 
-_(v1 全部需求已验证，无 Active 项)_
+- [ ] 新增 IM 平台适配器（具体平台由可行性调研决定） — v1.1
+- [ ] 投递体验优化（网络延迟、SPA 路由、编辑器兼容性等） — v1.1
 
 ### 不在范围 (Out of Scope)
 
@@ -72,6 +73,14 @@ _(v1 全部需求已验证，无 Active 项)_
 - **发送通道**：通过新开/激活 tab + content script 注入目标会话输入框完成发送，不使用平台官方 Bot API（避免 token 管理与服务端依赖）
 - **权限模型**：抓取走 `activeTab`；静态 `host_permissions` 仅声明 v1 已知公共域名（`https://discord.com/*`）；用户自部署的 OpenClaw 与未来 v2 平台通过 `optional_host_permissions: ["<all_urls>"]` + 运行时 `chrome.permissions.request` 动态获取具体 origin 权限。静态 `host_permissions` 中禁止 `<all_urls>`
 
+## Current Milestone: v1.1 多渠道适配
+
+**Goal:** 扩展 web2chat 的 IM 平台覆盖，同时优化投递链路的鲁棒性
+
+**Target features:**
+- 新增 IM 平台适配器（具体平台由可行性调研决定）
+- 投递体验优化（网络延迟、SPA 路由、编辑器兼容性等）
+
 ## 关键决策 (Key Decisions)
 
 | 决策                                                    | 理由                                                                                                                                                                                                                                                                                                                                     | 结果     |
@@ -105,4 +114,4 @@ _(v1 全部需求已验证，无 Active 项)_
 
 ---
 
-_最近更新：2026-05-09，v1.0 milestone 归档完成。47/47 需求全部 Validated。详见 .planning/milestones/v1.0-ROADMAP.md。_
+_最近更新：2026-05-09，v1.1 milestone 启动。_

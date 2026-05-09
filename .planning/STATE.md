@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: MVP
-status: Shipped
-last_updated: "2026-05-09T11:00:00Z"
+milestone: v1.1
+milestone_name: 多渠道适配
+status: planning
+last_updated: "2026-05-09T12:00:00Z"
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 41
-  completed_plans: 41
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # 项目状态
@@ -19,15 +19,14 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-05-09)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** v1.0 MVP 已发布 (2026-05-09)。等待规划下一个 milestone。
+**当前焦点：** v1.1 多渠道适配 — 扩展 IM 平台覆盖 + 投递体验优化
 
-## 当前位置
+## Current Position
 
-- **v1.0 已归档** — 详见 `.planning/milestones/v1.0-ROADMAP.md`
-- 状态：全部 7 个 phase / 41 个 plan / 47 条需求完成
-- 最近活动：2026-05-09 — milestone 归档
-
-进度：[██████████] **v1.0 COMPLETE & ARCHIVED**
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-09 — Milestone v1.1 started
 
 ## 已归档
 
@@ -42,9 +41,3 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-09:
 |----------|------|--------|
 | e2e | Phase 3-5 E2E specs pending human verification | Deferred (needs headed browser) |
 | code | 3 jsdom module resolution warnings | Non-blocking |
-
-## 会话连续性
-
-- 上次会话：2026-05-09
-- 停在哪里：v1.0 milestone 归档完成
-- Resume 文件：None
