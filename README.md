@@ -48,7 +48,7 @@ web2chat 最初为 [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e
 
 ### Chrome Web Store
 
-即将上架，敬请期待。
+[web2chat - Chrome Web Store](https://chromewebstore.google.com/detail/web2chat/kglpjocckfgpephljffgkamnfpnmkdnc)
 
 ## 使用
 
