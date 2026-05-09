@@ -3,6 +3,7 @@ import { fakeBrowser } from 'wxt/testing/fake-browser';
 import * as draftRepo from '@/shared/storage/repos/popupDraft';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 import type { ArticleSnapshot } from '@/shared/messaging';
+import { definePlatformId } from '@/shared/adapters/types';
 
 const fakeSnapshot: ArticleSnapshot = {
   title: 't',
@@ -24,7 +25,7 @@ function fakeRecord(
     send_to: 'https://example.com/',
     prompt: 'p',
     snapshot: fakeSnapshot,
-    platform_id: 'mock',
+    platform_id: definePlatformId('mock'),
     started_at: '2026-04-30T00:00:00.000Z',
     last_state_at: '2026-04-30T00:00:00.000Z',
     ...overrides,

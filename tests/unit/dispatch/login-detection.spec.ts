@@ -15,6 +15,7 @@ import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { onTabComplete, startDispatch } from '@/background/dispatch-pipeline';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 import type { DispatchRecord } from '@/shared/storage/repos/dispatch';
+import { definePlatformId } from '@/shared/adapters/types';
 
 const DISCORD_CHANNEL_URL = 'https://discord.com/channels/123/456';
 const DISCORD_LOGIN_URL = 'https://discord.com/login?redirect_to=%2Fchannels%2F123%2F456';
@@ -38,7 +39,7 @@ function makeRecord(overrides: Partial<DispatchRecord> = {}): DispatchRecord {
       create_at: '2026-05-05T00:00:00Z',
       content: 'body',
     },
-    platform_id: 'discord',
+    platform_id: definePlatformId('discord'),
     started_at: '2026-05-05T00:00:00Z',
     last_state_at: '2026-05-05T00:00:00Z',
     ...overrides,
@@ -127,7 +128,7 @@ describe('dispatch-pipeline login detection (D-70)', () => {
 
   it('skips login check for adapters with empty hostMatches (openclaw)', async () => {
     // Arrange: record targeting openclaw (empty hostMatches)
-    const record = makeRecord({ send_to: OPENCLAW_URL, platform_id: 'openclaw' });
+    const record = makeRecord({ send_to: OPENCLAW_URL, platform_id: definePlatformId('openclaw') });
     await dispatchRepo.set(record);
 
     // Act

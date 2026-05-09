@@ -28,6 +28,7 @@ import {
   POPUP_DRAFT_DEFAULT,
 } from '@/shared/storage/items';
 import type { ArticleSnapshot } from '@/shared/messaging';
+import { definePlatformId } from '@/shared/adapters/types';
 
 const fakeSnapshot: ArticleSnapshot = {
   title: 't',
@@ -134,16 +135,14 @@ describe('background/dispatch-pipeline — startDispatch (D-31, D-32, DSP-05)', 
     const stub = buildChromeStub({
       tabs: {
         ...buildChromeStub().tabs,
-        query: vi
-          .fn()
-          .mockResolvedValue([
-            {
-              id: 42,
-              url: 'http://localhost:4321/mock-platform.html?old=1',
-              windowId: 1,
-              status: 'complete',
-            },
-          ]),
+        query: vi.fn().mockResolvedValue([
+          {
+            id: 42,
+            url: 'http://localhost:4321/mock-platform.html?old=1',
+            windowId: 1,
+            status: 'complete',
+          },
+        ]),
       },
     });
     vi.stubGlobal('chrome', stub);
@@ -228,7 +227,7 @@ describe('background/dispatch-pipeline — onTabComplete (D-33)', () => {
       send_to: baseInput.send_to,
       prompt: 'p',
       snapshot: fakeSnapshot,
-      platform_id: 'mock',
+      platform_id: definePlatformId('mock'),
       started_at: '2026-04-30T00:00:00.000Z',
       last_state_at: '2026-04-30T00:00:00.000Z',
     });
@@ -351,14 +350,12 @@ describe('background/dispatch-pipeline — failure path (DSP-07)', () => {
         query: vi
           .fn()
           .mockResolvedValue([{ id: 42, url: baseInput.send_to, windowId: 1, status: 'complete' }]),
-        sendMessage: vi
-          .fn()
-          .mockResolvedValue({
-            ok: false,
-            code: 'NOT_LOGGED_IN',
-            message: 'login wall',
-            retriable: false,
-          }),
+        sendMessage: vi.fn().mockResolvedValue({
+          ok: false,
+          code: 'NOT_LOGGED_IN',
+          message: 'login wall',
+          retriable: false,
+        }),
       },
     });
     vi.stubGlobal('chrome', stub);
@@ -389,7 +386,7 @@ describe('background/dispatch-pipeline — onAlarmFired (D-33 / D-34)', () => {
       send_to: baseInput.send_to,
       prompt: 'p',
       snapshot: fakeSnapshot,
-      platform_id: 'mock',
+      platform_id: definePlatformId('mock'),
       started_at: '2026-04-30T00:00:00.000Z',
       last_state_at: '2026-04-30T00:00:00.000Z',
     });
@@ -413,7 +410,7 @@ describe('background/dispatch-pipeline — onAlarmFired (D-33 / D-34)', () => {
       send_to: baseInput.send_to,
       prompt: 'p',
       snapshot: fakeSnapshot,
-      platform_id: 'mock',
+      platform_id: definePlatformId('mock'),
       started_at: '2026-04-30T00:00:00.000Z',
       last_state_at: '2026-04-30T00:00:00.000Z',
     });
@@ -454,7 +451,7 @@ describe('background/dispatch-pipeline — cancelDispatch', () => {
       send_to: baseInput.send_to,
       prompt: 'p',
       snapshot: fakeSnapshot,
-      platform_id: 'mock',
+      platform_id: definePlatformId('mock'),
       started_at: '2026-04-30T00:00:00.000Z',
       last_state_at: '2026-04-30T00:00:00.000Z',
     });
@@ -476,7 +473,7 @@ describe('background/dispatch-pipeline — cancelDispatch', () => {
       send_to: baseInput.send_to,
       prompt: 'p',
       snapshot: fakeSnapshot,
-      platform_id: 'mock',
+      platform_id: definePlatformId('mock'),
       started_at: '2026-04-30T00:00:00.000Z',
       last_state_at: '2026-04-30T00:00:00.000Z',
     });

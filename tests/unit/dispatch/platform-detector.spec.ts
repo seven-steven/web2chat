@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { adapterRegistry, findAdapter, detectPlatformId } from '@/shared/adapters/registry';
-// @ts-expect-error -- RED phase: definePlatformId/defineAdapter not yet exported
 import { definePlatformId, defineAdapter } from '@/shared/adapters/types';
 
 describe('shared/adapters/registry (D-24 / D-26)', () => {
@@ -72,7 +71,6 @@ describe('branded PlatformId (D-96 / D-97)', () => {
   it('discord entry has spaNavigationHosts (D-103 / D-104)', () => {
     const discord = adapterRegistry.find((e) => e.id === 'discord');
     expect(discord).toBeDefined();
-    // @ts-expect-error -- RED phase: spaNavigationHosts not yet on type
     expect(discord!.spaNavigationHosts).toEqual(['discord.com']);
   });
 });

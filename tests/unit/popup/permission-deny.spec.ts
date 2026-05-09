@@ -10,6 +10,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
+import { definePlatformId } from '@/shared/adapters/types';
 
 describe('popup/permission-deny (ADO-05, D-42, D-43)', () => {
   beforeEach(() => {
@@ -27,7 +28,7 @@ describe('popup/permission-deny (ADO-05, D-42, D-43)', () => {
     // Mock findAdapter to return an adapter with hostMatches: [] (dynamic permission)
     const registry = await import('@/shared/adapters/registry');
     vi.spyOn(registry, 'findAdapter').mockReturnValue({
-      id: 'openclaw',
+      id: definePlatformId('openclaw'),
       match: () => true,
       scriptFile: 'content-scripts/openclaw.js',
       hostMatches: [],
@@ -70,7 +71,7 @@ describe('popup/permission-deny (ADO-05, D-42, D-43)', () => {
 
     const registry = await import('@/shared/adapters/registry');
     vi.spyOn(registry, 'findAdapter').mockReturnValue({
-      id: 'openclaw',
+      id: definePlatformId('openclaw'),
       match: () => true,
       scriptFile: 'content-scripts/openclaw.js',
       hostMatches: [],

@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-// @ts-expect-error -- RED phase: buildSpaUrlFilters not yet exported
 import { buildSpaUrlFilters } from '@/shared/adapters/registry';
-// @ts-expect-error -- RED phase: defineAdapter not yet exported
 import { defineAdapter } from '@/shared/adapters/types';
 
 describe('buildSpaUrlFilters (D-103 / D-104 / D-105)', () => {
