@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { adapterRegistry, findAdapter, detectPlatformId } from '@/shared/adapters/registry';
+// @ts-expect-error -- RED phase: definePlatformId/defineAdapter not yet exported
+import { definePlatformId, defineAdapter } from '@/shared/adapters/types';
 
 describe('shared/adapters/registry (D-24 / D-26)', () => {
   it('registry contains mock, openclaw, and discord entries', () => {
@@ -39,5 +41,38 @@ describe('shared/adapters/registry (D-24 / D-26)', () => {
     expect(() =>
       adapterRegistry[0]?.match('http://localhost:4321/mock-platform.html'),
     ).not.toThrow();
+  });
+});
+
+describe('branded PlatformId (D-96 / D-97)', () => {
+  it('definePlatformId returns a value that compares === to the raw string at runtime', () => {
+    const id = definePlatformId('discord');
+    expect(id === 'discord').toBe(true);
+    expect(id).toBe('discord');
+  });
+
+  it('defineAdapter produces entries with branded PlatformId on .id', () => {
+    const entry = defineAdapter({
+      id: 'test',
+      match: () => false,
+      scriptFile: 'test.js',
+      hostMatches: [],
+      iconKey: 'test',
+    });
+    expect(entry.id === 'test').toBe(true);
+    expect(entry.id).toBe('test');
+  });
+
+  it('all registry entries have branded PlatformId from defineAdapter', () => {
+    expect(adapterRegistry[0]?.id).toBe('mock');
+    expect(adapterRegistry[1]?.id).toBe('openclaw');
+    expect(adapterRegistry[2]?.id).toBe('discord');
+  });
+
+  it('discord entry has spaNavigationHosts (D-103 / D-104)', () => {
+    const discord = adapterRegistry.find((e) => e.id === 'discord');
+    expect(discord).toBeDefined();
+    // @ts-expect-error -- RED phase: spaNavigationHosts not yet on type
+    expect(discord!.spaNavigationHosts).toEqual(['discord.com']);
   });
 });
