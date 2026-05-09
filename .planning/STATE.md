@@ -26,7 +26,7 @@ progress:
 Phase: 8 of 12 (架构泛化)
 Plan: —
 Status: Ready to plan
-Last activity: 2026-05-09 — v1.1 roadmap defined (5 phases, 23 requirements)
+Last activity: 2026-05-09 — Completed quick task 260509-ocg: 按照 2 3 更新当前项目规划，构建 changelog 体系，纳入后续发版流程。
 
 Progress: [..........] 0%
 
@@ -65,6 +65,12 @@ None yet.
 ### Blockers/Concerns
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260509-ocg | 按照 2 3 更新当前项目规划，构建 changelog 体系，纳入后续发版流程。 | 2026-05-09 | d5a3ddc | [260509-ocg-2-3-changelog](./quick/260509-ocg-2-3-changelog/) |
 
 ## Deferred Items
 
