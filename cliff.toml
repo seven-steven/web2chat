@@ -35,6 +35,7 @@ sort_commits = "oldest"
 sort_tags = "oldest"
 
 commit_parsers = [
+  { message = ".*[Cc]hangelog.*", skip = true },
   { message = "^feat", group = "Features" },
   { message = "^fix", group = "Bug Fixes" },
   { message = "^docs", group = "Documentation" },

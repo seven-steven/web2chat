@@ -2,20 +2,6 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
-
-
-### Documentation
-
-- **260509-ocg:** Pre-dispatch plan for changelog体系 ([5f717f1](https://github.com/seven/web2chat/commit/5f717f15b93f7b957957fb36ec8bb675ff381d86))
-
-
-### Features
-
-- **260509-ocg:** Add changelog generation ([3e40f2d](https://github.com/seven/web2chat/commit/3e40f2d0d6e723ccf45778be3026234dae705902))
-
-- **260509-ocg:** Gate releases on changelog entries ([da3be2e](https://github.com/seven/web2chat/commit/da3be2eec4a919be78ae92cb8088836450aa650a))
-
 ## [v1.0.1] - 2026-05-09
 
 
