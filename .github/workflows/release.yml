@@ -25,6 +25,7 @@ jobs:
       - run: pnpm test
       - run: pnpm verify:manifest
       - run: pnpm zip
+      - run: pnpm verify:changelog-release
       - name: Release
         uses: softprops/action-gh-release@v2
         with:

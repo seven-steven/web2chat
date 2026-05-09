@@ -1,0 +1,46 @@
+# git-cliff configuration for web2chat.
+# Keep output deterministic so CHANGELOG.md can be committed and verified in CI.
+
+[changelog]
+header = """
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+"""
+body = """
+{% if version %}\
+## [{{ version }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## [Unreleased]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+
+### {{ group | striptags | trim | upper_first }}
+{% for commit in commits %}
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first }} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/seven/web2chat/commit/{{ commit.id }}))
+{% endfor %}\
+{% endfor %}
+
+"""
+trim = true
+render_always = false
+
+[git]
+conventional_commits = true
+filter_unconventional = false
+split_commits = false
+tag_pattern = "v*"
+sort_commits = "oldest"
+sort_tags = "oldest"
+
+commit_parsers = [
+  { message = ".*[Cc]hangelog.*", skip = true },
+  { message = "^feat", group = "Features" },
+  { message = "^fix", group = "Bug Fixes" },
+  { message = "^docs", group = "Documentation" },
+  { message = "^test", group = "Tests" },
+  { message = "^refactor", group = "Refactoring" },
+  { message = "^chore", group = "Chores" },
+  { message = ".*", group = "Other" },
+]
