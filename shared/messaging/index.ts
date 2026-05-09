@@ -1,5 +1,5 @@
-export type { Result, ErrorCode } from './result';
-export { Ok, Err } from './result';
+export type { Result, ErrorCode, CommonErrorCode, PlatformErrorCode } from './result';
+export { Ok, Err, isErrorCode } from './result';
 export type { ProtocolMap, MetaBumpHelloOutput, ArticleSnapshot } from './protocol';
 export { sendMessage, onMessage, schemas, ArticleSnapshotSchema } from './protocol';
 
