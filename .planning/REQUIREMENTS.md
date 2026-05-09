@@ -84,26 +84,26 @@ Requirements for v1.1 milestone — multi-channel adapter support + dispatch rob
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| ARCH-01 | — | — |
-| ARCH-02 | — | — |
-| ARCH-03 | — | — |
-| ARCH-04 | — | — |
-| DSPT-01 | — | — |
-| DSPT-02 | — | — |
-| DSPT-03 | — | — |
-| DSPT-04 | — | — |
-| SLK-01 | — | — |
-| SLK-02 | — | — |
-| SLK-03 | — | — |
-| SLK-04 | — | — |
-| SLK-05 | — | — |
-| TG-01 | — | — |
-| TG-02 | — | — |
-| TG-03 | — | — |
-| TG-04 | — | — |
-| TG-05 | — | — |
-| FSL-01 | — | — |
-| FSL-02 | — | — |
-| FSL-03 | — | — |
-| FSL-04 | — | — |
-| FSL-05 | — | — |
+| ARCH-01 | Phase 8 | Pending |
+| ARCH-02 | Phase 8 | Pending |
+| ARCH-03 | Phase 8 | Pending |
+| ARCH-04 | Phase 8 | Pending |
+| DSPT-01 | Phase 9 | Pending |
+| DSPT-02 | Phase 9 | Pending |
+| DSPT-03 | Phase 9 | Pending |
+| DSPT-04 | Phase 9 | Pending |
+| SLK-01 | Phase 10 | Pending |
+| SLK-02 | Phase 10 | Pending |
+| SLK-03 | Phase 10 | Pending |
+| SLK-04 | Phase 10 | Pending |
+| SLK-05 | Phase 10 | Pending |
+| TG-01 | Phase 11 | Pending |
+| TG-02 | Phase 11 | Pending |
+| TG-03 | Phase 11 | Pending |
+| TG-04 | Phase 11 | Pending |
+| TG-05 | Phase 11 | Pending |
+| FSL-01 | Phase 12 | Pending |
+| FSL-02 | Phase 12 | Pending |
+| FSL-03 | Phase 12 | Pending |
+| FSL-04 | Phase 12 | Pending |
+| FSL-05 | Phase 12 | Pending |
