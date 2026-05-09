@@ -60,10 +60,6 @@ web2chat 最初为 [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e
    - 点击 **加载已解压的扩展程序**，选择仓库的 `.output/chrome-mv3/` 目录
 4. 工具栏出现 web2chat 图标
 
-### Chrome Web Store
-
-[web2chat - Chrome Web Store](https://chromewebstore.google.com/detail/web2chat/kglpjocckfgpephljffgkamnfpnmkdnc)
-
 ## 使用
 
 1. 点击工具栏 web2chat 图标（或快捷键 `Ctrl+Shift+S` / `Cmd+Shift+S`）

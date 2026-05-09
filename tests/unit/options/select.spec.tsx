@@ -8,6 +8,13 @@ vi.mock('@/shared/i18n', () => ({
 describe('Select', () => {
   let container: HTMLDivElement;
 
+  /** Drain the microtask/macrotask queue — Preact useEffect registration
+   *  may need 2 ticks to complete after a state change that triggers a render. */
+  const flush = () =>
+    new Promise<void>((r) => setTimeout(r, 0)).then(
+      () => new Promise<void>((r) => setTimeout(r, 0)),
+    );
+
   beforeEach(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -46,7 +53,7 @@ describe('Select', () => {
       />,
       container,
     );
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
     return { onChange, options };
   }
 
@@ -55,7 +62,7 @@ describe('Select', () => {
 
     const button = container.querySelector('[data-testid="test-select"]') as HTMLButtonElement;
     button.click();
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
 
     const listbox = container.querySelector('[role="listbox"]');
     expect(listbox).toBeTruthy();
@@ -63,7 +70,7 @@ describe('Select', () => {
     const options = container.querySelectorAll('[role="option"]');
     const englishOption = options[1]!;
     englishOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
 
     expect(onChange).toHaveBeenCalledWith('en');
     expect(container.querySelector('[role="listbox"]')).toBeFalsy();
@@ -75,11 +82,11 @@ describe('Select', () => {
     const button = container.querySelector('[data-testid="test-select"]') as HTMLButtonElement;
 
     button.click();
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
     expect(container.querySelector('[role="listbox"]')).toBeTruthy();
 
     button.click();
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
     expect(container.querySelector('[role="listbox"]')).toBeFalsy();
   });
 
@@ -88,18 +95,13 @@ describe('Select', () => {
 
     const button = container.querySelector('[data-testid="test-select"]') as HTMLButtonElement;
     button.click();
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
     expect(container.querySelector('[role="listbox"]')).toBeTruthy();
 
-    // Yield one more tick so the useEffect-registered mousedown listener is attached
-    await new Promise((r) => setTimeout(r, 0));
-
-    // Dispatch mousedown on the container element (not on button or listbox)
-    // This should bubble up to document and trigger the outside-click handler
     const outsideEl = document.createElement('div');
     document.body.appendChild(outsideEl);
     outsideEl.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
 
     expect(container.querySelector('[role="listbox"]')).toBeFalsy();
     outsideEl.remove();
@@ -111,24 +113,18 @@ describe('Select', () => {
 
     const button = container.querySelector('[data-testid="test-select"]') as HTMLButtonElement;
     button.click();
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
 
-    // Get option and its position info before it's removed
     const options = container.querySelectorAll('[role="option"]');
     const englishOption = options[1]!;
 
-    // mousedown on option triggers commit() -> closes dropdown
     englishOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
 
-    // Dropdown should be closed now
     expect(container.querySelector('[role="listbox"]')).toBeFalsy();
 
-    // Simulate a click event reaching the button (which would toggle dropdown)
-    // This simulates what happens in real browser when mousedown causes DOM removal
-    // and the click event retargets to whatever is now under the cursor
     button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    await new Promise((r) => setTimeout(r, 0));
+    await flush();
 
     // After click on button, dropdown should be open again (button toggles)
     // But onChange should only have been called once (from the mousedown)
