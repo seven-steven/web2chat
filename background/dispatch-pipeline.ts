@@ -32,7 +32,7 @@
  * replace by appending to shared/adapters/registry.ts (this file untouched).
  */
 
-import { Ok, Err, type Result } from '@/shared/messaging';
+import { Ok, Err, isErrorCode, type Result, type ErrorCode } from '@/shared/messaging';
 import type {
   DispatchStartInput,
   DispatchStartOutput,
@@ -307,8 +307,9 @@ async function advanceToAdapterInjection(
   // adapter.match(). Promote INPUT_NOT_FOUND -> NOT_LOGGED_IN when host still
   // matches but URL pattern doesn't. Other INPUT_NOT_FOUND causes (legit "editor
   // not found" on a still-channel URL) are unaffected.
-  let code = response.code ?? 'INTERNAL';
-  let message = response.message ?? 'Adapter returned an unknown error';
+  const rawCode = response.code ?? 'INTERNAL';
+  const code: ErrorCode = isErrorCode(rawCode) ? rawCode : 'INTERNAL';
+  const message = response.message ?? 'Adapter returned an unknown error';
   let retriable = response.retriable ?? false;
   if (code === 'INPUT_NOT_FOUND') {
     const adapter = findAdapter(updated.send_to);
@@ -317,9 +318,8 @@ async function advanceToAdapterInjection(
         const tab = await chrome.tabs.get(tabId);
         const actualUrl = tab.url;
         if (actualUrl && isOnAdapterHost(adapter, actualUrl) && !adapter.match(actualUrl)) {
-          code = 'NOT_LOGGED_IN';
-          message = `Redirected to ${actualUrl}`;
-          retriable = true;
+          await failDispatch(updated, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
+          return;
         }
       } catch {
         // Tab closed — leave INPUT_NOT_FOUND as-is.
@@ -329,15 +329,7 @@ async function advanceToAdapterInjection(
 
   await failDispatch(
     updated,
-    code as
-      | 'INTERNAL'
-      | 'NOT_LOGGED_IN'
-      | 'INPUT_NOT_FOUND'
-      | 'TIMEOUT'
-      | 'RATE_LIMITED'
-      | 'EXECUTE_SCRIPT_FAILED'
-      | 'OPENCLAW_OFFLINE'
-      | 'OPENCLAW_PERMISSION_DENIED',
+    code,
     message,
     retriable,
   );
@@ -370,15 +362,7 @@ async function succeedDispatch(record: DispatchRecord): Promise<void> {
 
 async function failDispatch(
   record: DispatchRecord,
-  code:
-    | 'INTERNAL'
-    | 'NOT_LOGGED_IN'
-    | 'INPUT_NOT_FOUND'
-    | 'TIMEOUT'
-    | 'RATE_LIMITED'
-    | 'EXECUTE_SCRIPT_FAILED'
-    | 'OPENCLAW_OFFLINE'
-    | 'OPENCLAW_PERMISSION_DENIED',
+  code: ErrorCode,
   message: string,
   retriable: boolean,
 ): Promise<void> {
@@ -395,19 +379,10 @@ async function failDispatch(
 }
 
 /**
- * tabs.onUpdated listener — top-level registered in entrypoints/background.ts.
- *
- * Sweeps storage.session for dispatch:<id> records in awaiting_complete with
- * matching tabId; advances first match to awaiting_adapter and injects.
- * SW restart safe: even if SW died between opening and complete, this listener
- * is re-registered on next SW wake (FND-02), and the next 'complete' resumes.
+ * Shared helper: advance dispatch records after tab load or SPA navigation completes.
+ * Used by both onTabComplete and onSpaHistoryStateUpdated.
  */
-export async function onTabComplete(
-  tabId: number,
-  changeInfo: chrome.tabs.OnUpdatedInfo,
-  _tab: chrome.tabs.Tab,
-): Promise<void> {
-  if (changeInfo.status !== 'complete') return;
+async function advanceDispatchForTab(tabId: number): Promise<void> {
   const all = await dispatchRepo.listAll();
   for (const record of all) {
     if (record.state !== 'awaiting_complete') continue;
@@ -443,6 +418,32 @@ export async function onTabComplete(
 
     await advanceToAdapterInjection(record, adapter.scriptFile);
   }
+}
+
+/**
+ * tabs.onUpdated listener -- top-level registered in entrypoints/background.ts.
+ *
+ * Delegates to advanceDispatchForTab after filtering for 'complete' status.
+ * SW restart safe: even if SW died between opening and complete, this listener
+ * is re-registered on next SW wake (FND-02), and the next 'complete' resumes.
+ */
+export async function onTabComplete(
+  tabId: number,
+  changeInfo: chrome.tabs.OnUpdatedInfo,
+  _tab: chrome.tabs.Tab,
+): Promise<void> {
+  if (changeInfo.status !== 'complete') return;
+  await advanceDispatchForTab(tabId);
+}
+
+/**
+ * Dedicated SPA history handler (D-106).
+ * Shares advanceDispatchForTab with onTabComplete but is semantically separate.
+ */
+export function onSpaHistoryStateUpdated(
+  details: chrome.webNavigation.WebNavigationTransitionCallbackDetails,
+): void {
+  void advanceDispatchForTab(details.tabId);
 }
 
 export async function onAlarmFired(alarm: chrome.alarms.Alarm): Promise<void> {
