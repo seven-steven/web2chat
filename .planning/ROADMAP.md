@@ -50,8 +50,8 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. ErrorCode 按平台命名空间组织，新平台可追加错误码而不影响现有错误处理
 **Plans:** 4 plans
 Plans:
-- [ ] 08-01-PLAN.md — Branded PlatformId + defineAdapter + buildSpaUrlFilters (TDD)
-- [ ] 08-02-PLAN.md — ErrorCode namespace + isErrorCode runtime guard (TDD)
+- [x] 08-01-PLAN.md — Branded PlatformId + defineAdapter + buildSpaUrlFilters (TDD)
+- [x] 08-02-PLAN.md — ErrorCode namespace + isErrorCode runtime guard (TDD)
 - [ ] 08-03-PLAN.md — MAIN world bridge generalization + SPA filter integration
 - [ ] 08-04-PLAN.md — SendForm registry-driven icon lookup + ErrorBanner default cases
 
