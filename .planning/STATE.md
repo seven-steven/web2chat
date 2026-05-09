@@ -26,7 +26,7 @@ progress:
 - Phase：7 / 7（分发上架 — Complete，4/4 plans）
 - Plan：4/4 complete（全部完成）
 - 状态：Phase 7 UAT 通过（3/3），STORE-LISTING `<owner>` 替换为 `seven-steven`，URL 验证通过
-- 最近活动：2026-05-08 — Quick Task 260508-c2h 完成（设置页面返回导航）
+- 最近活动：2026-05-09 — Quick Task 260509 完成（GitHub Actions Release workflow + 安装文档）
 
 进度：[██████████] Phase 1 → [██████████] Phase 2 → [██████████] Phase 3 (E2E pending) → [██████████] Phase 4 (gap closure ✓, E2E pending) → [██████████] Phase 5 (gap closure ✓, E2E pending) → [██████████] Phase 6 ✓ → [██████████] Phase 7 ✓ — **v1.0 COMPLETE**
 
@@ -126,6 +126,7 @@ _每完成一个 plan 后更新_
 | 260507-n86 | 使用 frontend-design 优化项目现有 UI（Editorial / data-dense, popup + options 全量, 新增 DESIGN.md） | 2026-05-07 | 608b7d4 | Verified | [260507-n86-frontend-design-ui](./quick/260507-n86-frontend-design-ui/) |
 | 260508-9se | 把 settings 页面合并到 popup 显示 | 2026-05-08 | — | — | [260508-9se-merge-settings-into-popup](./quick/260508-9se-merge-settings-into-popup/) |
 | 260508-c2h | 设置页面要能回到主页面 | 2026-05-08 | — | — | [260508-c2h-settings-back-nav](./quick/260508-c2h-settings-back-nav/) |
+| 260509-github-actions | 添加 GitHub Actions Release workflow + 安装文档 | 2026-05-09 | — | — | [260509-github-actions-ci-release](./quick/260509-github-actions-ci-release/) |
 
 ## 延后事项
 

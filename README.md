@@ -24,6 +24,20 @@ web2chat 最初为 [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e
 
 ## 安装
 
+### Chrome Web Store
+
+[web2chat - Chrome Web Store](https://chromewebstore.google.com/detail/web2chat/kglpjocckfgpephljffgkamnfpnmkdnc)
+
+### 从 Release 下载
+
+1. 前往 [Releases 页面](../../releases)，下载最新版本的 `web2chat-*-chrome.zip`
+2. 解压 zip 文件到任意目录
+3. 在 Chrome 中加载扩展：
+   - 打开 `chrome://extensions`
+   - 右上角开启 **开发者模式**
+   - 点击 **加载已解压的扩展程序**，选择解压后的目录
+4. 工具栏出现 web2chat 图标
+
 ### 从源码加载（Load Unpacked）
 
 1. 克隆仓库并安装依赖：

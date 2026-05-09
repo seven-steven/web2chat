@@ -24,6 +24,20 @@ web2chat was originally designed for the [llm-wiki](https://gist.github.com/karp
 
 ## Installation
 
+### Chrome Web Store
+
+[web2chat - Chrome Web Store](https://chromewebstore.google.com/detail/web2chat/kglpjocckfgpephljffgkamnfpnmkdnc)
+
+### Download from Release
+
+1. Go to the [Releases page](../../releases) and download the latest `web2chat-*-chrome.zip`
+2. Extract the zip file to any directory
+3. Load the extension in Chrome:
+   - Open `chrome://extensions`
+   - Enable **Developer mode** in the top right
+   - Click **Load unpacked** and select the extracted directory
+4. The web2chat icon appears in the toolbar
+
 ### Load Unpacked (from source)
 
 1. Clone the repository and install dependencies:
