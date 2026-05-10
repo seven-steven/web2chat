@@ -74,7 +74,7 @@ export function App() {
         const pendingIntent = await draftRepo.loadPendingDispatch();
         if (!cancelled && pendingIntent) {
           const adapter = findAdapter(pendingIntent.send_to);
-          if (adapter && adapter.hostMatches.length === 0) {
+          if (adapter && adapter.requiresDynamicPermission === true) {
             const targetOrigin = new URL(pendingIntent.send_to).origin;
             const nowGranted = await chrome.permissions.contains({
               origins: [targetOrigin + '/*'],

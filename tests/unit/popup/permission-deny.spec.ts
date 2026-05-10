@@ -33,6 +33,7 @@ describe('popup/permission-deny (ADO-05, D-42, D-43)', () => {
       scriptFile: 'content-scripts/openclaw.js',
       hostMatches: [],
       iconKey: 'platform_icon_openclaw',
+      requiresDynamicPermission: true,
     });
 
     // Simulate the permission request logic from SendForm handleConfirm
@@ -42,7 +43,7 @@ describe('popup/permission-deny (ADO-05, D-42, D-43)', () => {
     let errorMessage: string | undefined;
 
     // This mirrors the logic in SendForm.tsx handleConfirm
-    if (adapter && adapter.hostMatches.length === 0) {
+    if (adapter && adapter.requiresDynamicPermission === true) {
       const targetOrigin = new URL(targetUrl).origin;
       const alreadyGranted = await grantedOriginsRepo.has(targetOrigin);
       if (!alreadyGranted) {
@@ -76,13 +77,14 @@ describe('popup/permission-deny (ADO-05, D-42, D-43)', () => {
       scriptFile: 'content-scripts/openclaw.js',
       hostMatches: [],
       iconKey: 'platform_icon_openclaw',
+      requiresDynamicPermission: true,
     });
 
     const targetUrl = 'http://localhost:18789/ui/chat?session=agent:main:main';
     const adapter = registry.findAdapter(targetUrl);
     let errorCode: string | undefined;
 
-    if (adapter && adapter.hostMatches.length === 0) {
+    if (adapter && adapter.requiresDynamicPermission === true) {
       const targetOrigin = new URL(targetUrl).origin;
       const alreadyGranted = await grantedOriginsRepo.has(targetOrigin);
       if (!alreadyGranted) {

@@ -64,6 +64,7 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     scriptFile: 'content-scripts/openclaw.js',
     hostMatches: [], // dynamic permission — no static host_permissions
     iconKey: 'platform_icon_openclaw',
+    requiresDynamicPermission: true,
   }),
   defineAdapter({
     id: 'discord',

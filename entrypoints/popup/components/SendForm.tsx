@@ -206,7 +206,7 @@ export function SendForm(props: SendFormProps) {
       };
 
       const adapter = findAdapter(props.sendTo);
-      if (adapter && adapter.hostMatches.length === 0) {
+      if (adapter && adapter.requiresDynamicPermission === true) {
         const targetOrigin = new URL(props.sendTo).origin;
         const alreadyGranted = await chrome.permissions.contains({
           origins: [targetOrigin + '/*'],

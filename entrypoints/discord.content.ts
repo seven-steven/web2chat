@@ -178,10 +178,8 @@ async function injectMainWorldPaste(editor: HTMLElement, text: string): Promise<
       resolve(message ? { ok: msg.ok === true, message } : { ok: msg.ok === true });
     });
     port.onDisconnect.addListener(() => {
-      if (chrome.runtime.lastError) {
-        const message = chrome.runtime.lastError.message;
-        resolve(message ? { ok: false, message } : { ok: false });
-      }
+      const errMsg = chrome.runtime.lastError?.message;
+      resolve({ ok: false, message: errMsg ?? 'Port disconnected unexpectedly' });
     });
     port.postMessage({ text });
   });

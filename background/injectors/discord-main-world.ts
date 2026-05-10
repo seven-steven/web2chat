@@ -31,7 +31,7 @@ export async function discordMainWorldPaste(text: string): Promise<boolean> {
   if ((editor.textContent ?? '').length > 0) {
     editor.dispatchEvent(
       new InputEvent('beforeinput', {
-        inputType: 'deleteContent',
+        inputType: 'deleteContentBackward',
         bubbles: true,
         cancelable: true,
       }),
@@ -68,7 +68,7 @@ export async function discordMainWorldPaste(text: string): Promise<boolean> {
   if ((editor.textContent ?? '').length > 0) {
     editor.dispatchEvent(
       new InputEvent('beforeinput', {
-        inputType: 'deleteContent',
+        inputType: 'deleteContentBackward',
         bubbles: true,
         cancelable: true,
       }),

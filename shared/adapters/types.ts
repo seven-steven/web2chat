@@ -59,6 +59,8 @@ export interface AdapterRegistryEntry {
   readonly spaNavigationHosts?: readonly string[];
   /** Platform-specific error codes declared by this adapter. Per D-110. */
   readonly errorCodes?: readonly string[];
+  /** True for adapters that need runtime origin permission (e.g. self-hosted platforms). */
+  readonly requiresDynamicPermission?: boolean;
 }
 
 // ── defineAdapter helper (D-97) ────────────────────────────────────────────

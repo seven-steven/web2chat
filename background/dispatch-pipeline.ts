@@ -71,7 +71,7 @@ const ALARM_PREFIX_BADGE_CLEAR = 'badge-clear:';
 function isOnAdapterHost(adapter: AdapterRegistryEntry, actualUrl: string): boolean {
   return adapter.hostMatches.some((pattern) => {
     try {
-      const patternHost = new URL(pattern.replace('*', 'x')).hostname;
+      const patternHost = new URL(pattern.replace(/\*/g, 'x')).hostname;
       const actualHost = new URL(actualUrl).hostname;
       return actualHost === patternHost || actualHost.endsWith('.' + patternHost);
     } catch {
@@ -97,7 +97,10 @@ async function openOrActivateTab(
     }
     return { tabId: created.id, expectsCompleteEvent: true };
   }
-  const existing = matches[0]!;
+
+  // Prefer exact-URL match to avoid navigating an unrelated prefix-matching tab
+  const exactMatches = matches.filter((t) => t.url === url);
+  const existing = exactMatches.length > 0 ? exactMatches[0]! : matches[0]!;
   if (typeof existing.id !== 'number') throw new Error('matched tab has no id');
 
   if (existing.url !== url) {
@@ -132,7 +135,7 @@ export async function startDispatch(
   // The popup's Confirm handler already called chrome.permissions.request (user gesture),
   // so this should always pass. If it doesn't, the origin was revoked between popup click
   // and SW processing — return OPENCLAW_PERMISSION_DENIED.
-  if (adapter.hostMatches.length === 0) {
+  if (adapter.requiresDynamicPermission === true) {
     // Adapter with no static hostMatches = dynamic permission required (openclaw)
     const targetOrigin = new URL(input.send_to).origin;
     const hasPermission = await chrome.permissions.contains({

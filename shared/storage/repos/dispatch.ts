@@ -6,8 +6,9 @@
  * or defineItem<Record<id, Record>> because chrome.storage has no transactions —
  * concurrent dispatches on a single collection key would race.
  *
- * The `dispatch:active` pointer (single string | null) goes through the
- * typed activeDispatchPointerItem in items.ts.
+ * The active dispatch pointer lives at `dispatchActive` (no `dispatch:` prefix),
+ * managed by activeDispatchPointerItem in items.ts. The startsWith(PREFIX) filter
+ * in listAll() naturally excludes it since `dispatchActive` lacks the colon.
  */
 import { activeDispatchPointerItem } from '@/shared/storage/items';
 import type { ArticleSnapshot, ErrorCode, DispatchState } from '@/shared/messaging';
@@ -29,7 +30,6 @@ export interface DispatchRecord {
 }
 
 const PREFIX = 'dispatch:';
-const ACTIVE_KEY = `${PREFIX}active`;
 
 const recordKey = (id: string): string => `${PREFIX}${id}`;
 
@@ -52,7 +52,6 @@ export async function listAll(): Promise<DispatchRecord[]> {
   const out: DispatchRecord[] = [];
   for (const [key, value] of Object.entries(all)) {
     if (!key.startsWith(PREFIX)) continue;
-    if (key === ACTIVE_KEY) continue;
     out.push(value as DispatchRecord);
   }
   return out;
@@ -71,4 +70,3 @@ export async function clearActive(): Promise<void> {
 }
 
 export const DISPATCH_KEY_PREFIX = PREFIX;
-export const DISPATCH_ACTIVE_KEY = ACTIVE_KEY;
