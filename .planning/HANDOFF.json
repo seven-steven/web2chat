@@ -1,0 +1,100 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-05-10T17:17:26.823Z",
+  "phase": "09",
+  "phase_name": "投递鲁棒性",
+  "phase_dir": ".planning/phases/09-dispatch-robustness",
+  "plan": 5,
+  "task": 1,
+  "total_tasks": 3,
+  "status": "paused",
+  "completed_tasks": [
+    {
+      "id": 1,
+      "name": "执行 09-01..09-05 并完成 wave 合并/测试门",
+      "status": "done",
+      "commit": "f56f44c"
+    },
+    {
+      "id": 2,
+      "name": "完成 Phase 09 深度 code review 并修复 CR-01/WR-01/WR-02/WR-03",
+      "status": "done",
+      "commit": "7514ff3"
+    },
+    {
+      "id": 3,
+      "name": "完成 phase verifier 并持久化 HUMAN-UAT 清单",
+      "status": "in_progress",
+      "progress": "09-VERIFICATION.md 已给出 4/4 must-haves verified；09-HUMAN-UAT.md 已创建并提交；仅剩 3 个真实 Chrome 运行时人测项待用户完成"
+    }
+  ],
+  "remaining_tasks": [
+    {
+      "id": 1,
+      "name": "人测 1：验证 TIMEOUT 后 Retry 按钮与 fresh dispatch 行为",
+      "status": "not_started"
+    },
+    {
+      "id": 2,
+      "name": "人测 2：验证 Discord tier3 低置信度 SelectorWarningDialog 与 Cancel/Confirm 语义",
+      "status": "not_started"
+    },
+    {
+      "id": 3,
+      "name": "人测 3：验证 SelectorWarningDialog 可访问性（focus trap / Escape / overlay click / autofocus）",
+      "status": "not_started"
+    },
+    {
+      "id": 4,
+      "name": "若用户 approved，则完成 phase.complete 路径并提交 ROADMAP/STATE/REQUIREMENTS/09-VERIFICATION.md",
+      "status": "not_started"
+    }
+  ],
+  "blockers": [
+    {
+      "description": "Phase 09 当前阻塞于 3 个真实 Chrome 扩展运行时的人测项；自动验证已全部通过，但 verifier 状态仍为 human_needed。",
+      "type": "human_action",
+      "workaround": "无自动 workaround；需要用户在真实 Chrome/Discord 环境下完成 09-HUMAN-UAT.md 中的 3 项测试，或明确给出 approved / 失败现象。"
+    }
+  ],
+  "human_actions_pending": [
+    {
+      "action": "在真实 Chrome 运行时确认 TIMEOUT 后 Retry 按钮出现，点击后使用新的 dispatchId 和当前表单值重试",
+      "context": "已通过 mock-platform 自动化验证大部分 Retry 路径，但 phase verifier 仍要求真人确认真实扩展运行时行为",
+      "blocking": true
+    },
+    {
+      "action": "在真实 Discord 频道页面触发 tier3 class-fragment selector，确认 SelectorWarningDialog 出现；Cancel 不发送，Confirm 仅发送一次",
+      "context": "该项依赖真实 Discord DOM 与扩展运行时，自动化未覆盖",
+      "blocking": true
+    },
+    {
+      "action": "手工验证 SelectorWarningDialog 可访问性：focus trap、Escape cancel、overlay click cancel、primary autofocus、读屏语义",
+      "context": "需要真实浏览器交互/可访问性检查工具，不能由当前自动化完全替代",
+      "blocking": true
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Retry 场景的 mock-platform 自动化验证已完成，证明 TIMEOUT 横幅会出现，Retry 可基于当前表单值重新发起并走成功路径",
+      "rationale": "先把可自动化部分尽量测掉，只把必须依赖真实 Discord/Chrome 运行时的部分留给用户",
+      "phase": "09"
+    },
+    {
+      "decision": "code review 发现的 1 个 blocker + 3 个 warnings 已全部修复并复测通过，再进入 verifier",
+      "rationale": "避免带着已知缺陷进入 human verification / phase completion",
+      "phase": "09"
+    },
+    {
+      "decision": "HUMAN-UAT.md 已持久化，后续恢复时以该文件和 09-VERIFICATION.md 为唯一人工验收来源",
+      "rationale": "保证 resume 时不丢失人测上下文，并能在 /gsd-progress 中可见",
+      "phase": "09"
+    }
+  ],
+  "uncommitted_files": [
+    ".planning/phases/09-dispatch-robustness/09-VERIFICATION.md",
+    ".planning/phases/08-architecture-generalization/08-CROSS-REVIEWS.md"
+  ],
+  "next_action": "恢复后先继续引导用户完成 09-HUMAN-UAT.md 的第 1 项人测；若用户回复 approved，则走 phase.complete 并提交 09-VERIFICATION.md 与 tracking 文件。",
+  "context_notes": "Phase 09 的实现、测试、code review fixes、verifier 都已完成。当前不是编码阻塞，而是 human_needed 阶段。注意两件事：一是 shell 曾漂移到 worktree 目录，后续任何 git 操作前都要确认 cwd 在仓库根目录 main；二是 09-03 曾因 503/缺 marker 看似失败，但实际已有提交，必须先 spot-check SUMMARY 和 git log，不能直接重跑覆盖。placeholder grep 命中了 summary/verifier 中的说明文字，不是未完成占位内容。"
+}
