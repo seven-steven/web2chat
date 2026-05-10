@@ -80,7 +80,7 @@ Plans:
 - [x] 09-02-PLAN.md — Registry logged-out path detection (TDD)
 
 **Wave 3** *(blocked on 09-01 and 09-02 completion)*
-- [ ] 09-04-PLAN.md — Selector low-confidence warning protocol + Discord adapter guard (TDD)
+- [x] 09-04-PLAN.md — Selector low-confidence warning protocol + Discord adapter guard (TDD)
 
 **Wave 4** *(blocked on 09-03 and 09-04 completion)*
 - [ ] 09-05-PLAN.md — Low-confidence confirmation UI + i18n
