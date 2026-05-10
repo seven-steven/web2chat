@@ -31,7 +31,7 @@ export function ErrorBanner({ code, retriable, onRetry, onDismiss }: ErrorBanner
   const heading = errorHeading(code);
   const body = errorBody(code);
   const retryLabel = errorRetry(code);
-  const showRetry = retriable && !!onRetry && retryLabel !== '';
+  const showRetry = retriable && !!onRetry;
 
   return (
     <div

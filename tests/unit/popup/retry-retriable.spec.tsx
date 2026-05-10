@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, h } from 'preact';
+import { render } from 'preact';
 import { act } from 'preact/test-utils';
 import type { ArticleSnapshot, DispatchStartInput } from '@/shared/messaging';
 
@@ -88,12 +88,7 @@ describe('popup retriable retry UI', () => {
 
     await act(async () => {
       render(
-        h(ErrorBanner as never, {
-          code: 'TIMEOUT',
-          retriable: true,
-          onRetry: vi.fn(),
-          onDismiss: vi.fn(),
-        }),
+        <ErrorBanner code="TIMEOUT" retriable={true} onRetry={vi.fn()} onDismiss={vi.fn()} />,
         container,
       );
     });
@@ -106,12 +101,7 @@ describe('popup retriable retry UI', () => {
 
     await act(async () => {
       render(
-        h(ErrorBanner as never, {
-          code: 'TIMEOUT',
-          retriable: false,
-          onRetry: vi.fn(),
-          onDismiss: vi.fn(),
-        }),
+        <ErrorBanner code="TIMEOUT" retriable={false} onRetry={vi.fn()} onDismiss={vi.fn()} />,
         container,
       );
     });
@@ -156,7 +146,7 @@ describe('popup retriable retry UI', () => {
           onPromptChange={vi.fn()}
           promptDirty={true}
           onPromptDirtyChange={vi.fn()}
-          dispatchError={{ code: 'TIMEOUT', message: 'old timeout', retriable: true } as never}
+          dispatchError={{ code: 'TIMEOUT', message: 'old timeout', retriable: true }}
           onDismissError={onDismissError}
           onConfirm={onConfirm}
           onDispatchError={vi.fn()}
