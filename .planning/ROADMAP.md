@@ -77,7 +77,7 @@ Plans:
 - [x] 09-03-PLAN.md — Retriable-driven popup Retry flow (TDD)
 
 **Wave 2** *(blocked on 09-01 completion)*
-- [ ] 09-02-PLAN.md — Registry logged-out path detection (TDD)
+- [x] 09-02-PLAN.md — Registry logged-out path detection (TDD)
 
 **Wave 3** *(blocked on 09-01 and 09-02 completion)*
 - [ ] 09-04-PLAN.md — Selector low-confidence warning protocol + Discord adapter guard (TDD)
