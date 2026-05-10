@@ -10,6 +10,9 @@ export type {
   DispatchCancelInput,
   DispatchCancelOutput,
   DispatchState,
+  DispatchWarningCode,
+  DispatchWarning,
+  SelectorConfirmation,
   ProtocolDispatch,
 } from './routes/dispatch';
 export {
@@ -18,6 +21,9 @@ export {
   DispatchCancelInputSchema,
   DispatchCancelOutputSchema,
   DispatchStateEnum,
+  DispatchWarningCodeSchema,
+  DispatchWarningSchema,
+  SelectorConfirmationSchema,
 } from './routes/dispatch';
 
 // Phase 3 route exports — history

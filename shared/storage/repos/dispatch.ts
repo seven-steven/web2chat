@@ -11,7 +11,13 @@
  * in listAll() naturally excludes it since `dispatchActive` lacks the colon.
  */
 import { activeDispatchPointerItem } from '@/shared/storage/items';
-import type { ArticleSnapshot, ErrorCode, DispatchState } from '@/shared/messaging';
+import type {
+  ArticleSnapshot,
+  ErrorCode,
+  DispatchState,
+  DispatchWarning,
+  SelectorConfirmation,
+} from '@/shared/messaging';
 import type { PlatformId } from '@/shared/adapters/types';
 
 /** D-31 state machine record. */
@@ -27,6 +33,8 @@ export interface DispatchRecord {
   started_at: string;
   last_state_at: string;
   error?: { code: ErrorCode; message: string; retriable: boolean };
+  warnings?: DispatchWarning[];
+  selectorConfirmation?: SelectorConfirmation;
 }
 
 const PREFIX = 'dispatch:';

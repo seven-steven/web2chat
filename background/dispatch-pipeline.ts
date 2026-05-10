@@ -32,12 +32,20 @@
  * replace by appending to shared/adapters/registry.ts (this file untouched).
  */
 
-import { Ok, Err, isErrorCode, type Result, type ErrorCode } from '@/shared/messaging';
+import {
+  Ok,
+  Err,
+  isErrorCode,
+  DispatchWarningSchema,
+  type Result,
+  type ErrorCode,
+} from '@/shared/messaging';
 import type {
   DispatchStartInput,
   DispatchStartOutput,
   DispatchCancelInput,
   DispatchCancelOutput,
+  DispatchWarning,
 } from '@/shared/messaging';
 import { findAdapter } from '@/shared/adapters/registry';
 import {
@@ -147,6 +155,7 @@ export async function startDispatch(
     prompt: input.prompt,
     snapshot: input.snapshot,
     platform_id: adapter.id,
+    ...(input.selectorConfirmation ? { selectorConfirmation: input.selectorConfirmation } : {}),
     started_at: nowIso,
     last_state_at: nowIso,
   };
@@ -236,7 +245,13 @@ async function advanceToAdapterInjection(
   // Send ADAPTER_DISPATCH message — adapter's content-script listener responds.
   // D-113 permits a scoped Promise.race timeout only for this tabs.sendMessage wait;
   // cross-event dispatch timeout remains chrome.alarms above.
-  let response: { ok: boolean; code?: string; message?: string; retriable?: boolean };
+  let response: {
+    ok: boolean;
+    code?: string;
+    message?: string;
+    retriable?: boolean;
+    warnings?: unknown[];
+  };
   try {
     response = await withAdapterResponseTimeout(
       chrome.tabs.sendMessage(tabId, {
@@ -246,6 +261,7 @@ async function advanceToAdapterInjection(
           send_to: updated.send_to,
           prompt: updated.prompt,
           snapshot: updated.snapshot,
+          selectorConfirmation: updated.selectorConfirmation,
         },
       }),
       adapterResponseTimeoutMs,
@@ -280,6 +296,11 @@ async function advanceToAdapterInjection(
   }
 
   if (response.ok) {
+    const warnings = parseDispatchWarnings(response.warnings);
+    if (warnings.length > 0) {
+      await requireDispatchConfirmation(updated, warnings);
+      return;
+    }
     await succeedDispatch(updated);
     return;
   }
@@ -314,9 +335,39 @@ async function advanceToAdapterInjection(
   await failDispatch(updated, code, message, retriable);
 }
 
+function parseDispatchWarnings(rawWarnings: unknown[] | undefined): DispatchWarning[] {
+  if (!Array.isArray(rawWarnings)) return [];
+  return rawWarnings.flatMap((warning) => {
+    const parsed = DispatchWarningSchema.safeParse(warning);
+    return parsed.success ? [parsed.data] : [];
+  });
+}
+
+async function requireDispatchConfirmation(
+  record: DispatchRecord,
+  warnings: DispatchWarning[],
+): Promise<void> {
+  const { selectorConfirmation: _selectorConfirmation, ...recordWithoutConfirmation } = record;
+  const needsConfirmation: DispatchRecord = {
+    ...recordWithoutConfirmation,
+    state: 'needs_confirmation',
+    last_state_at: new Date().toISOString(),
+    warnings,
+  };
+  await dispatchRepo.set(needsConfirmation);
+  await chrome.action.setBadgeText({ text: '' });
+  await chrome.alarms.clear(`${ALARM_PREFIX_TIMEOUT}${needsConfirmation.dispatchId}`);
+  await dispatchRepo.clearActive();
+}
+
 async function succeedDispatch(record: DispatchRecord): Promise<void> {
+  const {
+    selectorConfirmation: _selectorConfirmation,
+    warnings: _warnings,
+    ...recordWithoutTransient
+  } = record;
   const done: DispatchRecord = {
-    ...record,
+    ...recordWithoutTransient,
     state: 'done',
     last_state_at: new Date().toISOString(),
   };
@@ -345,8 +396,13 @@ async function failDispatch(
   message: string,
   retriable: boolean,
 ): Promise<void> {
+  const {
+    selectorConfirmation: _selectorConfirmation,
+    warnings: _warnings,
+    ...recordWithoutTransient
+  } = record;
   const failed: DispatchRecord = {
-    ...record,
+    ...recordWithoutTransient,
     state: 'error',
     last_state_at: new Date().toISOString(),
     error: { code, message, retriable },
