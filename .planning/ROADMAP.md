@@ -52,8 +52,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 08-01-PLAN.md — Branded PlatformId + defineAdapter + buildSpaUrlFilters (TDD)
 - [x] 08-02-PLAN.md — ErrorCode namespace + isErrorCode runtime guard (TDD)
-- [ ] 08-03-PLAN.md — MAIN world bridge generalization + SPA filter integration
-- [ ] 08-04-PLAN.md — SendForm registry-driven icon lookup + ErrorBanner default cases
+- [x] 08-03-PLAN.md — MAIN world bridge generalization + SPA filter integration
+- [x] 08-04-PLAN.md — SendForm registry-driven icon lookup + ErrorBanner default cases
 
 ### Phase 9: 投递鲁棒性
 **Goal**: 投递链路对网络延迟、DOM 变化、登录状态变化具备分层防护和用户可操作的重试能力
