@@ -58,7 +58,9 @@ const sendToSig = signal('');
 const promptSig = signal('');
 const promptDirtySig = signal(false);
 const dispatchInFlightSig = signal<DispatchRecord | null>(null);
-const dispatchErrorSig = signal<{ code: ErrorCode; message: string } | null>(null);
+const dispatchErrorSig = signal<{ code: ErrorCode; message: string; retriable: boolean } | null>(
+  null,
+);
 
 // Settings toggle
 const viewModeSig = signal<'send' | 'settings'>('send');
@@ -100,18 +102,23 @@ export function App() {
                 const res = await sendMessage('dispatch.start', pendingIntent);
                 if (!res.ok) {
                   dispatchInFlightSig.value = null;
-                  dispatchErrorSig.value = { code: res.code, message: res.message };
+                  dispatchErrorSig.value = {
+                    code: res.code,
+                    message: res.message,
+                    retriable: res.retriable,
+                  };
                 }
               } catch (err) {
                 dispatchInFlightSig.value = null;
                 const msg = err instanceof Error ? err.message : String(err);
-                dispatchErrorSig.value = { code: 'INTERNAL', message: msg };
+                dispatchErrorSig.value = { code: 'INTERNAL', message: msg, retriable: false };
               }
             } else {
               await draftRepo.clearPendingDispatch();
               dispatchErrorSig.value = {
                 code: 'OPENCLAW_PERMISSION_DENIED',
                 message: targetOrigin,
+                retriable: false,
               };
             }
           }
@@ -129,6 +136,7 @@ export function App() {
             dispatchErrorSig.value = {
               code: (rec.error?.code as ErrorCode) ?? 'INTERNAL',
               message: rec.error?.message ?? '',
+              retriable: rec.error?.retriable ?? false,
             };
           } else if (rec && rec.state !== 'done' && rec.state !== 'cancelled') {
             wasInFlight = true;
@@ -222,6 +230,7 @@ export function App() {
         dispatchErrorSig.value = {
           code: (rec.error?.code as ErrorCode) ?? 'INTERNAL',
           message: rec.error?.message ?? '',
+          retriable: rec.error?.retriable ?? false,
         };
       } else if (rec.state === 'done' || rec.state === 'cancelled') {
         dispatchInFlightSig.value = null;
@@ -280,6 +289,7 @@ export function App() {
           {dErr && (
             <ErrorBanner
               code={dErr.code}
+              retriable={dErr.retriable}
               onDismiss={() => {
                 dispatchErrorSig.value = null;
                 void dispatchRepo.clearActive();
@@ -330,8 +340,8 @@ export function App() {
             // popup will close on Ok per SendForm.handleConfirm; if Err, SendForm
             // calls onDispatchError which writes dispatchErrorSig (below).
           }}
-          onDispatchError={(code, message) => {
-            dispatchErrorSig.value = { code, message };
+          onDispatchError={(code, message, retriable) => {
+            dispatchErrorSig.value = { code, message, retriable };
           }}
         />
       </>
