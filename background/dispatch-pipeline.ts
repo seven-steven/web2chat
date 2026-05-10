@@ -162,6 +162,9 @@ export async function startDispatch(
   };
   await dispatchRepo.set(rec);
   await dispatchRepo.setActive(input.dispatchId);
+  if (input.selectorConfirmation) {
+    await dispatchRepo.clearPendingSelectorWarning();
+  }
 
   // Step 4: badge loading.
   await chrome.action.setBadgeText({ text: '...' });
@@ -376,6 +379,7 @@ async function requireDispatchConfirmation(
   await dispatchRepo.set(needsConfirmation);
   await chrome.action.setBadgeText({ text: '' });
   await chrome.alarms.clear(`${ALARM_PREFIX_TIMEOUT}${needsConfirmation.dispatchId}`);
+  await dispatchRepo.setPendingSelectorWarning(needsConfirmation.dispatchId);
   await dispatchRepo.clearActive();
 }
 
@@ -529,6 +533,7 @@ export async function cancelDispatch(
   await dispatchRepo.set(cancelled);
   await chrome.alarms.clear(`${ALARM_PREFIX_TIMEOUT}${cancelled.dispatchId}`);
   await chrome.action.setBadgeText({ text: '' });
+  await dispatchRepo.clearPendingSelectorWarning();
   await dispatchRepo.clearActive();
   return Ok({ dispatchId: cancelled.dispatchId, state: 'cancelled' });
 }

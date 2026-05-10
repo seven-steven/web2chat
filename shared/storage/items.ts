@@ -120,6 +120,15 @@ export const activeDispatchPointerItem = storage.defineItem<string | null>(
   },
 );
 
+/** Pointer to the latest dispatch awaiting selector warning confirmation.
+ *  Keeps popup mount from scanning every dispatch:<id> record in session storage. */
+export const selectorWarningDispatchPointerItem = storage.defineItem<string | null>(
+  'session:dispatchSelectorWarning',
+  {
+    fallback: null,
+  },
+);
+
 /** D-45: granted origins for dynamic host_permissions (storage.local).
  *  Phase 4 — OpenClaw self-deployed origins authorized via chrome.permissions.request. */
 export const grantedOriginsItem = storage.defineItem<string[]>('local:grantedOrigins', {

@@ -225,6 +225,7 @@ export function App() {
     selectorWarningSig.value = null;
     dispatchErrorSig.value = null;
     void dispatchRepo.clearActive();
+    void dispatchRepo.clearPendingSelectorWarning();
   };
   const confirmSelectorWarning = () => {
     const snapshotForDispatch = snapshotSig.value;
@@ -457,10 +458,11 @@ function isSelectorLowConfidenceRecord(rec: DispatchRecord | undefined): boolean
 }
 
 async function findPendingSelectorWarning(): Promise<DispatchRecord | null> {
-  const records = await dispatchRepo.listAll().catch(() => []);
-  const pending = records.filter(isSelectorLowConfidenceRecord);
-  pending.sort((a, b) => b.last_state_at.localeCompare(a.last_state_at));
-  return pending[0] ?? null;
+  const pendingId = await dispatchRepo.getPendingSelectorWarning().catch(() => null);
+  if (!pendingId) return null;
+  const rec = await dispatchRepo.get(pendingId).catch(() => undefined);
+  if (!rec || !isSelectorLowConfidenceRecord(rec)) return null;
+  return rec;
 }
 
 // ─── Loading Skeleton ─────────────────────────────────────────────────────────

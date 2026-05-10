@@ -90,6 +90,7 @@ describe('selector warning dispatch protocol (DSPT-04)', () => {
     ]);
     expect(record?.error).toBeUndefined();
     expect(await dispatchRepo.getActive()).toBeNull();
+    expect(await dispatchRepo.getPendingSelectorWarning()).toBe(baseInput.dispatchId);
     expect(stub.alarms.clear).toHaveBeenCalledWith(`dispatch-timeout:${baseInput.dispatchId}`);
   });
 
@@ -105,8 +106,10 @@ describe('selector warning dispatch protocol (DSPT-04)', () => {
       selectorConfirmation: { warning: 'SELECTOR_LOW_CONFIDENCE' };
     };
 
+    await dispatchRepo.setPendingSelectorWarning('00000000-0000-4000-8000-000000000403');
     await startDispatch(inputWithConfirmation);
 
+    expect(await dispatchRepo.getPendingSelectorWarning()).toBeNull();
     expect(stub.tabs.sendMessage).toHaveBeenCalledWith(
       42,
       expect.objectContaining({

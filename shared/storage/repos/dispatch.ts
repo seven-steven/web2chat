@@ -10,7 +10,10 @@
  * managed by activeDispatchPointerItem in items.ts. The startsWith(PREFIX) filter
  * in listAll() naturally excludes it since `dispatchActive` lacks the colon.
  */
-import { activeDispatchPointerItem } from '@/shared/storage/items';
+import {
+  activeDispatchPointerItem,
+  selectorWarningDispatchPointerItem,
+} from '@/shared/storage/items';
 import type {
   ArticleSnapshot,
   ErrorCode,
@@ -75,6 +78,18 @@ export async function getActive(): Promise<string | null> {
 
 export async function clearActive(): Promise<void> {
   await activeDispatchPointerItem.setValue(null);
+}
+
+export async function setPendingSelectorWarning(dispatchId: string | null): Promise<void> {
+  await selectorWarningDispatchPointerItem.setValue(dispatchId);
+}
+
+export async function getPendingSelectorWarning(): Promise<string | null> {
+  return selectorWarningDispatchPointerItem.getValue();
+}
+
+export async function clearPendingSelectorWarning(): Promise<void> {
+  await selectorWarningDispatchPointerItem.setValue(null);
 }
 
 export const DISPATCH_KEY_PREFIX = PREFIX;
