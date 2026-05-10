@@ -1,22 +1,34 @@
 /**
- * Verify dispatch-pipeline has no setTimeout (SW discipline, CR-02).
- *
- * The old ADAPTER_RESPONSE_TIMEOUT_MS constant and Promise.race+setTimeout
- * pattern were removed. The 30s chrome.alarms backstop (DISPATCH_TIMEOUT_MINUTES)
- * is the sole timeout mechanism.
+ * Verify dispatch-pipeline keeps cross-event timeout discipline while allowing
+ * the D-113 scoped adapter-response timeout helper.
  */
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 
 const pipelinePath = path.resolve(__dirname, '../../../background/dispatch-pipeline.ts');
+const policyPath = path.resolve(__dirname, '../../../shared/adapters/dispatch-policy.ts');
 
-describe('dispatch-pipeline SW discipline (CR-02: no setTimeout)', () => {
-  it('contains no setTimeout calls in executable code', () => {
+function stripComments(src: string): string {
+  return src.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
+describe('dispatch-pipeline SW discipline (CR-02 timeout scope)', () => {
+  it('uses chrome.alarms for dispatch total timeout', () => {
     const src = fs.readFileSync(pipelinePath, 'utf-8');
-    // Strip comments (single-line // and multi-line /* */) to avoid false positives
-    const codeOnly = src.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-    expect(codeOnly).not.toContain('setTimeout');
+    expect(src).toContain('chrome.alarms.create');
+    expect(src).toMatch(/dispatchTimeoutMs\s*\/\s*60_?000/);
+  });
+
+  it('does not define executable setTimeout calls in the service-worker pipeline', () => {
+    const codeOnly = stripComments(fs.readFileSync(pipelinePath, 'utf-8'));
+    expect(codeOnly.match(/\bsetTimeout\s*\(/g) ?? []).toHaveLength(0);
+  });
+
+  it('keeps the only executable setTimeout inside withAdapterResponseTimeout', () => {
+    const codeOnly = stripComments(fs.readFileSync(policyPath, 'utf-8'));
+    expect(codeOnly).toContain('function withAdapterResponseTimeout');
+    expect(codeOnly.match(/\bsetTimeout\s*\(/g) ?? []).toHaveLength(1);
   });
 
   it('does not export ADAPTER_RESPONSE_TIMEOUT_MS', () => {

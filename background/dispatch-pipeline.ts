@@ -40,6 +40,12 @@ import type {
   DispatchCancelOutput,
 } from '@/shared/messaging';
 import { findAdapter } from '@/shared/adapters/registry';
+import {
+  DEFAULT_DISPATCH_TIMEOUT_MS,
+  AdapterResponseTimeoutError,
+  resolveAdapterTimeouts,
+  withAdapterResponseTimeout,
+} from '@/shared/adapters/dispatch-policy';
 import type { AdapterRegistryEntry } from '@/shared/adapters/types';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 import * as historyRepo from '@/shared/storage/repos/history';
@@ -56,7 +62,7 @@ export const BADGE_COLORS = {
 
 /** DEVIATIONS.md D-34: 5s -> 30s (chrome.alarms minimum delay in production). */
 export const BADGE_OK_CLEAR_MINUTES = 0.5;
-export const DISPATCH_TIMEOUT_MINUTES = 0.5;
+export const DISPATCH_TIMEOUT_MINUTES = DEFAULT_DISPATCH_TIMEOUT_MS / 60_000;
 
 /** Alarm name prefixes — listed for spec assertion + cancelDispatch cleanup. */
 const ALARM_PREFIX_TIMEOUT = 'dispatch-timeout:';
@@ -131,6 +137,8 @@ export async function startDispatch(
     return Err('PLATFORM_UNSUPPORTED', input.send_to, false);
   }
 
+  const { dispatchTimeoutMs, adapterResponseTimeoutMs } = resolveAdapterTimeouts(adapter);
+
   // Step 2.5 (Phase 4 D-44): Defensive permissions.contains check for openclaw.
   // The popup's Confirm handler already called chrome.permissions.request (user gesture),
   // so this should always pass. If it doesn't, the origin was revoked between popup click
@@ -194,14 +202,14 @@ export async function startDispatch(
   };
   await dispatchRepo.set(rec);
 
-  // Step 7: arm 30s timeout safety net (D-33).
+  // Step 7: arm registry-derived timeout safety net (D-33, D-111).
   await chrome.alarms.create(`${ALARM_PREFIX_TIMEOUT}${input.dispatchId}`, {
-    delayInMinutes: DISPATCH_TIMEOUT_MINUTES,
+    delayInMinutes: dispatchTimeoutMs / 60_000,
   });
 
   // Step 8: fast-path advancement when tab was already complete (Pitfall 5).
   if (!tabResult.expectsCompleteEvent) {
-    await advanceToAdapterInjection(rec, adapter.scriptFile);
+    await advanceToAdapterInjection(rec, adapter.scriptFile, adapterResponseTimeoutMs);
   }
 
   return Ok({ dispatchId: input.dispatchId, state: rec.state });
@@ -210,6 +218,7 @@ export async function startDispatch(
 async function advanceToAdapterInjection(
   record: DispatchRecord,
   scriptFile: string,
+  adapterResponseTimeoutMs: number,
 ): Promise<void> {
   // Move to awaiting_adapter
   const updated: DispatchRecord = {
@@ -243,21 +252,27 @@ async function advanceToAdapterInjection(
   }
 
   // Send ADAPTER_DISPATCH message — adapter's content-script listener responds.
-  // SW discipline (CLAUDE.md): no setTimeout. The 30s chrome.alarms backstop
-  // (DISPATCH_TIMEOUT_MINUTES) handles timeout. On sendMessage failure, re-check
-  // tab URL for login redirect (Discord SPA returns 200 then client-side redirects).
+  // D-113 permits a scoped Promise.race timeout only for this tabs.sendMessage wait;
+  // cross-event dispatch timeout remains chrome.alarms above.
   let response: { ok: boolean; code?: string; message?: string; retriable?: boolean };
   try {
-    response = await chrome.tabs.sendMessage(tabId, {
-      type: 'ADAPTER_DISPATCH',
-      payload: {
-        dispatchId: updated.dispatchId,
-        send_to: updated.send_to,
-        prompt: updated.prompt,
-        snapshot: updated.snapshot,
-      },
-    });
+    response = await withAdapterResponseTimeout(
+      chrome.tabs.sendMessage(tabId, {
+        type: 'ADAPTER_DISPATCH',
+        payload: {
+          dispatchId: updated.dispatchId,
+          send_to: updated.send_to,
+          prompt: updated.prompt,
+          snapshot: updated.snapshot,
+        },
+      }),
+      adapterResponseTimeoutMs,
+    );
   } catch (err) {
+    if (err instanceof AdapterResponseTimeoutError) {
+      await failDispatch(updated, 'TIMEOUT', err.message, true);
+      return;
+    }
     const msg = err instanceof Error ? err.message : String(err);
 
     // On sendMessage failure, re-check the tab URL for login redirect
@@ -401,7 +416,8 @@ async function advanceDispatchForTab(tabId: number): Promise<void> {
       }
     }
 
-    await advanceToAdapterInjection(record, adapter.scriptFile);
+    const { adapterResponseTimeoutMs } = resolveAdapterTimeouts(adapter);
+    await advanceToAdapterInjection(record, adapter.scriptFile, adapterResponseTimeoutMs);
   }
 }
 
