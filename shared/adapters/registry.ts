@@ -84,6 +84,7 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     hostMatches: ['https://discord.com/*'],
     iconKey: 'platform_icon_discord',
     spaNavigationHosts: ['discord.com'],
+    loggedOutPathPatterns: ['/', '/login*', '/register*'],
   }),
 ];
 

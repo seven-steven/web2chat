@@ -68,6 +68,8 @@ export interface AdapterRegistryEntry {
   readonly dispatchTimeoutMs?: number;
   /** Timeout for one chrome.tabs.sendMessage adapter response wait. */
   readonly adapterResponseTimeoutMs?: number;
+  /** Pathname-only logged-out URL patterns, e.g. '/', '/login*'. */
+  readonly loggedOutPathPatterns?: readonly string[];
 }
 
 // ── defineAdapter helper (D-97) ────────────────────────────────────────────
