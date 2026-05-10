@@ -27,7 +27,7 @@
 import { useEffect } from 'preact/hooks';
 import { signal } from '@preact/signals';
 import { sendMessage } from '@/shared/messaging';
-import type { ArticleSnapshot, ErrorCode } from '@/shared/messaging';
+import type { ArticleSnapshot, DispatchStartInput, ErrorCode } from '@/shared/messaging';
 import { t } from '@/shared/i18n';
 import * as draftRepo from '@/shared/storage/repos/popupDraft';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
@@ -38,6 +38,7 @@ import { PopupChrome } from './components/PopupChrome';
 import { SendForm } from './components/SendForm';
 import { InProgressView } from './components/InProgressView';
 import { ErrorBanner } from './components/ErrorBanner';
+import { SelectorWarningDialog } from './components/SelectorWarningDialog';
 import { LanguageSection } from '../options/components/LanguageSection';
 import { ResetSection } from '../options/components/ResetSection';
 import { GrantedOriginsSection } from '../options/components/GrantedOriginsSection';
@@ -61,6 +62,7 @@ const dispatchInFlightSig = signal<DispatchRecord | null>(null);
 const dispatchErrorSig = signal<{ code: ErrorCode; message: string; retriable: boolean } | null>(
   null,
 );
+const selectorWarningSig = signal<DispatchRecord | null>(null);
 
 // Settings toggle
 const viewModeSig = signal<'send' | 'settings'>('send');
@@ -138,8 +140,11 @@ export function App() {
               message: rec.error?.message ?? '',
               retriable: rec.error?.retriable ?? false,
             };
-          } else if (rec && rec.state !== 'done' && rec.state !== 'cancelled') {
-            wasInFlight = true;
+          } else if (rec && isSelectorLowConfidenceRecord(rec)) {
+            selectorWarningSig.value = rec;
+          } else if (rec) {
+            const state = rec.state as string;
+            if (state !== 'done' && state !== 'cancelled') wasInFlight = true;
           }
         }
 
@@ -172,7 +177,11 @@ export function App() {
               if (draftRes.content) contentSig.value = draftRes.content;
             }
           }
+          if (!selectorWarningSig.value) {
+            selectorWarningSig.value = await findPendingSelectorWarning();
+          }
         } else {
+          selectorWarningSig.value = null;
           if (!dispatchErrorSig.value) {
             errorSig.value = { code: captureRes.code, message: captureRes.message };
           }
@@ -212,6 +221,65 @@ export function App() {
   const toggleSettings = () => {
     viewModeSig.value = viewModeSig.value === 'settings' ? 'send' : 'settings';
   };
+  const cancelSelectorWarning = () => {
+    selectorWarningSig.value = null;
+    dispatchErrorSig.value = null;
+    void dispatchRepo.clearActive();
+  };
+  const confirmSelectorWarning = () => {
+    const snapshotForDispatch = snapshotSig.value;
+    const warningRecord = selectorWarningSig.value;
+    if (!snapshotForDispatch || !warningRecord) {
+      selectorWarningSig.value = null;
+      return;
+    }
+    const dispatchId = crypto.randomUUID();
+    const input: DispatchStartInput = {
+      dispatchId,
+      send_to: sendToSig.value,
+      prompt: promptSig.value,
+      snapshot: {
+        ...snapshotForDispatch,
+        title: titleSig.value,
+        description: descriptionSig.value,
+        content: contentSig.value,
+      },
+      selectorConfirmation: { warning: 'SELECTOR_LOW_CONFIDENCE' },
+    };
+    const nowIso = new Date().toISOString();
+    selectorWarningSig.value = null;
+    dispatchErrorSig.value = null;
+    dispatchInFlightSig.value = {
+      schemaVersion: 1,
+      dispatchId,
+      state: 'pending',
+      target_tab_id: null,
+      send_to: input.send_to,
+      prompt: input.prompt,
+      snapshot: input.snapshot,
+      platform_id: warningRecord.platform_id,
+      started_at: nowIso,
+      last_state_at: nowIso,
+    };
+    void (async () => {
+      try {
+        await dispatchRepo.clearActive();
+        const res = await sendMessage('dispatch.start', input);
+        if (!res.ok) {
+          dispatchInFlightSig.value = null;
+          dispatchErrorSig.value = {
+            code: res.code,
+            message: res.message,
+            retriable: res.retriable,
+          };
+        }
+      } catch (err) {
+        dispatchInFlightSig.value = null;
+        const message = err instanceof Error ? err.message : String(err);
+        dispatchErrorSig.value = { code: 'INTERNAL', message, retriable: false };
+      }
+    })();
+  };
 
   // ─── Real-time dispatch state listener ─────────────────────────
   // When InProgressView is shown, poll storage for dispatch state changes.
@@ -227,13 +295,19 @@ export function App() {
       if (!rec) return;
       if (rec.state === 'error') {
         dispatchInFlightSig.value = null;
+        selectorWarningSig.value = null;
         dispatchErrorSig.value = {
           code: (rec.error?.code as ErrorCode) ?? 'INTERNAL',
           message: rec.error?.message ?? '',
           retriable: rec.error?.retriable ?? false,
         };
-      } else if (rec.state === 'done' || rec.state === 'cancelled') {
+      } else if (isSelectorLowConfidenceRecord(rec)) {
         dispatchInFlightSig.value = null;
+        dispatchErrorSig.value = null;
+        selectorWarningSig.value = rec;
+      } else {
+        const state = rec.state as string;
+        if (state === 'done' || state === 'cancelled') dispatchInFlightSig.value = null;
       }
     };
     chrome.storage.onChanged.addListener(listener);
@@ -254,6 +328,17 @@ export function App() {
               dispatchInFlightSig.value = null;
             }
           }}
+        />
+      </>
+    );
+  }
+  if (selectorWarningSig.value && snapshot !== null) {
+    return (
+      <>
+        <PopupChrome showSettings={showSettings} onToggleSettings={toggleSettings} />
+        <SelectorWarningDialog
+          onCancel={cancelSelectorWarning}
+          onConfirm={confirmSelectorWarning}
         />
       </>
     );
@@ -362,6 +447,20 @@ export function App() {
       <ErrorView />
     </>
   );
+}
+
+function isSelectorLowConfidenceRecord(rec: DispatchRecord | undefined): boolean {
+  return (
+    rec?.state === 'needs_confirmation' &&
+    rec.warnings?.some((warning) => warning.code === 'SELECTOR_LOW_CONFIDENCE') === true
+  );
+}
+
+async function findPendingSelectorWarning(): Promise<DispatchRecord | null> {
+  const records = await dispatchRepo.listAll().catch(() => []);
+  const pending = records.filter(isSelectorLowConfidenceRecord);
+  pending.sort((a, b) => b.last_state_at.localeCompare(a.last_state_at));
+  return pending[0] ?? null;
 }
 
 // ─── Loading Skeleton ─────────────────────────────────────────────────────────
