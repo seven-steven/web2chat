@@ -24,6 +24,7 @@
 import { defineContentScript } from '#imports';
 import { composeDiscordMarkdown } from '@/shared/adapters/discord-format';
 import { detectLoginWall } from '@/shared/adapters/discord-login-detect';
+import type { DispatchWarning, SelectorConfirmation } from '@/shared/messaging';
 
 const WAIT_TIMEOUT_MS = 5000;
 const LOGIN_WALL_PROBE_MS = 1500;
@@ -31,8 +32,13 @@ const RATE_LIMIT_MS = 5000;
 const PLATFORM_ID = 'discord';
 const MAIN_WORLD_PORT = `WEB2CHAT_MAIN_WORLD:${PLATFORM_ID}`;
 
+const SELECTOR_LOW_CONFIDENCE = 'SELECTOR_LOW_CONFIDENCE' as const;
+type SelectorTier = 'tier1-aria' | 'tier2-data' | 'tier3-class-fragment';
+type EditorMatch = { element: HTMLElement; tier: SelectorTier; lowConfidence: boolean };
+
 // Module-scope rate limit map (content script lifetime = tab lifetime)
 const lastSendTime = new Map<string, number>();
+let mainWorldPasteForTest: typeof injectMainWorldPaste | null = null;
 
 interface AdapterDispatchMessage {
   type: 'ADAPTER_DISPATCH';
@@ -47,6 +53,7 @@ interface AdapterDispatchMessage {
       create_at: string;
       content: string;
     };
+    selectorConfirmation?: SelectorConfirmation;
   };
 }
 
@@ -55,6 +62,7 @@ interface AdapterDispatchResponse {
   code?: 'INPUT_NOT_FOUND' | 'TIMEOUT' | 'RATE_LIMITED' | 'NOT_LOGGED_IN' | 'INTERNAL';
   message?: string;
   retriable?: boolean;
+  warnings?: DispatchWarning[];
 }
 
 function isAdapterDispatch(msg: unknown): msg is AdapterDispatchMessage {
@@ -105,12 +113,19 @@ function isLoggedOutPath(pathname: string): boolean {
  * Tier 2: data-slate-editor attribute
  * Tier 3: class fragment textArea + contenteditable
  */
-function findEditor(): HTMLElement | null {
-  return (
-    document.querySelector<HTMLElement>('[role="textbox"][aria-label*="Message"]') ??
-    document.querySelector<HTMLElement>('[data-slate-editor="true"]') ??
-    document.querySelector<HTMLElement>('div[class*="textArea"] [contenteditable="true"]')
+function findEditor(): EditorMatch | null {
+  const tier1 = document.querySelector<HTMLElement>('[role="textbox"][aria-label*="Message"]');
+  if (tier1) return { element: tier1, tier: 'tier1-aria', lowConfidence: false };
+
+  const tier2 = document.querySelector<HTMLElement>('[data-slate-editor="true"]');
+  if (tier2) return { element: tier2, tier: 'tier2-data', lowConfidence: false };
+
+  const tier3 = document.querySelector<HTMLElement>(
+    'div[class*="textArea"] [contenteditable="true"]',
   );
+  if (tier3) return { element: tier3, tier: 'tier3-class-fragment', lowConfidence: true };
+
+  return null;
 }
 
 /**
@@ -124,11 +139,11 @@ function findEditor(): HTMLElement | null {
  */
 function waitForReady(
   timeoutMs: number,
-): Promise<{ kind: 'editor'; el: HTMLElement } | { kind: 'login' } | { kind: 'timeout' }> {
+): Promise<{ kind: 'editor'; match: EditorMatch } | { kind: 'login' } | { kind: 'timeout' }> {
   // Synchronous probe first — covers the case where the page is already
   // settled at adapter injection time.
   const eagerEditor = findEditor();
-  if (eagerEditor) return Promise.resolve({ kind: 'editor', el: eagerEditor });
+  if (eagerEditor) return Promise.resolve({ kind: 'editor', match: eagerEditor });
   if (detectLoginWall()) return Promise.resolve({ kind: 'login' });
 
   return new Promise((resolve) => {
@@ -139,7 +154,7 @@ function waitForReady(
         settled = true;
         observer.disconnect();
         clearTimeout(timer);
-        resolve({ kind: 'editor', el: editor });
+        resolve({ kind: 'editor', match: editor });
         return;
       }
       if (!settled && detectLoginWall()) {
@@ -271,9 +286,9 @@ async function handleDispatch(
   // paints during the probe window, return NOT_LOGGED_IN immediately rather
   // than waiting out the full 5s editor timeout for a guaranteed failure.
   const probe = await waitForReady(LOGIN_WALL_PROBE_MS);
-  let editor: HTMLElement | null = null;
+  let editorMatch: EditorMatch | null = null;
   if (probe.kind === 'editor') {
-    editor = probe.el;
+    editorMatch = probe.match;
   } else if (probe.kind === 'login') {
     return {
       ok: false,
@@ -283,12 +298,9 @@ async function handleDispatch(
     };
   } else {
     // Probe timed out — fall back to the original 5s editor wait.
-    editor = await waitForElement<HTMLElement>(
-      '[role="textbox"][aria-label*="Message"], [data-slate-editor="true"]',
-      WAIT_TIMEOUT_MS,
-    );
+    editorMatch = await waitForEditor(WAIT_TIMEOUT_MS);
   }
-  if (!editor) {
+  if (!editorMatch) {
     // Final login-wall recheck — if Discord rendered the login UI during
     // the 5s editor wait, surface that instead of a generic INPUT_NOT_FOUND.
     if (detectLoginWall() || isLoggedOutPath(window.location.pathname)) {
@@ -307,6 +319,14 @@ async function handleDispatch(
     };
   }
 
+  if (editorMatch.lowConfidence) {
+    if (payload.selectorConfirmation?.warning !== SELECTOR_LOW_CONFIDENCE) {
+      return { ok: true, warnings: [{ code: SELECTOR_LOW_CONFIDENCE }] };
+    }
+  }
+
+  const editor = editorMatch.element;
+
   // Compose message (D-54, D-55, D-57, D-58)
   const message = composeDiscordMarkdown({ prompt: payload.prompt, snapshot: payload.snapshot });
 
@@ -315,7 +335,7 @@ async function handleDispatch(
   let pasteOk = false;
   let pasteError = 'Paste injection timed out';
   try {
-    pasteOk = await injectMainWorldPaste(editor, message);
+    pasteOk = await (mainWorldPasteForTest ?? injectMainWorldPaste)(editor, message);
   } catch (err) {
     pasteError = err instanceof Error ? err.message : String(err);
   }
@@ -351,19 +371,19 @@ async function handleDispatch(
   return { ok: true };
 }
 
-function waitForElement<T extends Element>(selector: string, timeoutMs: number): Promise<T | null> {
-  const immediate = document.querySelector<T>(selector);
+function waitForEditor(timeoutMs: number): Promise<EditorMatch | null> {
+  const immediate = findEditor();
   if (immediate) return Promise.resolve(immediate);
 
-  return new Promise<T | null>((resolve) => {
+  return new Promise<EditorMatch | null>((resolve) => {
     let settled = false;
     const observer = new MutationObserver(() => {
-      const el = document.querySelector<T>(selector);
-      if (el && !settled) {
+      const match = findEditor();
+      if (match && !settled) {
         settled = true;
         observer.disconnect();
         clearTimeout(timer);
-        resolve(el);
+        resolve(match);
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });
@@ -377,3 +397,15 @@ function waitForElement<T extends Element>(selector: string, timeoutMs: number):
     }, timeoutMs);
   });
 }
+
+export const __testing = {
+  findEditor,
+  handleDispatch,
+  setMainWorldPasteForTest(fn: typeof injectMainWorldPaste): void {
+    mainWorldPasteForTest = fn;
+  },
+  resetTestOverrides(): void {
+    mainWorldPasteForTest = null;
+    lastSendTime.clear();
+  },
+};
