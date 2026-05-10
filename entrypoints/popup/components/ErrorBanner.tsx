@@ -3,6 +3,7 @@ import type { ErrorCode } from '@/shared/messaging';
 
 interface ErrorBannerProps {
   code: ErrorCode;
+  retriable: boolean;
   onRetry?: () => void;
   onDismiss: () => void;
 }
@@ -26,23 +27,11 @@ interface ErrorBannerProps {
  * SW-side diagnostics; users get a code-mapped human-readable copy.
  */
 
-/** ErrorCodes whose human-readable `_retry` button MUST exist in i18n. */
-const RETRIABLE_CODES: ReadonlySet<ErrorCode> = new Set<ErrorCode>([
-  'NOT_LOGGED_IN',
-  'INPUT_NOT_FOUND',
-  'TIMEOUT',
-  'RATE_LIMITED',
-  'EXECUTE_SCRIPT_FAILED',
-  'INTERNAL',
-  'OPENCLAW_OFFLINE',
-  'OPENCLAW_PERMISSION_DENIED',
-]);
-
-export function ErrorBanner({ code, onRetry, onDismiss }: ErrorBannerProps) {
+export function ErrorBanner({ code, retriable, onRetry, onDismiss }: ErrorBannerProps) {
   const heading = errorHeading(code);
   const body = errorBody(code);
   const retryLabel = errorRetry(code);
-  const showRetry = RETRIABLE_CODES.has(code) && !!onRetry && retryLabel !== '';
+  const showRetry = retriable && !!onRetry && retryLabel !== '';
 
   return (
     <div

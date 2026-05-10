@@ -24,6 +24,7 @@ import type {
 import { detectPlatformId, findAdapter, adapterRegistry } from '@/shared/adapters/registry';
 import * as grantedOriginsRepo from '@/shared/storage/repos/grantedOrigins';
 import * as draftRepo from '@/shared/storage/repos/popupDraft';
+import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 import { Combobox, type ComboboxOption } from './Combobox';
 import { ErrorBanner } from './ErrorBanner';
 import { CapturePreview } from './CapturePreview';
@@ -46,12 +47,12 @@ interface SendFormProps {
   promptDirty: boolean;
   onPromptDirtyChange: (dirty: boolean) => void;
   // Dispatch error display
-  dispatchError: { code: ErrorCode; message: string } | null;
+  dispatchError: { code: ErrorCode; message: string; retriable: boolean } | null;
   onDismissError: () => void;
   // Confirm submission
   onConfirm: (dispatchId: string) => void;
   // Dispatch failure callback (App.tsx writes dispatchErrorSig)
-  onDispatchError: (code: ErrorCode, message: string) => void;
+  onDispatchError: (code: ErrorCode, message: string, retriable: boolean) => void;
 }
 
 export function SendForm(props: SendFormProps) {
@@ -188,60 +189,79 @@ export function SendForm(props: SendFormProps) {
       props.onPromptDirtyChange(false);
     }
   }
+  function buildDispatchInput(): DispatchStartInput {
+    return {
+      dispatchId: crypto.randomUUID(),
+      send_to: props.sendTo,
+      prompt: props.prompt,
+      snapshot: {
+        ...props.snapshot,
+        title: props.titleValue,
+        description: props.descriptionValue,
+        content: props.contentValue,
+      },
+    };
+  }
+
+  async function startDispatch(input: DispatchStartInput) {
+    const adapter = findAdapter(props.sendTo);
+    if (adapter && adapter.requiresDynamicPermission === true) {
+      const targetOrigin = new URL(props.sendTo).origin;
+      const alreadyGranted = await chrome.permissions.contains({
+        origins: [targetOrigin + '/*'],
+      });
+
+      if (!alreadyGranted) {
+        await draftRepo.savePendingDispatch(input);
+        const granted = await chrome.permissions.request({
+          origins: [targetOrigin + '/*'],
+        });
+
+        if (!granted) {
+          setSubmitting(false);
+          await draftRepo.clearPendingDispatch();
+          props.onDispatchError('OPENCLAW_PERMISSION_DENIED', targetOrigin, false);
+          return;
+        }
+
+        await grantedOriginsRepo.add(targetOrigin).catch(() => {});
+        await draftRepo.clearPendingDispatch();
+      }
+    }
+
+    props.onConfirm(input.dispatchId);
+    const res = await sendMessage('dispatch.start', input);
+    if (res.ok) {
+      window.close();
+    } else {
+      setSubmitting(false);
+      props.onDispatchError(res.code, res.message, res.retriable);
+    }
+  }
+
   async function handleConfirm() {
     if (submitting) return;
     setSubmitting(true);
     try {
-      const dispatchId = crypto.randomUUID();
-      const input: DispatchStartInput = {
-        dispatchId,
-        send_to: props.sendTo,
-        prompt: props.prompt,
-        snapshot: {
-          ...props.snapshot,
-          title: props.titleValue,
-          description: props.descriptionValue,
-          content: props.contentValue,
-        },
-      };
-
-      const adapter = findAdapter(props.sendTo);
-      if (adapter && adapter.requiresDynamicPermission === true) {
-        const targetOrigin = new URL(props.sendTo).origin;
-        const alreadyGranted = await chrome.permissions.contains({
-          origins: [targetOrigin + '/*'],
-        });
-
-        if (!alreadyGranted) {
-          await draftRepo.savePendingDispatch(input);
-          const granted = await chrome.permissions.request({
-            origins: [targetOrigin + '/*'],
-          });
-
-          if (!granted) {
-            setSubmitting(false);
-            await draftRepo.clearPendingDispatch();
-            props.onDispatchError('OPENCLAW_PERMISSION_DENIED', targetOrigin);
-            return;
-          }
-
-          await grantedOriginsRepo.add(targetOrigin).catch(() => {});
-          await draftRepo.clearPendingDispatch();
-        }
-      }
-
-      props.onConfirm(dispatchId);
-      const res = await sendMessage('dispatch.start', input);
-      if (res.ok) {
-        window.close();
-      } else {
-        setSubmitting(false);
-        props.onDispatchError(res.code, res.message);
-      }
+      await startDispatch(buildDispatchInput());
     } catch (err) {
       setSubmitting(false);
       const msg = err instanceof Error ? err.message : String(err);
-      props.onDispatchError('INTERNAL', msg);
+      props.onDispatchError('INTERNAL', msg, false);
+    }
+  }
+
+  async function handleRetry() {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      props.onDismissError();
+      await dispatchRepo.clearActive();
+      await startDispatch(buildDispatchInput());
+    } catch (err) {
+      setSubmitting(false);
+      const msg = err instanceof Error ? err.message : String(err);
+      props.onDispatchError('INTERNAL', msg, false);
     }
   }
 
@@ -270,9 +290,9 @@ export function SendForm(props: SendFormProps) {
       {props.dispatchError && (
         <ErrorBanner
           code={props.dispatchError.code}
+          retriable={props.dispatchError.retriable}
           onRetry={() => {
-            props.onDismissError();
-            void handleConfirm();
+            void handleRetry();
           }}
           onDismiss={props.onDismissError}
         />
