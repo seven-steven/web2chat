@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
-import { startDispatch } from '@/background/dispatch-pipeline';
+import { onTabComplete, startDispatch } from '@/background/dispatch-pipeline';
 import { DispatchStartInputSchema } from '@/shared/messaging/routes/dispatch';
+import { definePlatformId } from '@/shared/adapters/types';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 
 const fakeSnapshot = {
@@ -110,6 +111,39 @@ describe('selector warning dispatch protocol (DSPT-04)', () => {
       42,
       expect.objectContaining({
         type: 'ADAPTER_DISPATCH',
+        payload: expect.objectContaining({
+          selectorConfirmation: { warning: 'SELECTOR_LOW_CONFIDENCE' },
+        }),
+      }),
+    );
+  });
+
+  it('uses the fresh stored record when advancing from a stale awaiting_complete snapshot', async () => {
+    const stub = buildChromeStub({ ok: true });
+    vi.stubGlobal('chrome', stub);
+    const staleRecord = {
+      schemaVersion: 1,
+      dispatchId: '00000000-0000-4000-8000-000000000405',
+      state: 'awaiting_complete',
+      target_tab_id: 42,
+      send_to: baseInput.send_to,
+      prompt: baseInput.prompt,
+      snapshot: fakeSnapshot,
+      platform_id: definePlatformId('mock'),
+      started_at: '2026-04-30T00:00:00.000Z',
+      last_state_at: '2026-04-30T00:00:00.000Z',
+    } as const;
+    await dispatchRepo.set({
+      ...staleRecord,
+      selectorConfirmation: { warning: 'SELECTOR_LOW_CONFIDENCE' },
+    });
+    vi.spyOn(dispatchRepo, 'listAll').mockResolvedValue([staleRecord]);
+
+    await onTabComplete(42, { status: 'complete' }, {} as chrome.tabs.Tab);
+
+    expect(stub.tabs.sendMessage).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
         payload: expect.objectContaining({
           selectorConfirmation: { warning: 'SELECTOR_LOW_CONFIDENCE' },
         }),
