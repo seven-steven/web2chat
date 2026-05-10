@@ -83,7 +83,7 @@ Plans:
 - [x] 09-04-PLAN.md — Selector low-confidence warning protocol + Discord adapter guard (TDD)
 
 **Wave 4** *(blocked on 09-03 and 09-04 completion)*
-- [ ] 09-05-PLAN.md — Low-confidence confirmation UI + i18n
+- [x] 09-05-PLAN.md — Low-confidence confirmation UI + i18n
 
 ### Phase 10: Slack 适配器
 **Goal**: 用户可以向 Slack workspace 的任意 channel 投递格式化网页信息
