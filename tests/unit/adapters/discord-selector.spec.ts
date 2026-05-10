@@ -1,14 +1,57 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import * as discordContent from '@/entrypoints/discord.content';
 
 // Load fixture and extract inner content (inside <body>)
-const fixtureHtml = readFileSync(
-  resolve(__dirname, 'discord.fixture.html'),
-  'utf-8',
-);
+const fixtureHtml = readFileSync(resolve(__dirname, 'discord.fixture.html'), 'utf-8');
 const bodyMatch = fixtureHtml.match(/<body>([\s\S]*)<\/body>/);
 const fixtureBody = bodyMatch?.[1]?.trim() ?? '';
+type SelectorTier = 'tier1-aria' | 'tier2-data' | 'tier3-class-fragment';
+type EditorMatch = { element: HTMLElement; tier: SelectorTier; lowConfidence: boolean };
+
+function getDiscordTesting() {
+  return (
+    discordContent as unknown as {
+      __testing?: {
+        findEditor: () => EditorMatch | null;
+        handleDispatch: (payload: {
+          dispatchId: string;
+          send_to: string;
+          prompt: string;
+          snapshot: {
+            title: string;
+            url: string;
+            description: string;
+            create_at: string;
+            content: string;
+          };
+          selectorConfirmation?: { warning: 'SELECTOR_LOW_CONFIDENCE' };
+        }) => Promise<{
+          ok: boolean;
+          warnings?: Array<{ code: 'SELECTOR_LOW_CONFIDENCE' }>;
+        }>;
+        setMainWorldPasteForTest: (
+          fn: (editor: HTMLElement, text: string) => Promise<boolean>,
+        ) => void;
+        resetTestOverrides: () => void;
+      };
+    }
+  ).__testing;
+}
+
+const dispatchPayload = {
+  dispatchId: '00000000-0000-4000-8000-000000000401',
+  send_to: 'https://discord.com/channels/123/456',
+  prompt: 'remember this',
+  snapshot: {
+    title: 'Title',
+    url: 'https://example.com/',
+    description: 'Desc',
+    create_at: '2026-05-10T00:00:00.000Z',
+    content: 'Body',
+  },
+};
 
 // Three-tier ARIA-first editor selector (mirrors discord.content.ts logic)
 function findEditor(): HTMLElement | null {
@@ -78,6 +121,82 @@ describe('Discord selector fallback (ADD-05, D-62)', () => {
 
     const editor = findEditor();
     expect(editor).toBeNull();
+  });
+});
+
+describe('Discord selector confidence warnings (DSPT-04)', () => {
+  beforeEach(() => {
+    document.body.innerHTML = fixtureBody;
+    (window as Window & { happyDOM?: { setURL: (url: string) => void } }).happyDOM?.setURL(
+      'https://discord.com/channels/123/456',
+    );
+    getDiscordTesting()?.resetTestOverrides();
+  });
+
+  it('reports tier1-aria metadata without SELECTOR_LOW_CONFIDENCE', () => {
+    const testing = getDiscordTesting();
+    expect(testing).toBeDefined();
+    const match = testing!.findEditor();
+
+    expect(match?.tier).toBe('tier1-aria');
+    expect(match?.lowConfidence).toBe(false);
+  });
+
+  it('reports tier2-data metadata without SELECTOR_LOW_CONFIDENCE', () => {
+    const el = document.querySelector('[role="textbox"][aria-label*="Message"]')!;
+    el.removeAttribute('role');
+    el.removeAttribute('aria-label');
+
+    const testing = getDiscordTesting();
+    expect(testing).toBeDefined();
+    const match = testing!.findEditor();
+
+    expect(match?.tier).toBe('tier2-data');
+    expect(match?.lowConfidence).toBe(false);
+  });
+
+  it('returns SELECTOR_LOW_CONFIDENCE and does not paste/send for tier3-class-fragment before confirmation', async () => {
+    const el = document.querySelector('[role="textbox"]')!;
+    el.removeAttribute('role');
+    el.removeAttribute('aria-label');
+    el.removeAttribute('data-slate-editor');
+
+    const pasteSpy = vi.fn().mockResolvedValue(true);
+    const testing = getDiscordTesting();
+    expect(testing).toBeDefined();
+    testing!.setMainWorldPasteForTest(pasteSpy);
+
+    const match = testing!.findEditor();
+    expect(match?.tier).toBe('tier3-class-fragment');
+    expect(match?.lowConfidence).toBe(true);
+
+    const result = await testing!.handleDispatch(dispatchPayload);
+
+    expect(result.ok).toBe(true);
+    expect(result.warnings).toEqual([{ code: 'SELECTOR_LOW_CONFIDENCE' }]);
+    expect(pasteSpy).not.toHaveBeenCalled();
+  });
+
+  it('sends once for tier3-class-fragment with one-shot selectorConfirmation', async () => {
+    const el = document.querySelector('[role="textbox"]')!;
+    el.removeAttribute('role');
+    el.removeAttribute('aria-label');
+    el.removeAttribute('data-slate-editor');
+
+    const pasteSpy = vi.fn().mockResolvedValue(true);
+    const testing = getDiscordTesting();
+    expect(testing).toBeDefined();
+    testing!.setMainWorldPasteForTest(pasteSpy);
+
+    const result = await testing!.handleDispatch({
+      ...dispatchPayload,
+      dispatchId: '00000000-0000-4000-8000-000000000402',
+      selectorConfirmation: { warning: 'SELECTOR_LOW_CONFIDENCE' },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.warnings).toBeUndefined();
+    expect(pasteSpy).toHaveBeenCalledTimes(1);
   });
 });
 
