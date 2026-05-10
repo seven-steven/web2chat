@@ -297,8 +297,10 @@ async function handleDispatch(
       retriable: true,
     };
   } else {
-    // Probe timed out — fall back to the original 5s editor wait.
-    editorMatch = await waitForEditor(WAIT_TIMEOUT_MS);
+    // Probe timed out; bound the fallback so the total editor/login wait remains
+    // within WAIT_TIMEOUT_MS instead of LOGIN_WALL_PROBE_MS + WAIT_TIMEOUT_MS.
+    const remainingBudget = Math.max(WAIT_TIMEOUT_MS - LOGIN_WALL_PROBE_MS, 1000);
+    editorMatch = await waitForEditor(remainingBudget);
   }
   if (!editorMatch) {
     // Final login-wall recheck — if Discord rendered the login UI during

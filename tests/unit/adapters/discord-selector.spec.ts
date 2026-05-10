@@ -29,6 +29,8 @@ function getDiscordTesting() {
           selectorConfirmation?: { warning: 'SELECTOR_LOW_CONFIDENCE' };
         }) => Promise<{
           ok: boolean;
+          code?: 'INPUT_NOT_FOUND' | 'TIMEOUT' | 'RATE_LIMITED' | 'NOT_LOGGED_IN' | 'INTERNAL';
+          retriable?: boolean;
           warnings?: Array<{ code: 'SELECTOR_LOW_CONFIDENCE' }>;
         }>;
         setMainWorldPasteForTest: (
@@ -153,6 +155,34 @@ describe('Discord selector confidence warnings (DSPT-04)', () => {
 
     expect(match?.tier).toBe('tier2-data');
     expect(match?.lowConfidence).toBe(false);
+  });
+
+  it('bounds the login probe plus fallback editor wait to the editor timeout budget', async () => {
+    document.body.innerHTML = '<main></main>';
+    (window as Window & { happyDOM?: { setURL: (url: string) => void } }).happyDOM?.setURL(
+      'https://discord.com/channels/123/456',
+    );
+    vi.useFakeTimers();
+    const testing = getDiscordTesting();
+    expect(testing).toBeDefined();
+
+    try {
+      let settled = false;
+      const resultPromise = testing!.handleDispatch(dispatchPayload).then((result) => {
+        settled = true;
+        return result;
+      });
+
+      await vi.advanceTimersByTimeAsync(4999);
+      expect(settled).toBe(false);
+
+      await vi.advanceTimersByTimeAsync(1);
+      const result = await resultPromise;
+
+      expect(result).toMatchObject({ ok: false, code: 'INPUT_NOT_FOUND', retriable: true });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('returns SELECTOR_LOW_CONFIDENCE and does not paste/send for tier3-class-fragment before confirmation', async () => {
