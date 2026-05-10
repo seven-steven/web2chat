@@ -242,6 +242,43 @@ describe('background/dispatch-pipeline — onTabComplete (D-33)', () => {
     // State will be 'done' after sendMessage Ok mock — assert at least it is past awaiting_complete.
     expect(record?.state).toBe('done');
   });
+
+  it('advances awaiting_complete only once when complete events race for the same tab', async () => {
+    let releaseSendMessage!: () => void;
+    const sendMessageGate = new Promise<{ ok: true }>((resolve) => {
+      releaseSendMessage = () => resolve({ ok: true });
+    });
+    const stub = buildChromeStub({
+      tabs: {
+        ...buildChromeStub().tabs,
+        get: vi.fn().mockResolvedValue({ id: 42, url: baseInput.send_to }),
+        sendMessage: vi.fn().mockReturnValue(sendMessageGate),
+      },
+    });
+    vi.stubGlobal('chrome', stub);
+    await dispatchRepo.set({
+      schemaVersion: 1,
+      dispatchId: baseInput.dispatchId,
+      state: 'awaiting_complete',
+      target_tab_id: 42,
+      send_to: baseInput.send_to,
+      prompt: 'p',
+      snapshot: fakeSnapshot,
+      platform_id: definePlatformId('mock'),
+      started_at: '2026-04-30T00:00:00.000Z',
+      last_state_at: '2026-04-30T00:00:00.000Z',
+    });
+
+    const first = onTabComplete(42, { status: 'complete' }, {} as chrome.tabs.Tab);
+    const second = onTabComplete(42, { status: 'complete' }, {} as chrome.tabs.Tab);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(stub.scripting.executeScript).toHaveBeenCalledTimes(1);
+    expect(stub.tabs.sendMessage).toHaveBeenCalledTimes(1);
+
+    releaseSendMessage();
+    await Promise.all([first, second]);
+  });
 });
 
 describe('background/dispatch-pipeline — success path (D-36)', () => {

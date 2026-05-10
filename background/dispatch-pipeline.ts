@@ -75,6 +75,7 @@ export const DISPATCH_TIMEOUT_MINUTES = DEFAULT_DISPATCH_TIMEOUT_MS / 60_000;
 /** Alarm name prefixes — listed for spec assertion + cancelDispatch cleanup. */
 const ALARM_PREFIX_TIMEOUT = 'dispatch-timeout:';
 const ALARM_PREFIX_BADGE_CLEAR = 'badge-clear:';
+const adapterInjectionLocks = new Set<string>();
 
 /**
  * Open or activate the tab whose URL canonical-equals send_to.
@@ -211,14 +212,32 @@ async function advanceToAdapterInjection(
   scriptFile: string,
   adapterResponseTimeoutMs: number,
 ): Promise<void> {
+  if (adapterInjectionLocks.has(record.dispatchId)) return;
+  adapterInjectionLocks.add(record.dispatchId);
+
+  const fresh = await dispatchRepo.get(record.dispatchId);
+  if (!fresh || fresh.state !== 'awaiting_complete') {
+    adapterInjectionLocks.delete(record.dispatchId);
+    return;
+  }
+
   // Move to awaiting_adapter
   const updated: DispatchRecord = {
-    ...record,
+    ...fresh,
     state: 'awaiting_adapter',
     last_state_at: new Date().toISOString(),
   };
   await dispatchRepo.set(updated);
+  adapterInjectionLocks.delete(record.dispatchId);
 
+  await runAdapterDispatch(updated, scriptFile, adapterResponseTimeoutMs);
+}
+
+async function runAdapterDispatch(
+  updated: DispatchRecord,
+  scriptFile: string,
+  adapterResponseTimeoutMs: number,
+): Promise<void> {
   const tabId = updated.target_tab_id;
   if (tabId === null) {
     await failDispatch(updated, 'INTERNAL', 'No target_tab_id at awaiting_adapter', false);
