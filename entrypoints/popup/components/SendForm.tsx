@@ -191,46 +191,46 @@ export function SendForm(props: SendFormProps) {
   async function handleConfirm() {
     if (submitting) return;
     setSubmitting(true);
-    const dispatchId = crypto.randomUUID();
-    const input: DispatchStartInput = {
-      dispatchId,
-      send_to: props.sendTo,
-      prompt: props.prompt,
-      snapshot: {
-        ...props.snapshot,
-        title: props.titleValue,
-        description: props.descriptionValue,
-        content: props.contentValue,
-      },
-    };
+    try {
+      const dispatchId = crypto.randomUUID();
+      const input: DispatchStartInput = {
+        dispatchId,
+        send_to: props.sendTo,
+        prompt: props.prompt,
+        snapshot: {
+          ...props.snapshot,
+          title: props.titleValue,
+          description: props.descriptionValue,
+          content: props.contentValue,
+        },
+      };
 
-    const adapter = findAdapter(props.sendTo);
-    if (adapter && adapter.hostMatches.length === 0) {
-      const targetOrigin = new URL(props.sendTo).origin;
-      const alreadyGranted = await chrome.permissions.contains({
-        origins: [targetOrigin + '/*'],
-      });
-
-      if (!alreadyGranted) {
-        await draftRepo.savePendingDispatch(input);
-        const granted = await chrome.permissions.request({
+      const adapter = findAdapter(props.sendTo);
+      if (adapter && adapter.hostMatches.length === 0) {
+        const targetOrigin = new URL(props.sendTo).origin;
+        const alreadyGranted = await chrome.permissions.contains({
           origins: [targetOrigin + '/*'],
         });
 
-        if (!granted) {
-          setSubmitting(false);
+        if (!alreadyGranted) {
+          await draftRepo.savePendingDispatch(input);
+          const granted = await chrome.permissions.request({
+            origins: [targetOrigin + '/*'],
+          });
+
+          if (!granted) {
+            setSubmitting(false);
+            await draftRepo.clearPendingDispatch();
+            props.onDispatchError('OPENCLAW_PERMISSION_DENIED', targetOrigin);
+            return;
+          }
+
+          await grantedOriginsRepo.add(targetOrigin).catch(() => {});
           await draftRepo.clearPendingDispatch();
-          props.onDispatchError('OPENCLAW_PERMISSION_DENIED', targetOrigin);
-          return;
         }
-
-        await grantedOriginsRepo.add(targetOrigin).catch(() => {});
-        await draftRepo.clearPendingDispatch();
       }
-    }
 
-    props.onConfirm(dispatchId);
-    try {
+      props.onConfirm(dispatchId);
       const res = await sendMessage('dispatch.start', input);
       if (res.ok) {
         window.close();
@@ -272,6 +272,7 @@ export function SendForm(props: SendFormProps) {
           code={props.dispatchError.code}
           onRetry={() => {
             props.onDismissError();
+            void handleConfirm();
           }}
           onDismiss={props.onDismissError}
         />

@@ -1,22 +1,26 @@
 /**
- * Unit test for ADAPTER_RESPONSE_TIMEOUT_MS constant (Gap 2 fix).
+ * Verify dispatch-pipeline has no setTimeout (SW discipline, CR-02).
  *
- * Validates that the SW-side timeout gives enough headroom for Discord adapter's
- * two internal 5s waits (waitForElement + waitForNewMessage) + paste round-trip (~1-2s).
- * Old value 10_000 < 12s worst case → message sent but SW timeout reported error.
- * New value 20_000 > 12s → sufficient headroom.
+ * The old ADAPTER_RESPONSE_TIMEOUT_MS constant and Promise.race+setTimeout
+ * pattern were removed. The 30s chrome.alarms backstop (DISPATCH_TIMEOUT_MINUTES)
+ * is the sole timeout mechanism.
  */
 import { describe, it, expect } from 'vitest';
-import { ADAPTER_RESPONSE_TIMEOUT_MS } from '@/background/dispatch-pipeline';
+import fs from 'node:fs';
+import path from 'node:path';
 
-describe('ADAPTER_RESPONSE_TIMEOUT_MS (gap fix: 10s → 20s)', () => {
-  it('equals 20000 (sufficient for two 5s waits + paste round-trip)', () => {
-    expect(ADAPTER_RESPONSE_TIMEOUT_MS).toBe(20_000);
+const pipelinePath = path.resolve(__dirname, '../../../background/dispatch-pipeline.ts');
+
+describe('dispatch-pipeline SW discipline (CR-02: no setTimeout)', () => {
+  it('contains no setTimeout calls in executable code', () => {
+    const src = fs.readFileSync(pipelinePath, 'utf-8');
+    // Strip comments (single-line // and multi-line /* */) to avoid false positives
+    const codeOnly = src.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    expect(codeOnly).not.toContain('setTimeout');
   });
 
-  it('is greater than the Discord adapter worst-case internal wait (12s)', () => {
-    // waitForElement(5s) + waitForNewMessage(5s) + paste(2s) = 12s worst case
-    const discordWorstCaseMs = 5_000 + 5_000 + 2_000;
-    expect(ADAPTER_RESPONSE_TIMEOUT_MS).toBeGreaterThan(discordWorstCaseMs);
+  it('does not export ADAPTER_RESPONSE_TIMEOUT_MS', () => {
+    const src = fs.readFileSync(pipelinePath, 'utf-8');
+    expect(src).not.toContain('ADAPTER_RESPONSE_TIMEOUT_MS');
   });
 });

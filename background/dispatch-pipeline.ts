@@ -204,9 +204,6 @@ export async function startDispatch(
   return Ok({ dispatchId: input.dispatchId, state: rec.state });
 }
 
-/** Timeout for adapter response (Gap 2 fix: 10s → 20s). Covers two 5s internal waits + paste. */
-export const ADAPTER_RESPONSE_TIMEOUT_MS = 20_000;
-
 async function advanceToAdapterInjection(
   record: DispatchRecord,
   scriptFile: string,
@@ -243,35 +240,25 @@ async function advanceToAdapterInjection(
   }
 
   // Send ADAPTER_DISPATCH message — adapter's content-script listener responds.
-  // Gap 3 fix: Wrap with 10s Promise.race timeout. On timeout or connection-destroyed,
-  // re-check tab URL for login redirect (Discord SPA returns 200 then client-side redirects).
+  // SW discipline (CLAUDE.md): no setTimeout. The 30s chrome.alarms backstop
+  // (DISPATCH_TIMEOUT_MINUTES) handles timeout. On sendMessage failure, re-check
+  // tab URL for login redirect (Discord SPA returns 200 then client-side redirects).
   let response: { ok: boolean; code?: string; message?: string; retriable?: boolean };
   try {
-    response = await Promise.race([
-      chrome.tabs.sendMessage(tabId, {
-        type: 'ADAPTER_DISPATCH',
-        payload: {
-          dispatchId: updated.dispatchId,
-          send_to: updated.send_to,
-          prompt: updated.prompt,
-          snapshot: updated.snapshot,
-        },
-      }),
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error('ADAPTER_RESPONSE_TIMEOUT')),
-          ADAPTER_RESPONSE_TIMEOUT_MS,
-        ),
-      ),
-    ]);
+    response = await chrome.tabs.sendMessage(tabId, {
+      type: 'ADAPTER_DISPATCH',
+      payload: {
+        dispatchId: updated.dispatchId,
+        send_to: updated.send_to,
+        prompt: updated.prompt,
+        snapshot: updated.snapshot,
+      },
+    });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
 
-    // On timeout or sendMessage failure, re-check the tab URL for login redirect
-    if (
-      msg === 'ADAPTER_RESPONSE_TIMEOUT' ||
-      /Receiving end does not exist|Could not establish connection/i.test(msg)
-    ) {
+    // On sendMessage failure, re-check the tab URL for login redirect
+    if (/Receiving end does not exist|Could not establish connection/i.test(msg)) {
       let actualUrl: string | undefined;
       try {
         const tab = await chrome.tabs.get(tabId);
@@ -310,7 +297,7 @@ async function advanceToAdapterInjection(
   const rawCode = response.code ?? 'INTERNAL';
   const code: ErrorCode = isErrorCode(rawCode) ? rawCode : 'INTERNAL';
   const message = response.message ?? 'Adapter returned an unknown error';
-  let retriable = response.retriable ?? false;
+  const retriable = response.retriable ?? false;
   if (code === 'INPUT_NOT_FOUND') {
     const adapter = findAdapter(updated.send_to);
     if (adapter && adapter.hostMatches.length > 0) {
@@ -327,12 +314,7 @@ async function advanceToAdapterInjection(
     }
   }
 
-  await failDispatch(
-    updated,
-    code,
-    message,
-    retriable,
-  );
+  await failDispatch(updated, code, message, retriable);
 }
 
 async function succeedDispatch(record: DispatchRecord): Promise<void> {
