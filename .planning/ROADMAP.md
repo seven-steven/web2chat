@@ -70,7 +70,20 @@ Plans:
   2. 登录检测从 Discord 硬编码泛化为 registry 的 loggedOutPathPatterns，pipeline 层 URL 对比使用此配置
   3. 投递失败时 popup 对 retriable 错误显示"重试"按钮，用户点击后以新 dispatchId 重新发起投递
   4. 适配器选择器使用分层置信度，低置信度匹配在 popup 显示警告提示用户确认
-**Plans**: TBD
+**Plans:** 5 plans
+Plans:
+**Wave 1**
+- [ ] 09-01-PLAN.md — Registry timeout policy + adapter response timeout (TDD)
+- [ ] 09-03-PLAN.md — Retriable-driven popup Retry flow (TDD)
+
+**Wave 2** *(blocked on 09-01 completion)*
+- [ ] 09-02-PLAN.md — Registry logged-out path detection (TDD)
+
+**Wave 3** *(blocked on 09-01 and 09-02 completion)*
+- [ ] 09-04-PLAN.md — Selector low-confidence warning protocol + Discord adapter guard (TDD)
+
+**Wave 4** *(blocked on 09-03 and 09-04 completion)*
+- [ ] 09-05-PLAN.md — Low-confidence confirmation UI + i18n
 
 ### Phase 10: Slack 适配器
 **Goal**: 用户可以向 Slack workspace 的任意 channel 投递格式化网页信息
@@ -114,7 +127,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 8. 架构泛化 | v1.1 | 5/5 | Complete | 2026-05-10 |
-| 9. 投递鲁棒性 | v1.1 | 0/? | Not started | - |
+| 9. 投递鲁棒性 | v1.1 | 0/5 | Planned | - |
 | 10. Slack 适配器 | v1.1 | 0/? | Not started | - |
 | 11. Telegram 适配器 | v1.1 | 0/? | Not started | - |
 | 12. 飞书/Lark 适配器 | v1.1 | 0/? | Not started | - |
