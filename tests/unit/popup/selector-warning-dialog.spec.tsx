@@ -49,6 +49,18 @@ describe('SelectorWarningDialog', () => {
     expect(dialog?.getAttribute('aria-describedby')).toBe('selector-warning-dialog-body');
     expect(container.textContent).toContain('selector_low_confidence_heading');
     expect(container.textContent).toContain('selector_low_confidence_body');
+    expect(container.querySelector('[data-testid^="error-banner-"]')).toBeFalsy();
+  });
+
+  it('does not render the warning dialog while the in-progress view is mounted', async () => {
+    const { InProgressView } = await import('@/entrypoints/popup/components/InProgressView');
+
+    await act(async () => {
+      render(<InProgressView dispatchId="dispatch-in-flight" onCancel={vi.fn()} />, container);
+    });
+
+    expect(container.querySelector('[data-testid="dispatch-in-progress"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="selector-warning-dialog"]')).toBeFalsy();
   });
 
   it('cancels when Escape is pressed', async () => {
