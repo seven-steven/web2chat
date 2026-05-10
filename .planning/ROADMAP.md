@@ -48,12 +48,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. MAIN world paste 桥接基于 port.name 前缀路由到 per-adapter mainWorldInjector，SW 不含任何平台特定 DOM 逻辑
   3. SPA 路由检测 filter 从 adapterRegistry 动态构建，新增 SPA 平台只需在 registry 添加条目
   4. ErrorCode 按平台命名空间组织，新平台可追加错误码而不影响现有错误处理
-**Plans:** 4 plans
+**Plans:** 5 plans
 Plans:
 - [x] 08-01-PLAN.md — Branded PlatformId + defineAdapter + buildSpaUrlFilters (TDD)
 - [x] 08-02-PLAN.md — ErrorCode namespace + isErrorCode runtime guard (TDD)
 - [x] 08-03-PLAN.md — MAIN world bridge generalization + SPA filter integration
 - [x] 08-04-PLAN.md — SendForm registry-driven icon lookup + ErrorBanner default cases
+- [ ] 08-05-PLAN.md — Gap closure: popup bundle isolation + SW discipline + review fixes
 
 ### Phase 9: 投递鲁棒性
 **Goal**: 投递链路对网络延迟、DOM 变化、登录状态变化具备分层防护和用户可操作的重试能力
