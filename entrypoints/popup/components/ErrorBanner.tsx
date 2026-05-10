@@ -120,6 +120,8 @@ function errorHeading(code: ErrorCode): string {
       return t('error_code_OPENCLAW_OFFLINE_heading');
     case 'OPENCLAW_PERMISSION_DENIED':
       return t('error_code_OPENCLAW_PERMISSION_DENIED_heading');
+    default:
+      return t('error_code_INTERNAL_heading');
   }
 }
 
@@ -147,6 +149,8 @@ function errorBody(code: ErrorCode): string {
       return t('error_code_OPENCLAW_OFFLINE_body');
     case 'OPENCLAW_PERMISSION_DENIED':
       return t('error_code_OPENCLAW_PERMISSION_DENIED_body');
+    default:
+      return t('error_code_INTERNAL_body');
   }
 }
 

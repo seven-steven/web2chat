@@ -21,7 +21,7 @@ import type {
   HistoryListOutput,
   DispatchStartInput,
 } from '@/shared/messaging';
-import { detectPlatformId, findAdapter } from '@/shared/adapters/registry';
+import { detectPlatformId, findAdapter, adapterRegistry } from '@/shared/adapters/registry';
 import * as grantedOriginsRepo from '@/shared/storage/repos/grantedOrigins';
 import * as draftRepo from '@/shared/storage/repos/popupDraft';
 import { Combobox, type ComboboxOption } from './Combobox';
@@ -389,18 +389,39 @@ function toOptions(data: HistoryListOutput, kind: 'sendTo' | 'prompt'): Combobox
   }));
 }
 
+/**
+ * Convert registry iconKey (e.g. 'platform_icon_discord') to PlatformIcon variant.
+ * Strips 'platform_icon_' prefix. Validates against known PlatformIcon variants.
+ *
+ * Limitation: PlatformIcon requires explicit variant support (SVG asset + variant
+ * type union member). New platforms whose iconKey variant is not yet in PlatformIcon
+ * fall back to 'unsupported'. When adding a new platform, its variant string must be
+ * added to BOTH PlatformIcon's PlatformVariant type AND the known array below.
+ *
+ * Benefit over old approach: icon mapping is consolidated in one place instead of
+ * duplicated across variantFromUrl and iconForPlatformId if/else chains.
+ */
+const ICON_KEY_PREFIX = 'platform_icon_';
+function iconKeyToVariant(iconKey: string): ComboboxOption['iconVariant'] {
+  if (!iconKey.startsWith(ICON_KEY_PREFIX)) return 'unsupported';
+  const variant = iconKey.slice(ICON_KEY_PREFIX.length);
+  // Validate against known PlatformIcon variants.
+  // When adding a new platform, add its variant string here AND to PlatformIcon.
+  const known = ['mock', 'openclaw', 'discord'] as const;
+  return (known as readonly string[]).includes(variant)
+    ? (variant as ComboboxOption['iconVariant'])
+    : 'unsupported';
+}
+
 function variantFromUrl(url: string): ComboboxOption['iconVariant'] {
-  const id = detectPlatformId(url);
-  if (id === 'mock') return 'mock';
-  if (id === 'openclaw') return 'openclaw';
-  if (id === 'discord') return 'discord';
-  return 'unsupported';
+  const adapter = findAdapter(url);
+  if (!adapter) return 'unsupported';
+  return iconKeyToVariant(adapter.iconKey);
 }
 
 function iconForPlatformId(id: string | null): ComboboxOption['iconVariant'] {
   if (id === null) return 'unsupported';
-  if (id === 'mock') return 'mock';
-  if (id === 'openclaw') return 'openclaw';
-  if (id === 'discord') return 'discord';
-  return 'unsupported';
+  const entry = adapterRegistry.find((e) => e.id === id);
+  if (!entry) return 'unsupported';
+  return iconKeyToVariant(entry.iconKey);
 }
