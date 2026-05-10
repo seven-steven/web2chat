@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone Goal:** 扩展 IM 平台覆盖至 Slack、Telegram、Feishu/Lark，同时加固投递链路鲁棒性
 
-- [x] **Phase 8: 架构泛化** — PlatformId branded type + MAIN world 桥接泛化 + SPA filter 动态构建 + ErrorCode 命名空间
+- [x] **Phase 8: 架构泛化** — PlatformId branded type + MAIN world 桥接泛化 + SPA filter 动态构建 + ErrorCode 命名空间，review/verification closed 2026-05-10
 - [ ] **Phase 9: 投递鲁棒性** — 超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度
 - [ ] **Phase 10: Slack 适配器** — Slack URL 匹配 + 登录检测 + Quill 编辑器注入 + 发送确认 + 图标/i18n
 - [ ] **Phase 11: Telegram 适配器** — Telegram Web K URL 匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n
@@ -48,7 +48,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. MAIN world paste 桥接基于 port.name 前缀路由到 per-adapter mainWorldInjector，SW 不含任何平台特定 DOM 逻辑
   3. SPA 路由检测 filter 从 adapterRegistry 动态构建，新增 SPA 平台只需在 registry 添加条目
   4. ErrorCode 按平台命名空间组织，新平台可追加错误码而不影响现有错误处理
-**Plans:** 5/5 plans executed
+**Plans:** 5/5 plans executed; review and verification closed
 Plans:
 **Wave 1**
 - [x] 08-01-PLAN.md — Branded PlatformId + defineAdapter + buildSpaUrlFilters (TDD)
@@ -83,7 +83,7 @@ Plans:
 - [x] 09-04-PLAN.md — Selector low-confidence warning protocol + Discord adapter guard (TDD)
 
 **Wave 4** *(blocked on 09-03 and 09-04 completion)*
-- [ ] 09-05-PLAN.md — Low-confidence confirmation UI + i18n
+- [x] 09-05-PLAN.md — Low-confidence confirmation UI + i18n
 
 ### Phase 10: Slack 适配器
 **Goal**: 用户可以向 Slack workspace 的任意 channel 投递格式化网页信息
@@ -126,8 +126,8 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 8. 架构泛化 | v1.1 | 5/5 | Complete | 2026-05-10 |
-| 9. 投递鲁棒性 | v1.1 | 0/5 | Planned | - |
+| 8. 架构泛化 | v1.1 | 5/5 | Complete / reviewed | 2026-05-10 |
+| 9. 投递鲁棒性 | v1.1 | 5/5 | Ready for verification | - |
 | 10. Slack 适配器 | v1.1 | 0/? | Not started | - |
 | 11. Telegram 适配器 | v1.1 | 0/? | Not started | - |
 | 12. 飞书/Lark 适配器 | v1.1 | 0/? | Not started | - |
