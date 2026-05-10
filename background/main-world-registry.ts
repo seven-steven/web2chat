@@ -1,21 +1,18 @@
 /**
  * SW-local MAIN world injector registry (D-100).
  *
- * Builds the injector map by iterating adapterRegistry entries that declare
- * a mainWorldInjector function. background.ts imports this module; popup does not.
+ * Manual map pattern — each platform with a MAIN world injector is listed
+ * explicitly here with a direct import. This module is only imported by
+ * background.ts (SW); popup never touches it, keeping injector code out of
+ * the popup bundle.
  *
  * Adding a new MAIN world platform:
  *   1. Create injector function in background/injectors/<platform>-main-world.ts
- *   2. Import it in shared/adapters/registry.ts and set on the entry's mainWorldInjector
- *   3. This module auto-discovers it -- no editing needed here or in background.ts
+ *   2. Import it here and add to the map
+ *   3. No changes needed to shared/adapters/registry.ts or background.ts
  */
-import { adapterRegistry } from '@/shared/adapters/registry';
+import { discordMainWorldPaste } from '@/background/injectors/discord-main-world';
 
-export const mainWorldInjectors = new Map<string, (text: string) => Promise<boolean>>(
-  adapterRegistry
-    .filter(
-      (e): e is typeof e & { mainWorldInjector: (text: string) => Promise<boolean> } =>
-        typeof e.mainWorldInjector === 'function',
-    )
-    .map((e) => [e.id as string, e.mainWorldInjector]),
-);
+export const mainWorldInjectors = new Map<string, (text: string) => Promise<boolean>>([
+  ['discord', discordMainWorldPaste],
+]);

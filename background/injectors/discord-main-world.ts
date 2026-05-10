@@ -4,7 +4,7 @@
  * Finds Slate editor, dispatches synthetic ClipboardEvent with formatted text.
  *
  * Moved from entrypoints/background.ts in Phase 8 (D-99, D-100).
- * Imported by shared/adapters/registry.ts as the Discord entry's mainWorldInjector.
+ * Imported by background/main-world-registry.ts (SW-only, not shared/).
  */
 export async function discordMainWorldPaste(text: string): Promise<boolean> {
   const active = document.activeElement;
