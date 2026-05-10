@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 **Milestone Goal:** 扩展 IM 平台覆盖至 Slack、Telegram、Feishu/Lark，同时加固投递链路鲁棒性
 
-- [ ] **Phase 8: 架构泛化** — PlatformId branded type + MAIN world 桥接泛化 + SPA filter 动态构建 + ErrorCode 命名空间
+- [x] **Phase 8: 架构泛化** — PlatformId branded type + MAIN world 桥接泛化 + SPA filter 动态构建 + ErrorCode 命名空间
 - [ ] **Phase 9: 投递鲁棒性** — 超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度
 - [ ] **Phase 10: Slack 适配器** — Slack URL 匹配 + 登录检测 + Quill 编辑器注入 + 发送确认 + 图标/i18n
 - [ ] **Phase 11: Telegram 适配器** — Telegram Web K URL 匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n
@@ -48,7 +48,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. MAIN world paste 桥接基于 port.name 前缀路由到 per-adapter mainWorldInjector，SW 不含任何平台特定 DOM 逻辑
   3. SPA 路由检测 filter 从 adapterRegistry 动态构建，新增 SPA 平台只需在 registry 添加条目
   4. ErrorCode 按平台命名空间组织，新平台可追加错误码而不影响现有错误处理
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans executed
 Plans:
 **Wave 1**
 - [x] 08-01-PLAN.md — Branded PlatformId + defineAdapter + buildSpaUrlFilters (TDD)
@@ -59,7 +59,7 @@ Plans:
 - [x] 08-04-PLAN.md — SendForm registry-driven icon lookup + ErrorBanner default cases
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 08-05-PLAN.md — Gap closure: popup bundle isolation + SW discipline + review fixes
+- [x] 08-05-PLAN.md — Gap closure: popup bundle isolation + SW discipline + review fixes
 
 ### Phase 9: 投递鲁棒性
 **Goal**: 投递链路对网络延迟、DOM 变化、登录状态变化具备分层防护和用户可操作的重试能力
@@ -113,7 +113,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 8. 架构泛化 | v1.1 | 4/5 | In Progress|  |
+| 8. 架构泛化 | v1.1 | 5/5 | Complete | 2026-05-10 |
 | 9. 投递鲁棒性 | v1.1 | 0/? | Not started | - |
 | 10. Slack 适配器 | v1.1 | 0/? | Not started | - |
 | 11. Telegram 适配器 | v1.1 | 0/? | Not started | - |

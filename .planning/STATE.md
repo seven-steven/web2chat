@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: 多渠道适配
 status: executing
-stopped_at: Phase 8 context gathered
-last_updated: "2026-05-09T15:57:24.085Z"
-last_activity: 2026-05-09 -- Phase 08 execution started
+stopped_at: Phase 8 Plan 05 complete
+last_updated: "2026-05-10T05:57:41Z"
+last_activity: 2026-05-10 -- Phase 08 Plan 05 gap closure complete
 progress:
   total_phases: 5
-  completed_phases: 0
-  total_plans: 4
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 5
+  completed_plans: 5
+  percent: 100
 ---
 
 # 项目状态
@@ -25,25 +25,25 @@ progress:
 
 ## Current Position
 
-Phase: 08 (architecture-generalization) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 08
-Last activity: 2026-05-09 -- Phase 08 execution started
+Phase: 08 (architecture-generalization) — COMPLETE
+Plan: 5 of 5
+Status: Phase 08 all plans executed
+Last activity: 2026-05-10 -- Phase 08 Plan 05 gap closure complete
 
-Progress: [..........] 0%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
 **v1.1 Velocity:**
 
-- Total plans completed: 0
-- Total execution time: —
+- Total plans completed: 5
+- Total execution time: Phase 08 complete
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 8. 架构泛化 | 0/? | — | — |
+| 8. 架构泛化 | 5/5 | — | — |
 | 9. 投递鲁棒性 | 0/? | — | — |
 | 10. Slack 适配器 | 0/? | — | — |
 | 11. Telegram 适配器 | 0/? | — | — |
@@ -57,6 +57,9 @@ Progress: [..........] 0%
 
 v1.1 前置决策：
 
+- Manual map pattern for SW-only injector registry -- prevents shared/ from importing background/, isolates popup bundle
+- chrome.alarms as sole dispatch timeout mechanism -- SW discipline, no setTimeout in service worker
+- requiresDynamicPermission explicit field on AdapterRegistryEntry -- replaces hostMatches.length===0 sentinel
 - PlatformId branded type 替代硬编码联合类型，牺牲 switch 穷举检查换取并行开发无冲突
 - MAIN world 桥接泛化为 per-adapter 路由，SW 不含平台 DOM 逻辑
 - 投递重采用 popup-driven（非 SW auto-retry），避免 MV3 SW 生命周期问题
@@ -87,6 +90,6 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-09:
 
 ## Session Continuity
 
-Last session: 2026-05-09T14:56:46.713Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-architecture-generalization/08-CONTEXT.md
+Last session: 2026-05-10T05:57:41Z
+Stopped at: Phase 08 Plan 05 gap closure complete
+Resume file: .planning/phases/08-architecture-generalization/08-05-SUMMARY.md

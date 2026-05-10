@@ -9,10 +9,10 @@ Requirements for v1.1 milestone — multi-channel adapter support + dispatch rob
 
 ### Architecture (ARCH)
 
-- [ ] **ARCH-01**: PlatformId 从硬编码联合类型（`'mock' | 'openclaw' | 'discord'`）改为 branded string type，通过注册表条目的 `id` 字段约束合法值，避免多平台并行开发时的合并冲突
-- [ ] **ARCH-02**: MAIN world paste 桥接从 Discord 专用（`DISCORD_MAIN_WORLD_PASTE_PORT`）泛化为 per-adapter 路由（基于 `port.name` 前缀匹配），每个适配器提供自己的 `mainWorldInjector` 函数
-- [ ] **ARCH-03**: SPA 路由检测 filter 从硬编码 `discord.com` 改为从 `adapterRegistry` 动态构建 `webNavigation.onHistoryStateUpdated` filter
-- [ ] **ARCH-04**: ErrorCode 按平台命名空间组织（通用前缀 + 平台前缀），支持新平台扩展而不影响现有错误处理
+- [x] **ARCH-01**: PlatformId 从硬编码联合类型（`'mock' | 'openclaw' | 'discord'`）改为 branded string type，通过注册表条目的 `id` 字段约束合法值，避免多平台并行开发时的合并冲突
+- [x] **ARCH-02**: MAIN world paste 桥接从 Discord 专用（`DISCORD_MAIN_WORLD_PASTE_PORT`）泛化为 per-adapter 路由（基于 `port.name` 前缀匹配），每个适配器提供自己的 `mainWorldInjector` 函数
+- [x] **ARCH-03**: SPA 路由检测 filter 从硬编码 `discord.com` 改为从 `adapterRegistry` 动态构建 `webNavigation.onHistoryStateUpdated` filter
+- [x] **ARCH-04**: ErrorCode 按平台命名空间组织（通用前缀 + 平台前缀），支持新平台扩展而不影响现有错误处理
 
 ### Dispatch Robustness (DSPT)
 
@@ -84,10 +84,10 @@ Requirements for v1.1 milestone — multi-channel adapter support + dispatch rob
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| ARCH-01 | Phase 8 | Pending |
-| ARCH-02 | Phase 8 | Pending |
-| ARCH-03 | Phase 8 | Pending |
-| ARCH-04 | Phase 8 | Pending |
+| ARCH-01 | Phase 8 | Complete |
+| ARCH-02 | Phase 8 | Complete |
+| ARCH-03 | Phase 8 | Complete |
+| ARCH-04 | Phase 8 | Complete |
 | DSPT-01 | Phase 9 | Pending |
 | DSPT-02 | Phase 9 | Pending |
 | DSPT-03 | Phase 9 | Pending |
