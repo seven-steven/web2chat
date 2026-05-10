@@ -61,6 +61,13 @@ export interface AdapterRegistryEntry {
   readonly errorCodes?: readonly string[];
   /** True for adapters that need runtime origin permission (e.g. self-hosted platforms). */
   readonly requiresDynamicPermission?: boolean;
+
+  // Phase 9 additions:
+
+  /** Total dispatch timeout. Must be >= Chrome alarms 30s minimum. */
+  readonly dispatchTimeoutMs?: number;
+  /** Timeout for one chrome.tabs.sendMessage adapter response wait. */
+  readonly adapterResponseTimeoutMs?: number;
 }
 
 // ── defineAdapter helper (D-97) ────────────────────────────────────────────

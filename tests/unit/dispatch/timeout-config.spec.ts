@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { adapterRegistry } from '@/shared/adapters/registry';
-import type { AdapterRegistryEntry } from '@/shared/adapters/types';
+import { defineAdapter } from '@/shared/adapters/types';
 import {
   DEFAULT_ADAPTER_RESPONSE_TIMEOUT_MS,
   DEFAULT_DISPATCH_TIMEOUT_MS,
@@ -23,7 +23,7 @@ describe('registry dispatch timeout policy (DSPT-01)', () => {
   });
 
   it('honors explicit adapter timeout overrides without rounding', () => {
-    const adapter = {
+    const adapter = defineAdapter({
       id: 'timeout-override-test',
       match: () => false,
       scriptFile: 'content-scripts/timeout-override-test.js',
@@ -31,10 +31,7 @@ describe('registry dispatch timeout policy (DSPT-01)', () => {
       iconKey: 'platform_icon_mock',
       dispatchTimeoutMs: 45_000,
       adapterResponseTimeoutMs: 12_000,
-    } as unknown as AdapterRegistryEntry & {
-      readonly dispatchTimeoutMs: number;
-      readonly adapterResponseTimeoutMs: number;
-    };
+    });
 
     expect(resolveAdapterTimeouts(adapter)).toEqual({
       dispatchTimeoutMs: 45_000,
@@ -43,14 +40,14 @@ describe('registry dispatch timeout policy (DSPT-01)', () => {
   });
 
   it('rejects dispatchTimeoutMs below Chrome alarms minimum', () => {
-    const adapter = {
+    const adapter = defineAdapter({
       id: 'timeout-too-low-test',
       match: () => false,
       scriptFile: 'content-scripts/timeout-too-low-test.js',
       hostMatches: ['https://example.com/*'],
       iconKey: 'platform_icon_mock',
       dispatchTimeoutMs: 29_999,
-    } as unknown as AdapterRegistryEntry & { readonly dispatchTimeoutMs: number };
+    });
 
     expect(() => resolveAdapterTimeouts(adapter)).toThrow(/dispatchTimeoutMs must be >= 30000/);
   });
