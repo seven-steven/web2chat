@@ -43,10 +43,10 @@ import { findAdapter } from '@/shared/adapters/registry';
 import {
   DEFAULT_DISPATCH_TIMEOUT_MS,
   AdapterResponseTimeoutError,
+  isLoggedOutUrlForAdapter,
   resolveAdapterTimeouts,
   withAdapterResponseTimeout,
 } from '@/shared/adapters/dispatch-policy';
-import type { AdapterRegistryEntry } from '@/shared/adapters/types';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 import * as historyRepo from '@/shared/storage/repos/history';
 import * as bindingRepo from '@/shared/storage/repos/binding';
@@ -67,24 +67,6 @@ export const DISPATCH_TIMEOUT_MINUTES = DEFAULT_DISPATCH_TIMEOUT_MS / 60_000;
 /** Alarm name prefixes — listed for spec assertion + cancelDispatch cleanup. */
 const ALARM_PREFIX_TIMEOUT = 'dispatch-timeout:';
 const ALARM_PREFIX_BADGE_CLEAR = 'badge-clear:';
-
-/**
- * True when `actualUrl` lives on a host described by any of the adapter's
- * `hostMatches` glob patterns. Used as the "did the tab navigate within the
- * platform's domain" check — distinguishing a logged-out redirect to
- * /login (still discord.com) from a tab close or unrelated navigation.
- */
-function isOnAdapterHost(adapter: AdapterRegistryEntry, actualUrl: string): boolean {
-  return adapter.hostMatches.some((pattern) => {
-    try {
-      const patternHost = new URL(pattern.replace(/\*/g, 'x')).hostname;
-      const actualHost = new URL(actualUrl).hostname;
-      return actualHost === patternHost || actualHost.endsWith('.' + patternHost);
-    } catch {
-      return false;
-    }
-  });
-}
 
 /**
  * Open or activate the tab whose URL canonical-equals send_to.
@@ -286,8 +268,7 @@ async function advanceToAdapterInjection(
       }
       if (actualUrl) {
         const adapter = findAdapter(updated.send_to);
-        // If URL no longer matches the adapter (e.g., redirected to /login)
-        if (adapter && !adapter.match(actualUrl)) {
+        if (adapter && isLoggedOutUrlForAdapter(adapter, actualUrl)) {
           await failDispatch(updated, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
           return;
         }
@@ -318,17 +299,15 @@ async function advanceToAdapterInjection(
   const retriable = response.retriable ?? false;
   if (code === 'INPUT_NOT_FOUND') {
     const adapter = findAdapter(updated.send_to);
-    if (adapter && adapter.hostMatches.length > 0) {
-      try {
-        const tab = await chrome.tabs.get(tabId);
-        const actualUrl = tab.url;
-        if (actualUrl && isOnAdapterHost(adapter, actualUrl) && !adapter.match(actualUrl)) {
-          await failDispatch(updated, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
-          return;
-        }
-      } catch {
-        // Tab closed — leave INPUT_NOT_FOUND as-is.
+    try {
+      const tab = await chrome.tabs.get(tabId);
+      const actualUrl = tab.url;
+      if (adapter && actualUrl && isLoggedOutUrlForAdapter(adapter, actualUrl)) {
+        await failDispatch(updated, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
+        return;
       }
+    } catch {
+      // Tab closed — leave INPUT_NOT_FOUND as-is.
     }
   }
 
@@ -398,22 +377,17 @@ async function advanceDispatchForTab(tabId: number): Promise<void> {
       continue;
     }
 
-    // Phase 5 D-70: Login redirect detection for Discord (and future adapters).
-    // After tab completes loading, check if the actual URL still matches the adapter.
-    // If tab URL is on the adapter's host but doesn't match adapter.match(),
-    // a redirect occurred (e.g., discord.com/login?redirect_to=...).
-    if (adapter.hostMatches.length > 0) {
-      let actualUrl: string | undefined;
-      try {
-        const tab = await chrome.tabs.get(tabId);
-        actualUrl = tab.url;
-      } catch {
-        // Tab may have been closed
-      }
-      if (actualUrl && !adapter.match(actualUrl) && isOnAdapterHost(adapter, actualUrl)) {
-        await failDispatch(record, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
-        continue;
-      }
+    // D-118: tab-complete and SPA advancement use the same registry-owned helper.
+    let actualUrl: string | undefined;
+    try {
+      const tab = await chrome.tabs.get(tabId);
+      actualUrl = tab.url;
+    } catch {
+      // Tab may have been closed
+    }
+    if (actualUrl && isLoggedOutUrlForAdapter(adapter, actualUrl)) {
+      await failDispatch(record, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
+      continue;
     }
 
     const { adapterResponseTimeoutMs } = resolveAdapterTimeouts(adapter);

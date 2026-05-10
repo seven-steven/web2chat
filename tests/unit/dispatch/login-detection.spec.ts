@@ -1,18 +1,16 @@
 /**
- * Unit tests for dispatch-pipeline login redirect detection (D-70).
+ * Unit tests for registry-owned logged-out URL detection (D-115..D-118).
  *
- * Validates that onTabComplete detects Discord login redirects:
- * when a tab URL is on the adapter's host but doesn't match adapter.match(),
- * the dispatch should fail with NOT_LOGGED_IN.
- *
- * Also covers the post-launch fix (debug session discord-login-detection,
- * 2026-05-07): when the adapter returns INPUT_NOT_FOUND but the tab URL
- * has navigated to a non-channel discord.com URL (e.g. /login or /), the
- * pipeline should remap the error code to NOT_LOGGED_IN.
+ * URL-layer NOT_LOGGED_IN remap is driven only by adapter.loggedOutPathPatterns.
+ * Same-host but non-matching URLs are not generic login redirects.
  */
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
-import { onTabComplete, startDispatch } from '@/background/dispatch-pipeline';
+import {
+  onSpaHistoryStateUpdated,
+  onTabComplete,
+  startDispatch,
+} from '@/background/dispatch-pipeline';
 import * as dispatchRepo from '@/shared/storage/repos/dispatch';
 import type { DispatchRecord } from '@/shared/storage/repos/dispatch';
 import { definePlatformId } from '@/shared/adapters/types';
@@ -20,7 +18,10 @@ import { definePlatformId } from '@/shared/adapters/types';
 const DISCORD_CHANNEL_URL = 'https://discord.com/channels/123/456';
 const DISCORD_LOGIN_URL = 'https://discord.com/login?redirect_to=%2Fchannels%2F123%2F456';
 const DISCORD_ROOT_URL = 'https://discord.com/';
+const DISCORD_REGISTER_URL = 'https://discord.com/register';
+const DISCORD_SAME_HOST_NON_LOGIN_URL = 'https://discord.com/channels/@me';
 const OPENCLAW_URL = 'http://localhost:18789/chat?session=agent:test:s1';
+const OPENCLAW_LOGIN_URL = 'http://localhost:18789/login?redirect=/chat%3Fsession%3Dagent:test:s1';
 
 const TAB_ID = 42;
 
@@ -46,135 +47,122 @@ function makeRecord(overrides: Partial<DispatchRecord> = {}): DispatchRecord {
   };
 }
 
-describe('dispatch-pipeline login detection (D-70)', () => {
+function stubChromeForAwaitingComplete(actualUrl: string | undefined): void {
+  vi.stubGlobal('chrome', {
+    ...chrome,
+    tabs: {
+      ...chrome.tabs,
+      get: vi.fn().mockResolvedValue({ id: TAB_ID, url: actualUrl }),
+      sendMessage: vi.fn().mockResolvedValue({ ok: true }),
+    },
+    scripting: {
+      ...chrome.scripting,
+      executeScript: vi.fn().mockResolvedValue([{ result: undefined }]),
+    },
+    action: {
+      ...chrome.action,
+      setBadgeText: vi.fn().mockResolvedValue(undefined),
+      setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+    },
+    alarms: {
+      ...chrome.alarms,
+      create: vi.fn().mockResolvedValue(undefined),
+      clear: vi.fn().mockResolvedValue(true),
+    },
+    storage: chrome.storage,
+  });
+}
+
+const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+describe('dispatch-pipeline loggedOutPathPatterns detection (D-115..D-118)', () => {
   beforeEach(() => {
     fakeBrowser.reset();
-
-    // Stub chrome.action (badge)
-    vi.stubGlobal('chrome', {
-      ...chrome,
-      tabs: {
-        ...chrome.tabs,
-        get: vi.fn(),
-        sendMessage: vi.fn().mockResolvedValue({ ok: true }),
-      },
-      scripting: {
-        ...chrome.scripting,
-        executeScript: vi.fn().mockResolvedValue([{ result: undefined }]),
-      },
-      action: {
-        ...chrome.action,
-        setBadgeText: vi.fn().mockResolvedValue(undefined),
-        setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
-      },
-      alarms: {
-        ...chrome.alarms,
-        create: vi.fn().mockResolvedValue(undefined),
-        clear: vi.fn().mockResolvedValue(true),
-      },
-      storage: chrome.storage,
-    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('calls failDispatch with NOT_LOGGED_IN when tab URL is discord.com/login', async () => {
-    // Arrange: store a dispatch record awaiting_complete
+  it('remaps tab complete to NOT_LOGGED_IN when Discord URL matches /login*', async () => {
     const record = makeRecord();
     await dispatchRepo.set(record);
+    stubChromeForAwaitingComplete(DISCORD_LOGIN_URL);
 
-    // Mock chrome.tabs.get to return the login URL
-    (chrome.tabs.get as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-      id: TAB_ID,
-      url: DISCORD_LOGIN_URL,
-    });
-
-    // Act
     await onTabComplete(TAB_ID, { status: 'complete' }, {} as chrome.tabs.Tab);
 
-    // Assert: record should be in error state with NOT_LOGGED_IN
     const updated = await dispatchRepo.get(record.dispatchId);
     expect(updated?.state).toBe('error');
     expect(updated?.error?.code).toBe('NOT_LOGGED_IN');
     expect(updated?.error?.message).toContain('login');
-
-    // advanceToAdapterInjection should NOT have been called (no executeScript)
     expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
   });
 
-  it('proceeds to advanceToAdapterInjection when tab URL matches adapter', async () => {
-    // Arrange
-    const record = makeRecord();
+  it('remaps SPA history advancement to NOT_LOGGED_IN when Discord URL matches /register*', async () => {
+    const record = makeRecord({ dispatchId: 'test-dispatch-spa' });
     await dispatchRepo.set(record);
+    stubChromeForAwaitingComplete(DISCORD_REGISTER_URL);
 
-    // Mock chrome.tabs.get to return the matching channel URL
-    (chrome.tabs.get as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-      id: TAB_ID,
-      url: DISCORD_CHANNEL_URL,
-    });
+    onSpaHistoryStateUpdated({
+      tabId: TAB_ID,
+    } as chrome.webNavigation.WebNavigationTransitionCallbackDetails);
+    await flush();
 
-    // Act
-    await onTabComplete(TAB_ID, { status: 'complete' }, {} as chrome.tabs.Tab);
-
-    // Assert: executeScript should have been called (adapter injection proceeded)
-    expect(chrome.scripting.executeScript).toHaveBeenCalled();
-
-    // Record should NOT be in error with NOT_LOGGED_IN
     const updated = await dispatchRepo.get(record.dispatchId);
-    expect(updated?.error?.code).not.toBe('NOT_LOGGED_IN');
+    expect(updated?.state).toBe('error');
+    expect(updated?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(updated?.error?.message).toContain('register');
+    expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
   });
 
-  it('skips login check for adapters with empty hostMatches (openclaw)', async () => {
-    // Arrange: record targeting openclaw (empty hostMatches)
-    const record = makeRecord({ send_to: OPENCLAW_URL, platform_id: definePlatformId('openclaw') });
+  it('does not remap same-host Discord non-matching paths without loggedOutPathPatterns match', async () => {
+    const record = makeRecord();
     await dispatchRepo.set(record);
+    stubChromeForAwaitingComplete(DISCORD_SAME_HOST_NON_LOGIN_URL);
 
-    // Act
     await onTabComplete(TAB_ID, { status: 'complete' }, {} as chrome.tabs.Tab);
 
-    // Assert: chrome.tabs.get was NOT called (login check skipped for empty hostMatches)
-    expect(chrome.tabs.get).not.toHaveBeenCalled();
+    const updated = await dispatchRepo.get(record.dispatchId);
+    expect(updated?.error?.code).not.toBe('NOT_LOGGED_IN');
+    expect(chrome.scripting.executeScript).toHaveBeenCalled();
+  });
 
-    // executeScript should have been called (adapter injection proceeded)
+  it('does not perform URL-layer remap for OpenClaw because it has no loggedOutPathPatterns', async () => {
+    const record = makeRecord({
+      send_to: OPENCLAW_URL,
+      platform_id: definePlatformId('openclaw'),
+    });
+    await dispatchRepo.set(record);
+    stubChromeForAwaitingComplete(OPENCLAW_LOGIN_URL);
+
+    await onTabComplete(TAB_ID, { status: 'complete' }, {} as chrome.tabs.Tab);
+
+    const updated = await dispatchRepo.get(record.dispatchId);
+    expect(updated?.error?.code).not.toBe('NOT_LOGGED_IN');
     expect(chrome.scripting.executeScript).toHaveBeenCalled();
   });
 
   it('does nothing when changeInfo.status is not complete', async () => {
     const record = makeRecord();
     await dispatchRepo.set(record);
+    stubChromeForAwaitingComplete(DISCORD_LOGIN_URL);
 
     await onTabComplete(TAB_ID, { status: 'loading' }, {} as chrome.tabs.Tab);
 
-    // Record should remain unchanged
     const updated = await dispatchRepo.get(record.dispatchId);
     expect(updated?.state).toBe('awaiting_complete');
     expect(chrome.tabs.get).not.toHaveBeenCalled();
   });
 });
 
-/**
- * Backstop remap added in debug session discord-login-detection (2026-05-07).
- *
- * When the Discord adapter races against a tab navigation to /login or /,
- * its `extractChannelId(window.location.href)` returns null and it emits
- * INPUT_NOT_FOUND ("Channel mismatch"). The pipeline must detect this and
- * remap to NOT_LOGGED_IN so the user gets the correct error banner.
- *
- * We exercise the path via startDispatch with `expectsCompleteEvent: false`
- * (tab already at the target URL) — that drives advanceToAdapterInjection
- * directly so we can assert on the response handling.
- */
-describe('dispatch-pipeline INPUT_NOT_FOUND -> NOT_LOGGED_IN remap (post-launch fix)', () => {
-  const SEND_TO = DISCORD_CHANNEL_URL;
+describe('dispatch-pipeline INPUT_NOT_FOUND URL remap', () => {
   const DISPATCH_ID = 'remap-001';
   const TAB_ID_REMAP = 99;
 
-  function baseStartInput() {
+  function baseStartInput(sendTo = DISCORD_CHANNEL_URL) {
     return {
       dispatchId: DISPATCH_ID,
-      send_to: SEND_TO,
+      send_to: sendTo,
       prompt: 'hi',
       snapshot: {
         title: 'T',
@@ -195,23 +183,20 @@ describe('dispatch-pipeline INPUT_NOT_FOUND -> NOT_LOGGED_IN remap (post-launch 
   });
 
   function stubChrome(opts: {
+    sendTo?: string;
     tabsGetUrl: string | null;
     sendMessageResponse: { ok: boolean; code?: string; message?: string; retriable?: boolean };
   }) {
+    const sendTo = opts.sendTo ?? DISCORD_CHANNEL_URL;
     vi.stubGlobal('chrome', {
       ...chrome,
       tabs: {
         ...chrome.tabs,
-        // tabs.query returns existing matching tab so startDispatch's openOrActivateTab
-        // takes the "exact URL match, already complete" branch — fast-path.
         query: vi
           .fn()
-          .mockResolvedValue([{ id: TAB_ID_REMAP, url: SEND_TO, status: 'complete', windowId: 1 }]),
+          .mockResolvedValue([{ id: TAB_ID_REMAP, url: sendTo, status: 'complete', windowId: 1 }]),
         update: vi.fn().mockResolvedValue(undefined),
-        get: vi.fn().mockResolvedValue({
-          id: TAB_ID_REMAP,
-          url: opts.tabsGetUrl,
-        }),
+        get: vi.fn().mockResolvedValue({ id: TAB_ID_REMAP, url: opts.tabsGetUrl }),
         sendMessage: vi.fn().mockResolvedValue(opts.sendMessageResponse),
       },
       windows: {
@@ -233,13 +218,16 @@ describe('dispatch-pipeline INPUT_NOT_FOUND -> NOT_LOGGED_IN remap (post-launch 
         clear: vi.fn().mockResolvedValue(true),
       },
       storage: chrome.storage,
-      permissions: chrome.permissions,
+      permissions: {
+        ...chrome.permissions,
+        contains: vi.fn().mockResolvedValue(true),
+      },
     });
   }
 
-  it('remaps INPUT_NOT_FOUND to NOT_LOGGED_IN when tab URL is /login on discord.com', async () => {
+  it('remaps INPUT_NOT_FOUND to NOT_LOGGED_IN when tab URL matches Discord root loggedOutPathPatterns', async () => {
     stubChrome({
-      tabsGetUrl: DISCORD_LOGIN_URL,
+      tabsGetUrl: DISCORD_ROOT_URL,
       sendMessageResponse: {
         ok: false,
         code: 'INPUT_NOT_FOUND',
@@ -257,9 +245,9 @@ describe('dispatch-pipeline INPUT_NOT_FOUND -> NOT_LOGGED_IN remap (post-launch 
     expect(stored?.error?.retriable).toBe(true);
   });
 
-  it('remaps INPUT_NOT_FOUND to NOT_LOGGED_IN when tab URL is discord.com root', async () => {
+  it('does not remap INPUT_NOT_FOUND for same-host Discord non-login paths', async () => {
     stubChrome({
-      tabsGetUrl: DISCORD_ROOT_URL,
+      tabsGetUrl: DISCORD_SAME_HOST_NON_LOGIN_URL,
       sendMessageResponse: {
         ok: false,
         code: 'INPUT_NOT_FOUND',
@@ -271,12 +259,14 @@ describe('dispatch-pipeline INPUT_NOT_FOUND -> NOT_LOGGED_IN remap (post-launch 
     await startDispatch(baseStartInput());
 
     const stored = await dispatchRepo.get(DISPATCH_ID);
-    expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(stored?.error?.code).toBe('INPUT_NOT_FOUND');
+    expect(stored?.error?.message).toBe('Channel mismatch');
   });
 
-  it('keeps INPUT_NOT_FOUND when tab URL is still on a valid channel (genuine editor failure)', async () => {
+  it('does not remap INPUT_NOT_FOUND for OpenClaw URL shapes because OpenClaw is unconfigured', async () => {
     stubChrome({
-      tabsGetUrl: DISCORD_CHANNEL_URL,
+      sendTo: OPENCLAW_URL,
+      tabsGetUrl: OPENCLAW_LOGIN_URL,
       sendMessageResponse: {
         ok: false,
         code: 'INPUT_NOT_FOUND',
@@ -285,14 +275,14 @@ describe('dispatch-pipeline INPUT_NOT_FOUND -> NOT_LOGGED_IN remap (post-launch 
       },
     });
 
-    await startDispatch(baseStartInput());
+    await startDispatch(baseStartInput(OPENCLAW_URL));
 
     const stored = await dispatchRepo.get(DISPATCH_ID);
     expect(stored?.error?.code).toBe('INPUT_NOT_FOUND');
     expect(stored?.error?.message).toBe('Editor not found');
   });
 
-  it('passes through NOT_LOGGED_IN from adapter unchanged (DOM-detected login wall)', async () => {
+  it('passes through NOT_LOGGED_IN from adapter unchanged', async () => {
     stubChrome({
       tabsGetUrl: DISCORD_CHANNEL_URL,
       sendMessageResponse: {
