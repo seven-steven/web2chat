@@ -92,6 +92,14 @@ dispatch_in_progress_copy_toast:
   message: 'Copied dispatch ID.'
 dispatch_cancel_label:
   message: 'Cancel'
+selector_low_confidence_heading:
+  message: 'Confirm target message box'
+selector_low_confidence_body:
+  message: 'web2chat found the message box using a less stable selector. Confirm the target page is correct before sending.'
+selector_low_confidence_cancel:
+  message: 'Cancel'
+selector_low_confidence_confirm:
+  message: 'Send once'
 
 # Group D — error_code_* for ErrorBanner
 error_code_NOT_LOGGED_IN_heading:

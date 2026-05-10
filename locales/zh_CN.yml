@@ -92,6 +92,14 @@ dispatch_in_progress_copy_toast:
   message: '已复制投递 ID。'
 dispatch_cancel_label:
   message: '取消'
+selector_low_confidence_heading:
+  message: '确认目标输入框'
+selector_low_confidence_body:
+  message: 'web2chat 使用稳定性较低的选择器找到了输入框。发送前请确认目标页面正确。'
+selector_low_confidence_cancel:
+  message: '取消'
+selector_low_confidence_confirm:
+  message: '仅本次投递'
 
 # Group D — error_code_* for ErrorBanner
 error_code_NOT_LOGGED_IN_heading:

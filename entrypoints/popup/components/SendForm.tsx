@@ -189,7 +189,9 @@ export function SendForm(props: SendFormProps) {
       props.onPromptDirtyChange(false);
     }
   }
-  function buildDispatchInput(): DispatchStartInput {
+  function buildDispatchInput(
+    selectorConfirmation?: DispatchStartInput['selectorConfirmation'],
+  ): DispatchStartInput {
     return {
       dispatchId: crypto.randomUUID(),
       send_to: props.sendTo,
@@ -200,6 +202,7 @@ export function SendForm(props: SendFormProps) {
         description: props.descriptionValue,
         content: props.contentValue,
       },
+      ...(selectorConfirmation ? { selectorConfirmation } : {}),
     };
   }
 
