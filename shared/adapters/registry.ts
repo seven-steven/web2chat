@@ -25,6 +25,7 @@
  */
 import { defineAdapter } from './types';
 import type { AdapterRegistryEntry, PlatformId } from './types';
+import { discordMainWorldPaste } from '@/background/injectors/discord-main-world';
 
 export const adapterRegistry: readonly AdapterRegistryEntry[] = [
   defineAdapter({
@@ -80,6 +81,7 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     hostMatches: ['https://discord.com/*'],
     iconKey: 'platform_icon_discord',
     spaNavigationHosts: ['discord.com'],
+    mainWorldInjector: discordMainWorldPaste,
   }),
 ];
 
