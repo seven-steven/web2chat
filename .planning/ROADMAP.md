@@ -73,8 +73,8 @@ Plans:
 **Plans:** 5 plans
 Plans:
 **Wave 1**
-- [ ] 09-01-PLAN.md — Registry timeout policy + adapter response timeout (TDD)
-- [ ] 09-03-PLAN.md — Retriable-driven popup Retry flow (TDD)
+- [x] 09-01-PLAN.md — Registry timeout policy + adapter response timeout (TDD)
+- [x] 09-03-PLAN.md — Retriable-driven popup Retry flow (TDD)
 
 **Wave 2** *(blocked on 09-01 completion)*
 - [ ] 09-02-PLAN.md — Registry logged-out path detection (TDD)
