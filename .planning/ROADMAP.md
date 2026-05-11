@@ -94,7 +94,15 @@ Plans:
   2. 用户未登录 Slack 时 popup 收到 NOT_LOGGED_IN 错误提示
   3. 用户确认投递后消息成功注入 Slack Quill 编辑器并发送，popup 显示投递成功
   4. Slack 平台图标和 i18n key 在中英双语 locale 中 100% 覆盖
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+**Wave 1** *(all independent, parallel)*
+- [ ] 10-01-PLAN.md — Slack mrkdwn formatting + mention escaping (TDD)
+- [ ] 10-02-PLAN.md — Slack login detection + URL match tests (TDD)
+- [ ] 10-03-PLAN.md — Registry + config + i18n + icon + fixture
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 10-04-PLAN.md — Slack content script + selector tests
 
 ### Phase 11: Telegram 适配器
 **Goal**: 用户可以向 Telegram Web K 的任意对话投递格式化网页信息
@@ -128,7 +136,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 |-------|-----------|----------------|--------|-----------|
 | 8. 架构泛化 | v1.1 | 5/5 | Complete / reviewed | 2026-05-10 |
 | 9. 投递鲁棒性 | v1.1 | 5/5 | Ready for verification | - |
-| 10. Slack 适配器 | v1.1 | 0/? | Not started | - |
+| 10. Slack 适配器 | v1.1 | 0/4 | Planned | - |
 | 11. Telegram 适配器 | v1.1 | 0/? | Not started | - |
 | 12. 飞书/Lark 适配器 | v1.1 | 0/? | Not started | - |
 
