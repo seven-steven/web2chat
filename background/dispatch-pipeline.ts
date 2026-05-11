@@ -66,6 +66,7 @@ export const BADGE_COLORS = {
   loading: '#94a3b8', // slate-400
   ok: '#22c55e', // green-500
   err: '#ef4444', // red-500
+  warn: '#f59e0b', // amber-500
 } as const;
 
 /** DEVIATIONS.md D-34: 5s -> 30s (chrome.alarms minimum delay in production). */
@@ -377,7 +378,8 @@ async function requireDispatchConfirmation(
     warnings,
   };
   await dispatchRepo.set(needsConfirmation);
-  await chrome.action.setBadgeText({ text: '' });
+  await chrome.action.setBadgeText({ text: '?' });
+  await chrome.action.setBadgeBackgroundColor({ color: BADGE_COLORS.warn });
   await chrome.alarms.clear(`${ALARM_PREFIX_TIMEOUT}${needsConfirmation.dispatchId}`);
   await dispatchRepo.setPendingSelectorWarning(needsConfirmation.dispatchId);
   await dispatchRepo.clearActive();

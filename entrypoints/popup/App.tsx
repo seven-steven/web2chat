@@ -226,6 +226,7 @@ export function App() {
     dispatchErrorSig.value = null;
     void dispatchRepo.clearActive();
     void dispatchRepo.clearPendingSelectorWarning();
+    void chrome.action.setBadgeText({ text: '' }).catch(() => {});
   };
   const confirmSelectorWarning = () => {
     const snapshotForDispatch = snapshotSig.value;
@@ -333,17 +334,6 @@ export function App() {
       </>
     );
   }
-  if (selectorWarningSig.value && snapshot !== null) {
-    return (
-      <>
-        <PopupChrome showSettings={showSettings} onToggleSettings={toggleSettings} />
-        <SelectorWarningDialog
-          onCancel={cancelSelectorWarning}
-          onConfirm={confirmSelectorWarning}
-        />
-      </>
-    );
-  }
   if (showSettings) {
     return (
       <>
@@ -430,6 +420,12 @@ export function App() {
             dispatchErrorSig.value = { code, message, retriable };
           }}
         />
+        {selectorWarningSig.value && (
+          <SelectorWarningDialog
+            onCancel={cancelSelectorWarning}
+            onConfirm={confirmSelectorWarning}
+          />
+        )}
       </>
     );
   }
