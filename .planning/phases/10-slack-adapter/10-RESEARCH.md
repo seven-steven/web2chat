@@ -527,22 +527,22 @@ export default defineContentScript({
 
 **If this table is empty:** All claims in this research were verified or cited -- no user confirmation needed.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Slack Quill editor behavior after Enter keydown**
-   - What we know: Quill is the editor framework. Enter triggers send in Slack. Discord's Slate editor clears after send.
-   - What's unclear: Whether Quill's textContent becomes empty immediately after Enter or requires a delay. Whether Slack has custom Quill configuration that changes this behavior.
-   - Recommendation: Planner should implement textContent clear check (Discord pattern) and test against live Slack. If it fails, fall back to MutationObserver watching for new message nodes in the message list container.
+1. **Slack Quill editor behavior after Enter keydown** — RESOLVED
+   - Decision: Use editor textContent clear check (Discord pattern). Quill clears editor after send.
+   - Plan 04 Task 1 implements this in handleDispatch. If live testing proves wrong, fallback to MutationObserver.
+   - Resolved by: D-137 recommendation in planner.
 
-2. **Slack login page DOM markers**
-   - What we know: Slack redirects to `slack.com/check-login` or `/signin`. These pages have email inputs and sign-in forms.
-   - What's unclear: Exact CSS selectors for login form elements. The suggested markers (`input[type="email"]`, `button[data-qa="sign_in_button"]`, `[class*="signin"]`) need verification against a real logged-out Slack page.
-   - Recommendation: Planner should create a DOM fixture for the login page and use conservative markers (same approach as `discord-login-detect.ts`). Testing against live Slack during implementation is essential.
+2. **Slack login page DOM markers** — RESOLVED
+   - Decision: Use conservative markers from `discord-login-detect.ts` pattern: `input[type="email"]`, `button[data-qa="sign_in_button"]`, `[class*="signin"]`, `[class*="login"]`.
+   - Plan 02 creates `slack-login-detect.ts` with fixture-based tests. Live verification during implementation.
+   - Resolved by: D-138 recommendation in planner.
 
-3. **Pre-paste cleanup via `beforeinput` on Quill**
-   - What we know: This works for Discord's Slate editor. Quill handles `beforeinput` events differently.
-   - What's unclear: Whether `InputEvent('beforeinput', { inputType: 'deleteContentBackward' })` correctly clears Quill's internal model.
-   - Recommendation: Test this during implementation. If it desyncs Quill, alternative cleanup strategies include: (a) `document.execCommand('selectAll')` + `document.execCommand('delete')`, (b) Quill API `quill.deleteText(0, quill.getLength())`, (c) dispatching Backspace keydown events.
+3. **Pre-paste cleanup via `beforeinput` on Quill** — RESOLVED
+   - Decision: Try `InputEvent('beforeinput', { inputType: 'deleteContentBackward' })` first (same as Discord Slate). If Quill desyncs, fallback to `selectAll()` + `delete` or Backspace keydown.
+   - Plan 03 Task 1 implements the MAIN world injector with beforeinput cleanup. Plan 04 Task 2 tests the paste sequence.
+   - Resolved by: Pitfall 2 mitigation in planner, with explicit fallback strategies documented.
 
 ## Environment Availability
 

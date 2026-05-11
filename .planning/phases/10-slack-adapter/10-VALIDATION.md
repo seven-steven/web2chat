@@ -2,7 +2,7 @@
 phase: 10
 slug: slack-adapter
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-05-11
 ---
@@ -38,19 +38,20 @@ created: 2026-05-11
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 10-01-01 | 01 | 1 | SLK-01 | T-10-01 | URL match pure, no host escalation | unit | `pnpm test:unit -- tests/unit/adapters/slack-match.spec.ts` | ❌ W0 | ⬜ pending |
-| 10-01-02 | 01 | 1 | SLK-01 | — | Registry entry with correct hostMatches | unit | `pnpm test:unit -- tests/unit/dispatch/platform-detector.spec.ts` | ✅ | ⬜ pending |
-| 10-01-03 | 01 | 1 | SLK-01 | — | SPA filter includes app.slack.com | unit | `pnpm test:unit -- tests/unit/dispatch/spaFilter.spec.ts` | ✅ | ⬜ pending |
-| 10-02-01 | 02 | 1 | SLK-02 | T-10-02 | DOM login detection (positive + negative fixtures) | unit | `pnpm test:unit -- tests/unit/adapters/slack-login-detect.spec.ts` | ❌ W0 | ⬜ pending |
+| 10-01-01 | 01 | 1 | D-128, D-130 | — | escapeSlackMentions breaks mention patterns | unit | `pnpm test:unit -- tests/unit/adapters/slack-format.spec.ts` | ❌ W0 | ⬜ pending |
+| 10-01-02 | 01 | 1 | D-128, D-131 | — | composeSlackMrkdwn produces valid mrkdwn | unit | `pnpm test:unit -- tests/unit/adapters/slack-format.spec.ts` | ❌ W0 | ⬜ pending |
+| 10-02-01 | 02 | 1 | SLK-01 | T-10-01 | URL match pure, no host escalation | unit | `pnpm test:unit -- tests/unit/adapters/slack-match.spec.ts` | ❌ W0 | ⬜ pending |
+| 10-02-02 | 02 | 1 | SLK-02 | T-10-02 | DOM login detection (positive + negative fixtures) | unit | `pnpm test:unit -- tests/unit/adapters/slack-login-detect.spec.ts` | ❌ W0 | ⬜ pending |
 | 10-02-02 | 02 | 1 | SLK-02 | — | loggedOutPathPatterns for Slack | unit | `pnpm test:unit -- tests/unit/dispatch/logged-out-paths.spec.ts` | ✅ | ⬜ pending |
-| 10-03-01 | 03 | 2 | SLK-03 | — | Editor selector three-tier fallback | unit | `pnpm test:unit -- tests/unit/adapters/slack-selector.spec.ts` | ❌ W0 | ⬜ pending |
-| 10-03-02 | 03 | 2 | SLK-03 | — | MAIN world bridge routes to slack injector | unit | `pnpm test:unit -- tests/unit/dispatch/mainWorldBridge.spec.ts` | ✅ | ⬜ pending |
-| 10-04-01 | 04 | 2 | — | — | mrkdwn formatting + mention escaping | unit | `pnpm test:unit -- tests/unit/adapters/slack-format.spec.ts` | ❌ W0 | ⬜ pending |
-| 10-05-01 | 05 | 3 | SLK-04 | — | Send confirmation (editor clear check) | unit | `pnpm test:unit -- tests/unit/adapters/slack-selector.spec.ts` | ❌ W0 | ⬜ pending |
-| 10-06-01 | 06 | 3 | SLK-05 | — | i18n key coverage en + zh_CN 100% | unit | `pnpm test:unit -- tests/unit/adapters/slack-i18n.spec.ts` | ❌ W0 | ⬜ pending |
-| 10-06-02 | 06 | 3 | SLK-05 | T-10-03 | Static host_permissions limited to known domains | unit | `pnpm test:unit -- tests/unit/scripts/verify-manifest.spec.ts` | ✅ | ⬜ pending |
-| 10-07-01 | 07 | 4 | SLK-03 | — | MAIN world injector paste + Enter sequence | unit | `pnpm test:unit -- tests/unit/adapters/slack-selector.spec.ts` | ❌ W0 | ⬜ pending |
-| 10-07-02 | 07 | 4 | SLK-04 | — | Content script handleDispatch flow | manual | Human UAT on live Slack | N/A | ⬜ pending |
+| 10-03-01 | 03 | 1 | SLK-01 | — | Registry entry with correct hostMatches | unit | `pnpm test:unit -- tests/unit/dispatch/platform-detector.spec.ts` | ✅ | ⬜ pending |
+| 10-03-01 | 03 | 1 | SLK-01 | — | SPA filter includes app.slack.com | unit | `pnpm test:unit -- tests/unit/dispatch/spaFilter.spec.ts` | ✅ | ⬜ pending |
+| 10-03-01 | 03 | 1 | SLK-03 | — | MAIN world bridge routes to slack injector | unit | `pnpm test:unit -- tests/unit/dispatch/mainWorldBridge.spec.ts` | ✅ | ⬜ pending |
+| 10-03-01 | 03 | 1 | T-10-04 | Static host_permissions limited to known domains | unit | `pnpm test:unit -- tests/unit/scripts/verify-manifest.spec.ts` | ✅ | ⬜ pending |
+| 10-03-02 | 03 | 1 | SLK-05 | — | i18n key coverage en + zh_CN 100% | unit | `pnpm test:unit -- tests/unit/adapters/slack-i18n.spec.ts` | ❌ W0 | ⬜ pending |
+| 10-04-01 | 04 | 2 | SLK-03 | — | Editor selector three-tier fallback | unit | `pnpm test:unit -- tests/unit/adapters/slack-selector.spec.ts` | ❌ W0 | ⬜ pending |
+| 10-04-02 | 04 | 2 | SLK-03 | — | MAIN world paste + Enter injection test | unit | `pnpm test:unit -- tests/unit/adapters/slack-selector.spec.ts` | ❌ W0 | ⬜ pending |
+| 10-04-02 | 04 | 2 | SLK-04 | — | Send confirmation (editor clear check) | unit | `pnpm test:unit -- tests/unit/adapters/slack-selector.spec.ts` | ❌ W0 | ⬜ pending |
+| 10-04-02 | 04 | 2 | SLK-04 | — | Content script handleDispatch flow | manual | Human UAT on live Slack | N/A | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -58,12 +59,12 @@ created: 2026-05-11
 
 ## Wave 0 Requirements
 
-- [ ] `tests/unit/adapters/slack-match.spec.ts` — stubs for SLK-01 URL matching
-- [ ] `tests/unit/adapters/slack-format.spec.ts` — stubs for D-128 mrkdwn formatting + D-130 mention escaping
-- [ ] `tests/unit/adapters/slack-login-detect.spec.ts` — stubs for SLK-02 DOM detection
-- [ ] `tests/unit/adapters/slack-selector.spec.ts` — stubs for SLK-03 selector fallback + SLK-04 send confirmation
-- [ ] `tests/unit/adapters/slack.fixture.html` — DOM fixture for selector and injection tests
-- [ ] `tests/unit/adapters/slack-i18n.spec.ts` — stubs for SLK-05 i18n key coverage
+- [ ] `tests/unit/adapters/slack-format.spec.ts` — covers D-128 mrkdwn formatting + D-130 mention escaping (Plan 01)
+- [ ] `tests/unit/adapters/slack-match.spec.ts` — covers SLK-01 URL matching (Plan 02)
+- [ ] `tests/unit/adapters/slack-login-detect.spec.ts` — covers SLK-02 DOM detection (Plan 02)
+- [ ] `tests/unit/adapters/slack-i18n.spec.ts` — covers SLK-05 i18n key coverage (Plan 03)
+- [ ] `tests/unit/adapters/slack-selector.spec.ts` — covers SLK-03 selector fallback + SLK-04 send confirmation (Plan 04)
+- [ ] `tests/unit/adapters/slack.fixture.html` — DOM fixture for selector and injection tests (Plan 03)
 
 ---
 
@@ -79,11 +80,11 @@ created: 2026-05-11
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 10s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 10s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
