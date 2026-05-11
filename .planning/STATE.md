@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: 多渠道适配
-status: verifying
-stopped_at: Phase 9 complete; ready for verification
-last_updated: "2026-05-10T19:35:00+08:00"
-last_activity: 2026-05-10
+status: ready
+stopped_at: Phase 9 verified complete; ready for Phase 10 planning
+last_updated: "2026-05-11T14:40:00+08:00"
+last_activity: 2026-05-11
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 10
   completed_plans: 10
   percent: 100
@@ -21,14 +21,14 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-05-09)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** v1.1 多渠道适配 — Phase 9 投递鲁棒性验证
+**当前焦点：** v1.1 多渠道适配 — Phase 9 已验证通过，准备 Phase 10 (Slack 适配器)
 
 ## Current Position
 
-Phase: 09 (投递鲁棒性) — VERIFYING
+Phase: 09 (投递鲁棒性) — VERIFIED COMPLETE
 Plan: 5 of 5
-Status: Phase 8 reviewed/verified complete; Phase 9 implementation complete and ready for verification
-Last activity: 2026-05-10
+Status: Phase 9 implementation + human UAT complete; 2 bugs found and fixed during UAT
+Last activity: 2026-05-11
 
 Progress: [##########] 100%
 
@@ -37,7 +37,7 @@ Progress: [##########] 100%
 **v1.1 Velocity:**
 
 - Total plans completed: 10
-- Total execution time: Phase 08 complete + Phase 09 implementation complete
+- Total execution time: Phase 08 complete + Phase 09 verified
 
 **By Phase:**
 
@@ -71,13 +71,19 @@ Phase 8 review closure:
 - 08-VALIDATION.md status: approved; nyquist_compliant: true.
 - 08-VERIFICATION.md status: passed; 13/13 must-haves verified.
 
+Phase 9 verification:
+
+- 09-HUMAN-UAT.md status: complete; 2 passed, 1 skipped (automated coverage), 0 issues.
+- 09-VERIFICATION.md status: 4/4 must-haves verified.
+- UAT found 2 bugs, both fixed: SelectorWarningDialog overlay + badge.
+
 ### Pending Todos
 
-- Verify Phase 9 and then plan Phase 10 Slack adapter.
+- Plan Phase 10 (Slack 适配器).
 
 ### Blockers/Concerns
 
-None yet.
+None.
 
 ### Quick Tasks Completed
 
@@ -96,6 +102,6 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-09:
 
 ## Session Continuity
 
-Last session: 2026-05-10T19:35:00+08:00
-Stopped at: Phase 9 complete; ready for verification
-Resume file: .planning/phases/09-dispatch-robustness/09-UI-SPEC.md
+Last session: 2026-05-11T14:40:00+08:00
+Stopped at: Phase 9 verified complete; ready for Phase 10
+Resume file: none
