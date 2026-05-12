@@ -86,6 +86,26 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     spaNavigationHosts: ['discord.com'],
     loggedOutPathPatterns: ['/', '/login*', '/register*'],
   }),
+  defineAdapter({
+    id: 'slack',
+    match: (url: string): boolean => {
+      try {
+        const u = new URL(url);
+        return (
+          u.hostname === 'app.slack.com' &&
+          u.pathname.startsWith('/client/') &&
+          u.pathname.split('/').filter(Boolean).length >= 3
+        );
+      } catch {
+        return false;
+      }
+    },
+    scriptFile: 'content-scripts/slack.js',
+    hostMatches: ['https://app.slack.com/*'],
+    iconKey: 'platform_icon_slack',
+    spaNavigationHosts: ['app.slack.com'],
+    loggedOutPathPatterns: ['/check-login*', '/signin*', '/workspace-signin*'],
+  }),
 ];
 
 /**

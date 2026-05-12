@@ -17,14 +17,16 @@ export default defineConfig({
       mode === 'development'
         ? ['activeTab', 'alarms', 'scripting', 'storage', 'tabs', 'webNavigation']
         : ['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation'],
-    // Production stays at the locked discord-only host scope; OpenClaw and any
+    // Production stays at the locked discord + slack host scope; OpenClaw and any
     // user-supplied origin go through optional_host_permissions runtime grant.
     // Dev mode adds <all_urls> so Playwright E2E can executeScript into
     // localhost fixture pages — activeTab would normally cover this, but it's
     // only granted on user gesture (toolbar click), which Playwright cannot
     // simulate for action popups.
     host_permissions:
-      mode === 'development' ? ['https://discord.com/*', '<all_urls>'] : ['https://discord.com/*'],
+      mode === 'development'
+        ? ['https://app.slack.com/*', 'https://discord.com/*', '<all_urls>']
+        : ['https://app.slack.com/*', 'https://discord.com/*'],
     optional_host_permissions: ['<all_urls>'],
     action: {
       default_title: '__MSG_action_default_title__',
