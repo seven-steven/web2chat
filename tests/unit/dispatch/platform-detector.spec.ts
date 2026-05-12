@@ -3,11 +3,12 @@ import { adapterRegistry, findAdapter, detectPlatformId } from '@/shared/adapter
 import { definePlatformId, defineAdapter } from '@/shared/adapters/types';
 
 describe('shared/adapters/registry (D-24 / D-26)', () => {
-  it('registry contains mock, openclaw, and discord entries', () => {
-    expect(adapterRegistry).toHaveLength(3);
+  it('registry contains mock, openclaw, discord, and slack entries', () => {
+    expect(adapterRegistry).toHaveLength(4);
     expect(adapterRegistry[0]?.id).toBe('mock');
     expect(adapterRegistry[1]?.id).toBe('openclaw');
     expect(adapterRegistry[2]?.id).toBe('discord');
+    expect(adapterRegistry[3]?.id).toBe('slack');
   });
 
   it('mock entry matches the canonical localhost fixture URL', () => {
@@ -66,6 +67,7 @@ describe('branded PlatformId (D-96 / D-97)', () => {
     expect(adapterRegistry[0]?.id).toBe('mock');
     expect(adapterRegistry[1]?.id).toBe('openclaw');
     expect(adapterRegistry[2]?.id).toBe('discord');
+    expect(adapterRegistry[3]?.id).toBe('slack');
   });
 
   it('discord entry has spaNavigationHosts (D-103 / D-104)', () => {

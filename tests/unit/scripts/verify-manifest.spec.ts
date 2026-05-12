@@ -7,7 +7,7 @@ function validManifest(overrides: Partial<Manifest> = {}): Manifest {
     description: '__MSG_extension_description__',
     default_locale: 'en',
     permissions: ['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation'],
-    host_permissions: ['https://discord.com/*'],
+    host_permissions: ['https://app.slack.com/*', 'https://discord.com/*'],
     optional_host_permissions: ['<all_urls>'],
     action: { default_title: '__MSG_action_default_title__' },
     commands: {

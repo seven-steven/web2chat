@@ -12,7 +12,9 @@
  *   3. No changes needed to shared/adapters/registry.ts or background.ts
  */
 import { discordMainWorldPaste } from '@/background/injectors/discord-main-world';
+import { slackMainWorldPaste } from '@/background/injectors/slack-main-world';
 
 export const mainWorldInjectors = new Map<string, (text: string) => Promise<boolean>>([
   ['discord', discordMainWorldPaste],
+  ['slack', slackMainWorldPaste],
 ]);
