@@ -186,6 +186,8 @@ platform_icon_openclaw:
   message: 'OpenClaw'
 platform_icon_discord:
   message: 'Discord'
+platform_icon_slack:
+  message: 'Slack'
 platform_icon_unsupported:
   message: 'Unsupported platform'
 
@@ -245,6 +247,12 @@ options_origins_confirm_action:
 discord_tos_warning:
   message: 'Discord dispatch uses DOM injection and may violate Discord Terms of Service.'
 discord_tos_details:
+  message: 'Details'
+
+# Group L — Slack ToS (D-132)
+slack_tos_warning:
+  message: 'Slack dispatch uses DOM injection and may violate Slack Terms of Service.'
+slack_tos_details:
   message: 'Details'
 
 # Group K — Options page Language section (Phase 6, I18N-02)

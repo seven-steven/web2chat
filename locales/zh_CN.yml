@@ -186,6 +186,8 @@ platform_icon_openclaw:
   message: 'OpenClaw'
 platform_icon_discord:
   message: 'Discord'
+platform_icon_slack:
+  message: 'Slack'
 platform_icon_unsupported:
   message: '不支持的平台'
 
@@ -245,6 +247,12 @@ options_origins_confirm_action:
 discord_tos_warning:
   message: 'Discord 投递使用 DOM 注入，可能违反 Discord 服务条款。'
 discord_tos_details:
+  message: '详情'
+
+# Group L — Slack ToS (D-132)
+slack_tos_warning:
+  message: 'Slack 投递使用 DOM 注入，可能违反 Slack 服务条款。'
+slack_tos_details:
   message: '详情'
 
 # Group K — Options page Language section (Phase 6, I18N-02)

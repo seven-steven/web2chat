@@ -383,6 +383,25 @@ export function SendForm(props: SendFormProps) {
         </p>
       )}
 
+      {/* Slack ToS warning — compact muted note with warn-color link */}
+      {platformId === 'slack' && (
+        <p
+          class="text-xs leading-snug text-[var(--color-ink-muted)]"
+          data-testid="slack-tos-footnote"
+        >
+          {t('slack_tos_warning')}{' '}
+          <a
+            href="https://slack.com/terms-of-service"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-[var(--color-warn)] underline underline-offset-2 hover:text-[var(--color-ink-strong)] transition-colors duration-[var(--duration-instant)]"
+            data-testid="slack-tos-link"
+          >
+            {t('slack_tos_details')}
+          </a>
+        </p>
+      )}
+
       {/* Hairline divider before Phase 2 capture preview region */}
       <hr class="border-0 border-t border-[var(--color-rule)]" />
 
@@ -431,7 +450,7 @@ function iconKeyToVariant(iconKey: string): ComboboxOption['iconVariant'] {
   const variant = iconKey.slice(ICON_KEY_PREFIX.length);
   // Validate against known PlatformIcon variants.
   // When adding a new platform, add its variant string here AND to PlatformIcon.
-  const known = ['mock', 'openclaw', 'discord'] as const;
+  const known = ['mock', 'openclaw', 'discord', 'slack'] as const;
   return (known as readonly string[]).includes(variant)
     ? (variant as ComboboxOption['iconVariant'])
     : 'unsupported';
