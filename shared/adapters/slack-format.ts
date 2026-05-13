@@ -43,7 +43,11 @@ export function escapeSlackMentions(text: string): string {
 
 /**
  * Convert CommonMark Markdown to Slack mrkdwn (T-10-05-01 — uses lazy quantifiers).
- * Order matters: extract code blocks first to prevent conversion inside them.
+ * Order matters: extract code blocks first, then protect bold/heading/list markers
+ * from the italic regex before italic conversion.
+ *
+ * Step order: fenced code -> inline code -> bold -> headings -> links -> list markers
+ * -> italic -> horizontal rules -> restore all placeholders.
  */
 export function convertMarkdownToMrkdwn(text: string): string {
   // Unique placeholder prefix — unlikely to collide with web content
@@ -80,17 +84,22 @@ export function convertMarkdownToMrkdwn(text: string): string {
   // 5. Convert links: [text](url) -> <url|text>
   result = result.replace(/\[(.+?)\]\((.+?)\)/g, '<$2|$1>');
 
-  // 6. Convert italic: *text* -> _text_
-  //    Bold and heading results are protected, so only original Markdown *italic* matches.
-  result = result.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '_$1_');
+  // 6. Strip list markers via placeholders (protect from italic regex)
+  //    Turndown default bulletListMarker is '*', so asterisk list markers
+  //    would be matched by the italic regex if not protected.
+  //    Only the marker ("- "/"* ") is replaced; content remains for italic conversion.
+  let listIdx = 0;
+  result = result.replace(/^[-*]\s/gm, () => PH('LIST', listIdx++));
 
-  // 7. Convert list items: remove leading "- " or "* " at line start
-  result = result.replace(/^[-*]\s+/gm, '');
+  // 7. Convert italic: *text* -> _text_
+  //    Bold, heading, and list markers are protected, so only original Markdown *italic* matches.
+  result = result.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '_$1_');
 
   // 8. Convert horizontal rules: --- (or more) on own line -> empty line
   result = result.replace(/^-{3,}$/gm, '');
 
-  // 9. Restore placeholders
+  // 9. Restore placeholders (LIST markers restored as empty — effectively stripped)
+  result = result.replace(/@@W2C_LIST_(\d+)@@/g, () => '');
   result = result.replace(/@@W2C_BOLD_(\d+)@@/g, (_, i) => boldTokens[Number(i)] ?? '');
   result = result.replace(/@@W2C_HEADING_(\d+)@@/g, (_, i) => headingTokens[Number(i)] ?? '');
   result = result.replace(/@@W2C_INLINE_(\d+)@@/g, (_, i) => inlineCodes[Number(i)] ?? '');
