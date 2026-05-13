@@ -192,33 +192,6 @@ async function injectMainWorldPaste(editor: HTMLElement, text: string): Promise<
   throw new Error(response.message ?? 'MAIN world paste failed');
 }
 
-function waitForEditor(timeoutMs: number): Promise<EditorMatch | null> {
-  const immediate = findEditor();
-  if (immediate) return Promise.resolve(immediate);
-
-  return new Promise<EditorMatch | null>((resolve) => {
-    let settled = false;
-    const observer = new MutationObserver(() => {
-      const match = findEditor();
-      if (match && !settled) {
-        settled = true;
-        observer.disconnect();
-        clearTimeout(timer);
-        resolve(match);
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    const timer = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        observer.disconnect();
-        resolve(null);
-      }
-    }, timeoutMs);
-  });
-}
-
 async function handleDispatch(
   payload: AdapterDispatchMessage['payload'],
 ): Promise<AdapterDispatchResponse> {
@@ -287,7 +260,17 @@ async function handleDispatch(
     };
   } else {
     const remainingBudget = Math.max(WAIT_TIMEOUT_MS - LOGIN_WALL_PROBE_MS, 1000);
-    editorMatch = await waitForEditor(remainingBudget);
+    const secondProbe = await waitForReady(remainingBudget);
+    if (secondProbe.kind === 'editor') {
+      editorMatch = secondProbe.match;
+    } else if (secondProbe.kind === 'login') {
+      return {
+        ok: false,
+        code: 'NOT_LOGGED_IN',
+        message: 'Slack login required (login UI detected)',
+        retriable: true,
+      };
+    }
   }
   if (!editorMatch) {
     if (detectLoginWall() || isLoggedOutPath(window.location.pathname)) {

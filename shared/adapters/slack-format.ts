@@ -26,6 +26,8 @@ export function escapeSlackMentions(text: string): string {
   // Break <!everyone>, <!here>, <!channel> with ZWS after !
   result = result.replace(/<!(everyone|here|channel)>/g, `<!${ZWS}$1>`);
   // Break <@U123>, <@W123> user mentions with ZWS after <
+  // Only U (user) and W (workspace guest) IDs are mentionable; B (bot) IDs are not
+  // valid mention targets in Slack, so they are intentionally excluded.
   result = result.replace(/<@([UW][A-Z0-9]+)>/g, `<${ZWS}@$1>`);
   // Break <#C123> channel mentions with ZWS after <
   result = result.replace(/<#([A-Z0-9]+)>/g, `<${ZWS}#$1>`);

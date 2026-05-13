@@ -98,6 +98,10 @@ describe('adapters/slack — escapeSlackMentions (D-130)', () => {
     expect(escapeSlackMentions('@here')).toBe(`@${ZWS}here`);
   });
 
+  it('bare @channel unchanged (only <!channel> triggers, not @channel)', () => {
+    expect(escapeSlackMentions('@channel')).toBe('@channel');
+  });
+
   it('normal text unchanged', () => {
     const text = 'Hello world, nothing special here.';
     expect(escapeSlackMentions(text)).toBe(text);
