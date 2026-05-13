@@ -22,6 +22,7 @@
 import { defineContentScript } from '#imports';
 import { composeSlackMrkdwn } from '@/shared/adapters/slack-format';
 import { detectLoginWall } from '@/shared/adapters/slack-login-detect';
+import { t } from '@/shared/i18n';
 import type { DispatchWarning, SelectorConfirmation } from '@/shared/messaging';
 
 const WAIT_TIMEOUT_MS = 5000;
@@ -314,7 +315,11 @@ async function handleDispatch(
   const editor = editorMatch.element;
 
   // Compose message
-  const message = composeSlackMrkdwn({ prompt: payload.prompt, snapshot: payload.snapshot });
+  const message = composeSlackMrkdwn({
+    prompt: payload.prompt,
+    snapshot: payload.snapshot,
+    timestampLabel: t('slack_timestamp_label'),
+  });
 
   // Inject via MAIN world paste bridge
   let pasteOk = false;

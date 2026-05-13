@@ -29,6 +29,10 @@ export function escapeSlackMentions(text: string): string {
   result = result.replace(/<@([UW][A-Z0-9]+)>/g, `<${ZWS}@$1>`);
   // Break <#C123> channel mentions with ZWS after <
   result = result.replace(/<#([A-Z0-9]+)>/g, `<${ZWS}#$1>`);
+  // Break <!subteam^S12345> and <!subteam^S12345|@name> usergroup mentions
+  result = result.replace(/<!subteam\^[A-Z0-9]+(?:\|[^>]*)?>/g, (m) => {
+    return '<!' + ZWS + m.slice(2);
+  });
   // Break bare @everyone / @here with ZWS after @ (lookbehind + word boundary)
   result = result.replace(/(?<!\w)@(everyone|here)\b/g, `@${ZWS}$1`);
   return result;
@@ -44,9 +48,9 @@ export function escapeSlackMentions(text: string): string {
 export function composeSlackMrkdwn(payload: {
   prompt: string;
   snapshot: Snapshot;
-  timestampLabel?: string;
+  timestampLabel: string;
 }): string {
-  const { prompt, snapshot, timestampLabel = '采集时间:' } = payload;
+  const { prompt, snapshot, timestampLabel } = payload;
 
   // Escape user-controlled text fields
   const safePrompt = prompt ? escapeSlackMentions(prompt) : '';

@@ -4,7 +4,7 @@
  *
  * Asserts FND-05 + ROADMAP Phase 1 success criterion #5:
  *   - permissions === ['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation'] (set equality)
- *   - host_permissions === ['https://discord.com/*'] (NO `<all_urls>` ever)
+ *   - host_permissions === ['https://app.slack.com/*', 'https://discord.com/*'] (NO `<all_urls>` ever)
  *   - optional_host_permissions === ['<all_urls>']
  *   - default_locale === 'en'
  *   - name / description / action.default_title use __MSG_*__

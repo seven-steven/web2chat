@@ -26,6 +26,11 @@ export async function slackMainWorldPaste(text: string): Promise<boolean> {
   // Defensive pre-paste cleanup: if the editor still holds residual text from a
   // prior (failed) dispatch, clear it via beforeinput[deleteContent] BEFORE
   // pasting new content.
+  // NOTE: This dispatches a synthetic InputEvent and immediately checks textContent.
+  // Quill processes the event asynchronously via its own handler, so the textContent
+  // check below is a best-effort race. In practice, the 200ms setTimeout (line 58)
+  // gives Quill time to reconcile. Deterministic clearing (editor.textContent = '')
+  // would break Quill's internal state, so synthetic events are the safe approach.
   if ((editor.textContent ?? '').length > 0) {
     editor.dispatchEvent(
       new InputEvent('beforeinput', {

@@ -129,7 +129,7 @@ error_code_RATE_LIMITED_retry:
 error_code_PLATFORM_UNSUPPORTED_heading:
   message: '不支持的平台'
 error_code_PLATFORM_UNSUPPORTED_body:
-  message: 'v1 仅支持 Discord 与 OpenClaw，其他平台后续版本支持。'
+  message: 'v1 支持 Discord、Slack 与 OpenClaw，其他平台后续版本支持。'
 error_code_INTERNAL_heading:
   message: '出错了'
 error_code_INTERNAL_body:
@@ -195,7 +195,7 @@ platform_icon_unsupported:
 combobox_send_to_label:
   message: '投递到'
 combobox_send_to_placeholder:
-  message: '粘贴 Discord 频道或 OpenClaw 会话 URL…'
+  message: '粘贴 Discord 频道、Slack 频道或 OpenClaw 会话 URL…'
 combobox_prompt_label:
   message: '提示词'
 combobox_prompt_placeholder:
@@ -254,6 +254,9 @@ slack_tos_warning:
   message: 'Slack 投递使用 DOM 注入，可能违反 Slack 服务条款。'
 slack_tos_details:
   message: '详情'
+
+slack_timestamp_label:
+  message: '采集时间'
 
 # Group K — Options page Language section (Phase 6, I18N-02)
 options_language_heading:

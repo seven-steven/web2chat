@@ -11,7 +11,11 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
   };
 
   it('formats prompt-first with *bold* title (mrkdwn)', () => {
-    const result = composeSlackMrkdwn({ prompt: 'Summarize this', snapshot: fullSnapshot });
+    const result = composeSlackMrkdwn({
+      prompt: 'Summarize this',
+      snapshot: fullSnapshot,
+      timestampLabel: 'Captured at:',
+    });
     const lines = result.split('\n');
     expect(lines[0]).toBe('Summarize this');
     expect(lines[1]).toBe('');
@@ -20,27 +24,39 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
     expect(result).not.toContain('**Test Article**');
     expect(result).toContain('https://example.com/article');
     expect(result).toContain('> A test description');
-    expect(result).toContain('> 采集时间: 2026-05-01T12:00:00.000Z');
+    expect(result).toContain('> Captured at: 2026-05-01T12:00:00.000Z');
     expect(result).toContain('# Content\n\nParagraph here.');
   });
 
   it('omits empty fields entirely', () => {
     const sparse = { title: 'Only Title', url: '', description: '', create_at: '', content: '' };
-    const result = composeSlackMrkdwn({ prompt: '', snapshot: sparse });
+    const result = composeSlackMrkdwn({
+      prompt: '',
+      snapshot: sparse,
+      timestampLabel: 'Captured at:',
+    });
     expect(result).toBe('*Only Title*');
-    expect(result).not.toContain('采集时间');
+    expect(result).not.toContain('Captured at');
     expect(result).not.toContain('> ');
   });
 
   it('omits prompt when empty', () => {
-    const result = composeSlackMrkdwn({ prompt: '', snapshot: fullSnapshot });
+    const result = composeSlackMrkdwn({
+      prompt: '',
+      snapshot: fullSnapshot,
+      timestampLabel: 'Captured at:',
+    });
     expect(result.startsWith('*Test Article*')).toBe(true);
   });
 
   it('does NOT truncate long content (D-129)', () => {
     const longContent = 'x'.repeat(5000);
     const snapshot = { ...fullSnapshot, content: longContent };
-    const result = composeSlackMrkdwn({ prompt: 'Summarize', snapshot });
+    const result = composeSlackMrkdwn({
+      prompt: 'Summarize',
+      snapshot,
+      timestampLabel: 'Captured at:',
+    });
     // Slack 40K limit — no truncation expected
     expect(result.length).toBeGreaterThan(2000);
     expect(result).not.toContain('[truncated]');

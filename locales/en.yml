@@ -129,7 +129,7 @@ error_code_RATE_LIMITED_retry:
 error_code_PLATFORM_UNSUPPORTED_heading:
   message: 'Unsupported platform'
 error_code_PLATFORM_UNSUPPORTED_body:
-  message: 'web2chat supports Discord and OpenClaw in v1. Other platforms come later.'
+  message: 'web2chat supports Discord, Slack, and OpenClaw in v1. Other platforms come later.'
 error_code_INTERNAL_heading:
   message: 'Something went wrong'
 error_code_INTERNAL_body:
@@ -195,7 +195,7 @@ platform_icon_unsupported:
 combobox_send_to_label:
   message: 'Send to'
 combobox_send_to_placeholder:
-  message: 'Paste a Discord channel or OpenClaw chat URL…'
+  message: 'Paste a Discord channel, Slack channel, or OpenClaw chat URL…'
 combobox_prompt_label:
   message: 'Prompt'
 combobox_prompt_placeholder:
@@ -254,6 +254,9 @@ slack_tos_warning:
   message: 'Slack dispatch uses DOM injection and may violate Slack Terms of Service.'
 slack_tos_details:
   message: 'Details'
+
+slack_timestamp_label:
+  message: 'Captured at'
 
 # Group K — Options page Language section (Phase 6, I18N-02)
 options_language_heading:
