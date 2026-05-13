@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { composeSlackMrkdwn, escapeSlackMentions } from '@/shared/adapters/slack-format';
+import {
+  composeSlackMrkdwn,
+  escapeSlackMentions,
+  convertMarkdownToMrkdwn,
+} from '@/shared/adapters/slack-format';
 
 describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
   const fullSnapshot = {
@@ -49,7 +53,7 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
     expect(result.startsWith('*Test Article*')).toBe(true);
   });
 
-  it('does NOT truncate long content (D-129)', () => {
+  it('does NOT truncate content under 35000 chars (D-129)', () => {
     const longContent = 'x'.repeat(5000);
     const snapshot = { ...fullSnapshot, content: longContent };
     const result = composeSlackMrkdwn({
@@ -57,9 +61,27 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
       snapshot,
       timestampLabel: 'Captured at:',
     });
-    // Slack 40K limit — no truncation expected
+    // 5000 chars is well under 35000 limit — no truncation expected
     expect(result.length).toBeGreaterThan(2000);
     expect(result).not.toContain('[truncated]');
+  });
+
+  it('converts Markdown syntax in content to Slack mrkdwn', () => {
+    const snapshot = {
+      ...fullSnapshot,
+      content: '## Title\n\n**bold** text and *italic*\n\n- list item',
+    };
+    const result = composeSlackMrkdwn({
+      prompt: '',
+      snapshot,
+      timestampLabel: 'Captured at:',
+    });
+    expect(result).toContain('*Title*');
+    expect(result).toContain('*bold*');
+    expect(result).toContain('_italic_');
+    expect(result).not.toContain('## Title');
+    expect(result).not.toContain('**bold**');
+    expect(result).not.toContain('- list item');
   });
 });
 
@@ -128,5 +150,104 @@ describe('adapters/slack — escapeSlackMentions (D-130)', () => {
 
   it('@everywhere unchanged (word boundary)', () => {
     expect(escapeSlackMentions('@everywhere')).toBe('@everywhere');
+  });
+});
+
+describe('adapters/slack — convertMarkdownToMrkdwn', () => {
+  it('converts **bold** to *bold*', () => {
+    expect(convertMarkdownToMrkdwn('say **hello** world')).toBe('say *hello* world');
+  });
+
+  it('converts *italic* to _italic_', () => {
+    expect(convertMarkdownToMrkdwn('this is *important*')).toBe('this is _important_');
+  });
+
+  it('does NOT double-convert **bold** as italic', () => {
+    expect(convertMarkdownToMrkdwn('**bold** and *italic*')).toBe('*bold* and _italic_');
+  });
+
+  it('converts ## heading to *heading*', () => {
+    expect(convertMarkdownToMrkdwn('## Section Title\nparagraph')).toBe(
+      '*Section Title*\nparagraph',
+    );
+  });
+
+  it('converts # heading to *heading*', () => {
+    expect(convertMarkdownToMrkdwn('# Main Title\nparagraph')).toBe('*Main Title*\nparagraph');
+  });
+
+  it('converts [text](url) to <url|text>', () => {
+    expect(convertMarkdownToMrkdwn('visit [example](https://example.com)')).toBe(
+      'visit <https://example.com|example>',
+    );
+  });
+
+  it('converts - item (hyphen list) to plain text', () => {
+    expect(convertMarkdownToMrkdwn('- first item')).toBe('first item');
+  });
+
+  it('converts * item (asterisk list) to plain text', () => {
+    expect(convertMarkdownToMrkdwn('* first item')).toBe('first item');
+  });
+
+  it('preserves inline code unchanged', () => {
+    expect(convertMarkdownToMrkdwn('`inline code` stays')).toBe('`inline code` stays');
+  });
+
+  it('preserves fenced code blocks unchanged', () => {
+    const input = '```js\ncode\n```';
+    expect(convertMarkdownToMrkdwn(input)).toBe(input);
+  });
+
+  it('preserves > blockquote unchanged', () => {
+    expect(convertMarkdownToMrkdwn('> quoted text')).toBe('> quoted text');
+  });
+
+  it('handles --- horizontal rule', () => {
+    const result = convertMarkdownToMrkdwn('above\n---\nbelow');
+    expect(result).not.toContain('---');
+  });
+});
+
+describe('adapters/slack — content truncation', () => {
+  const fullSnapshot = {
+    title: 'Test Article',
+    url: 'https://example.com/article',
+    description: 'A test description',
+    create_at: '2026-05-01T12:00:00.000Z',
+    content: '# Content\n\nParagraph here.',
+  };
+
+  it('does NOT truncate content at exactly 35000 chars', () => {
+    const content = 'x'.repeat(35000);
+    const snapshot = { ...fullSnapshot, content };
+    const result = composeSlackMrkdwn({
+      prompt: '',
+      snapshot,
+      timestampLabel: 'Captured at:',
+    });
+    expect(result).not.toContain('[truncated]');
+  });
+
+  it('truncates content exceeding 35000 chars with [truncated] suffix', () => {
+    const content = 'x'.repeat(35001);
+    const snapshot = { ...fullSnapshot, content };
+    const result = composeSlackMrkdwn({
+      prompt: '',
+      snapshot,
+      timestampLabel: 'Captured at:',
+    });
+    expect(result).toContain('...[truncated]');
+  });
+
+  it('truncated output ends with ...[truncated]', () => {
+    const content = 'a'.repeat(35001);
+    const snapshot = { ...fullSnapshot, content };
+    const result = composeSlackMrkdwn({
+      prompt: '',
+      snapshot,
+      timestampLabel: 'Captured at:',
+    });
+    expect(result.endsWith('...[truncated]')).toBe(true);
   });
 });

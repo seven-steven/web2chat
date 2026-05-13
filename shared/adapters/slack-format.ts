@@ -40,6 +40,11 @@ export function escapeSlackMentions(text: string): string {
   return result;
 }
 
+// Stub — TDD RED phase
+export function convertMarkdownToMrkdwn(_text: string): string {
+  return _text;
+}
+
 /**
  * Build prompt-first Slack mrkdwn per D-128/D-131.
  * - Title uses *bold* (mrkdwn syntax, NOT **bold**).
