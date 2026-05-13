@@ -210,6 +210,25 @@ describe('adapters/slack — convertMarkdownToMrkdwn', () => {
     const result = convertMarkdownToMrkdwn('above\n---\nbelow');
     expect(result).not.toContain('---');
   });
+
+  it('correctly handles asterisk list items containing italic text', () => {
+    const input = '* item with *important* text';
+    const result = convertMarkdownToMrkdwn(input);
+    // List marker stripped, italic preserved, no corruption
+    expect(result).toBe('item with _important_ text');
+  });
+
+  it('correctly handles hyphen list items containing italic text', () => {
+    const input = '- item with *emphasized* word';
+    const result = convertMarkdownToMrkdwn(input);
+    expect(result).toBe('item with _emphasized_ word');
+  });
+
+  it('correctly handles multiline asterisk list with mixed italic', () => {
+    const input = '* first\n* second with *bold-like*';
+    const result = convertMarkdownToMrkdwn(input);
+    expect(result).toBe('first\nsecond with _bold-like_');
+  });
 });
 
 describe('adapters/slack — content truncation', () => {
