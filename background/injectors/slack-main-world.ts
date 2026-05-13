@@ -50,6 +50,9 @@ export async function slackMainWorldPaste(text: string): Promise<boolean> {
       cancelable: true,
     }),
   );
+  // Wait for Quill to process pasted text before sending Enter
+  await new Promise<void>((resolve) => setTimeout(resolve, 300));
+
   editor.dispatchEvent(
     new KeyboardEvent('keydown', {
       key: 'Enter',

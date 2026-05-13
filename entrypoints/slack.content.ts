@@ -28,6 +28,8 @@ import type { DispatchWarning, SelectorConfirmation } from '@/shared/messaging';
 const WAIT_TIMEOUT_MS = 5000;
 const LOGIN_WALL_PROBE_MS = 1500;
 const RATE_LIMIT_MS = 5000;
+const CONFIRM_POLL_INTERVAL_MS = 300;
+const CONFIRM_MAX_POLLS = 5;
 const PLATFORM_ID = 'slack';
 const MAIN_WORLD_PORT = `WEB2CHAT_MAIN_WORLD:${PLATFORM_ID}`;
 
@@ -321,11 +323,16 @@ async function handleDispatch(
     };
   }
 
-  // Confirm send: Slack clears the Quill editor after processing Enter -> send.
-  let confirmed = (editor.textContent ?? '').trim().length === 0;
-  if (!confirmed) {
-    await new Promise<void>((resolve) => setTimeout(resolve, 500));
-    confirmed = (editor.textContent ?? '').trim().length === 0;
+  // Confirm send: poll editor textContent clearance every 300ms up to 5 attempts (1500ms total).
+  // Slack clears the Quill editor after processing Enter -> send.
+  // For long messages, Quill may need more time to process.
+  let confirmed = false;
+  for (let i = 0; i < CONFIRM_MAX_POLLS; i++) {
+    await new Promise<void>((resolve) => setTimeout(resolve, CONFIRM_POLL_INTERVAL_MS));
+    if ((editor.textContent ?? '').trim().length === 0) {
+      confirmed = true;
+      break;
+    }
   }
   if (!confirmed) {
     return {

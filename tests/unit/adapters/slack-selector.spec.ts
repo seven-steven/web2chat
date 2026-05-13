@@ -292,6 +292,36 @@ describe('Slack send confirmation (SLK-04)', () => {
     expect(result.ok).toBe(true);
     expect(editor.textContent?.trim()).toBe('');
   });
+
+  it('handleDispatch returns TIMEOUT when editor text never clears after all polls', async () => {
+    const pasteSpy = vi.fn().mockImplementation(async (el: HTMLElement) => {
+      el.textContent = 'text that never clears';
+      return true;
+    });
+    const testing = getSlackTesting();
+    testing!.setMainWorldPasteForTest(pasteSpy);
+
+    const result = await testing!.handleDispatch(dispatchPayload);
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('TIMEOUT');
+    expect(result.retriable).toBe(true);
+  });
+
+  it('handleDispatch succeeds when editor clears on later poll (not immediate)', async () => {
+    const pasteSpy = vi.fn().mockImplementation(async (el: HTMLElement) => {
+      el.textContent = 'pending text';
+      // Simulate delayed send: clear after a short delay
+      setTimeout(() => {
+        el.textContent = '';
+      }, 100);
+      return true;
+    });
+    const testing = getSlackTesting();
+    testing!.setMainWorldPasteForTest(pasteSpy);
+
+    const result = await testing!.handleDispatch(dispatchPayload);
+    expect(result.ok).toBe(true);
+  });
 });
 
 describe('Slack login detection (SLK-02)', () => {
