@@ -1,190 +1,153 @@
 ---
 phase: 10-slack-adapter
-reviewed: 2026-05-13T00:52:00Z
+reviewed: 2026-05-14T01:30:00Z
 depth: deep
-files_reviewed: 20
+files_reviewed: 5
 files_reviewed_list:
-  - background/injectors/slack-main-world.ts
-  - background/main-world-registry.ts
-  - entrypoints/popup/components/PlatformIcon.tsx
-  - entrypoints/popup/components/SendForm.tsx
-  - entrypoints/slack.content.ts
-  - locales/en.yml
-  - locales/zh_CN.yml
-  - scripts/verify-manifest.ts
-  - shared/adapters/registry.ts
   - shared/adapters/slack-format.ts
-  - shared/adapters/slack-login-detect.ts
+  - entrypoints/slack.content.ts
+  - background/injectors/slack-main-world.ts
   - tests/unit/adapters/slack-format.spec.ts
-  - tests/unit/adapters/slack-i18n.spec.ts
-  - tests/unit/adapters/slack-login-detect.spec.ts
-  - tests/unit/adapters/slack-match.spec.ts
   - tests/unit/adapters/slack-selector.spec.ts
-  - tests/unit/adapters/slack.fixture.html
-  - tests/unit/dispatch/platform-detector.spec.ts
-  - tests/unit/scripts/verify-manifest.spec.ts
-  - wxt.config.ts
 findings:
   critical: 1
-  warning: 5
-  info: 3
-  total: 9
+  warning: 2
+  info: 2
+  total: 5
 status: issues_found
 ---
 
 # Phase 10: Code Review Report
 
-**Reviewed:** 2026-05-13T00:52:00Z
+**Reviewed:** 2026-05-14T01:30:00Z
 **Depth:** deep
-**Files Reviewed:** 20
+**Files Reviewed:** 5
 **Status:** issues_found
 
 ## Summary
 
-Deep review of Phase 10 (Slack adapter) covering 20 source files across content script injection, mrkdwn formatting, mention escaping, login detection, registry wiring, i18n, and build config. Cross-file analysis traced the MAIN world port bridge from content script through service worker to the injector function.
+Gap closure review for Phase 10 plan 10-05. Reviewed `convertMarkdownToMrkdwn` (placeholder-based Markdown-to-mrkdwn converter), content truncation at 35000 chars, polling-based send confirmation (5x300ms), and the 300ms Enter delay in the MAIN world injector. Cross-file analysis traced the full pipeline from content script through SW port bridge to MAIN world injector and back.
 
-One critical issue found: the `composeSlackMrkdwn` function hardcodes the timestamp label as a Chinese string (`采集时间:`) regardless of user locale, violating the project's i18n requirement and exposing non-localized text to non-Chinese users.
+One critical bug found: the `convertMarkdownToMrkdwn` function applies italic conversion (step 6) before list marker removal (step 7), causing asterisk-prefixed list items containing italic text to produce corrupted mrkdwn output. Since Turndown uses `*` for unordered lists by default, this affects real web content. Two warnings: placeholder collision vulnerability and truncation producing broken mrkdwn formatting at the cut boundary. Two info items.
 
-Five warnings: (1) `beforeinput deleteContentBackward` dispatch does not actually clear editor text content -- it relies on the editor framework to handle the event, but the code comments and intent suggest direct DOM clearing; (2) i18n placeholder and error messages reference "Discord and OpenClaw" but omit Slack; (3) `<!subteam^...>` usergroup mentions are not escaped; (4) verify-manifest comment is stale; (5) test asserts a hardcoded Chinese string that perpetuates the i18n defect.
-
-Three info items: redundant `waitForEditor` function duplicating part of `waitForReady` logic, no test for `@channel` bare mention escaping, and mention regex only covers `U`/`W` user ID prefixes (not `B` bot IDs, though those are not mentionable).
+Previous review findings CR-01 (hardcoded Chinese timestamp) and WR-03 (subteam mentions) are confirmed resolved in the gap closure changes.
 
 ## Critical Issues
 
-### CR-01: Hardcoded Chinese timestamp label in shared utility
+### CR-01: Asterisk list items with italic text produce corrupted mrkdwn output
 
-**File:** `shared/adapters/slack-format.ts:49`
-**Issue:** `composeSlackMrkdwn` has `timestampLabel = '采集时间:'` as the default parameter value. The only caller (`entrypoints/slack.content.ts:317`) does not pass `timestampLabel`, so every Slack dispatch uses the Chinese string `采集时间:` regardless of the user's locale setting. This violates the project convention "用户可见的字符串全部走 `t(...)`" (CLAUDE.md) and the i18n requirement that "en 与 zh_CN locale 文件必须达到 100% 键覆盖率."
+**File:** `shared/adapters/slack-format.ts:85-88`
+**Issue:** In `convertMarkdownToMrkdwn`, italic conversion (step 6, line 85) runs before list marker removal (step 7, line 88). When content has an asterisk list item containing italic text, the italic regex matches the list marker `*` as an opening italic delimiter, consuming text until the first italic asterisk, producing broken output.
 
-The function lives in `shared/adapters/` (no WXT/chrome dependency), so it cannot directly call `t()`. The fix is to make `timestampLabel` a required parameter and pass the i18n-resolved value from the content script caller.
+Example: `* item with *important* text` produces `_ item with _important* text` instead of `item with _important_ text`.
 
-**Fix:**
+The italic regex `(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)` matches `* item with *` as an italic span (the non-greedy `.+?` matches ` item with `), leaving `important* text` with an unmatched closing asterisk.
+
+This is high impact because Turndown uses `*` for unordered lists by default. Any web page with an unordered list containing emphasized text will produce garbled Slack output.
+
+**Fix:** Move list marker removal (step 7) before italic conversion (step 6). However, simply reordering is insufficient because the italic regex would then match bare `*text*` on lines that previously had list markers stripped. A better approach: extract and protect list markers before italic conversion, similar to how bold is protected with placeholders.
 
 ```typescript
-// shared/adapters/slack-format.ts — remove default, make required
-export function composeSlackMrkdwn(payload: {
-  prompt: string;
-  snapshot: Snapshot;
-  timestampLabel: string;  // REQUIRED, no default
-}): string {
-  const { prompt, snapshot, timestampLabel } = payload;
-  // ...
-}
-
-// entrypoints/slack.content.ts — pass i18n value
-import { t } from '@/shared/i18n';
-const message = composeSlackMrkdwn({
-  prompt: payload.prompt,
-  snapshot: payload.snapshot,
-  timestampLabel: t('slack_timestamp_label') + ' ',
+// After step 5 (links), before italic:
+// 6a. Extract list markers into placeholders (like bold/headings)
+const listTokens: string[] = [];
+result = result.replace(/^[-*]\s+(.+)$/gm, (_, content: string) => {
+  listTokens.push(content); // store content WITHOUT the marker
+  return PH('LIST', listTokens.length - 1);
 });
-```
 
-Also add `slack_timestamp_label` key to both `locales/en.yml` and `locales/zh_CN.yml`.
+// 6b. Convert italic: *text* -> _text_
+result = result.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '_$1_');
+
+// ... later, restore list placeholders:
+result = result.replace(/@@W2C_LIST_(\d+)@@/g, (_, i) => listTokens[Number(i)] ?? '');
+```
 
 ## Warnings
 
-### WR-01: `beforeinput deleteContentBackward` does not clear editor text
+### WR-01: Placeholder pattern collision with user content
 
-**File:** `background/injectors/slack-main-world.ts:29-37` and `background/injectors/slack-main-world.ts:57-67`
-**Issue:** The code dispatches a `beforeinput` event with `inputType: 'deleteContentBackward'` and then immediately checks `editor.textContent` to decide what to do next. However, `dispatchEvent()` is synchronous -- the `beforeinput` event is dispatched, but the editor framework (Quill) must handle it asynchronously. The code does not `await` any framework processing. The `editor.textContent` check on line 59 (post-Enter cleanup) will therefore always see the same text that was there before, unless Quill happened to process it within the 200ms `setTimeout` on line 58.
+**File:** `shared/adapters/slack-format.ts:50`
+**Issue:** The placeholder format `@@W2C_<TAG>_<N>@@` is not guaranteed to be unique against user content. If captured web content contains the literal string `@@W2C_BOLD_0@@`, the restore step (line 94) will replace it with a bold token value instead of preserving the original text. Testing confirmed:
 
-The same pattern exists in `discord-main-world.ts` and was noted as a "UAT regression fix." In practice, Quill/Slate may process the event, but the code's correctness depends on a race condition between the event handler and the textContent check.
+- Input: `some text @@W2C_BOLD_0@@ more text **real bold**` produces `some text *real bold* more text *real bold*` (duplicate substitution).
+- Input: `some text @@W2C_BOLD_0@@ more text` (no bold) produces `some text  more text` (text deleted via `?? ''` fallback).
 
-**Fix:** If the intent is a best-effort cleanup (acceptable given the defensive nature), add a comment explicitly acknowledging the race condition. If deterministic clearing is needed, use `editor.textContent = ''` before dispatching the paste event, then let Quill reconcile via its MutationObserver.
+The likelihood is low (`@@W2C_` is an unusual prefix), but the consequence is silent data corruption. This is a design weakness in the placeholder scheme.
 
-### WR-02: i18n messages reference "Discord and OpenClaw" but omit Slack
+**Fix:** Use a UUID-based or sufficiently random prefix to make collision astronomically unlikely:
 
-**File:** `locales/en.yml:132` and `locales/zh_CN.yml:132`
-**Issue:** `error_code_PLATFORM_UNSUPPORTED_body` says "web2chat supports Discord and OpenClaw in v1" (en) / "v1 仅支持 Discord 与 OpenClaw" (zh_CN). Since Slack is now supported, this message is inaccurate -- a user who enters an unsupported platform URL will be told only Discord and OpenClaw are supported.
-
-Similarly, `combobox_send_to_placeholder` says "Paste a Discord channel or OpenClaw chat URL..." but does not mention Slack.
-
-**Fix:** Update both locale files:
-```yaml
-# en.yml
-error_code_PLATFORM_UNSUPPORTED_body:
-  message: 'web2chat supports Discord, Slack, and OpenClaw in v1. Other platforms come later.'
-combobox_send_to_placeholder:
-  message: 'Paste a Discord channel, Slack channel, or OpenClaw chat URL...'
-
-# zh_CN.yml
-error_code_PLATFORM_UNSUPPORTED_body:
-  message: 'v1 支持 Discord、Slack 与 OpenClaw，其他平台后续版本支持。'
-combobox_send_to_placeholder:
-  message: '粘贴 Discord 频道、Slack 频道或 OpenClaw 会话 URL...'
+```typescript
+const PH = (tag: string, idx: number) => `\x00W2C_${tag}_${idx}\x00`;
 ```
 
-### WR-03: `<!subteam^...>` usergroup mentions not escaped
+Using null bytes (`\x00`) as delimiters guarantees no collision with web content, since null bytes are stripped during HTML parsing and cannot appear in text nodes.
 
-**File:** `shared/adapters/slack-format.ts:24-35`
-**Issue:** The `escapeSlackMentions` function handles `<!everyone>`, `<!here>`, `<!channel>`, `<@U...>`, `<@W...>`, `<#C...>`, and bare `@everyone`/`@here`. It does NOT handle Slack usergroup mentions in the form `<!subteam^S12345>` or `<!subteam^S12345|@group-name>`. If a user's captured web content contains this pattern (e.g., from copying Slack message text), it would trigger a usergroup ping on dispatch.
+### WR-02: Truncation can cut mid-mrkdwn-entity, producing broken formatting
 
-This is lower severity because the `<!subteam^...>` format is Slack-specific internal syntax unlikely to appear in arbitrary web content, but it is a gap in the mention escaping coverage.
+**File:** `shared/adapters/slack-format.ts:123-126`
+**Issue:** When content exceeds 35000 chars, `rawContent.slice(0, TRUNCATE_LIMIT)` performs a blind character cut. This can slice mid-mrkdwn-entity, producing broken output. For example, if a bold marker `*bold tex` is cut mid-way, Slack receives an unclosed bold delimiter. Similarly, a link `<https://example.com|exa` would be cut mid-link.
 
-**Fix:** Add a regex for subteam mentions:
+Testing confirmed: content of length 35103 with bold at position 34997-35005 produces truncated output ending with `aaaaaaa*bo\n...[truncated]`, leaving a broken bold marker.
+
+This is a cosmetic issue (the truncated portion is discarded content), but Slack may render the broken formatting in the visible portion, e.g., rendering `*bo\n...[truncated]` as partially bold.
+
+**Fix:** Truncate at the last newline boundary before the limit:
+
 ```typescript
-// Break <!subteam^S12345> and <!subteam^S12345|@name> with ZWS after !
-result = result.replace(/<!subteam\^[A-Z0-9]+(?:\|[^>]*)?>/g, (m) => {
-  return '<!' + ZWS + m.slice(2);
-});
-```
-
-### WR-04: verify-manifest.ts header comment is stale
-
-**File:** `scripts/verify-manifest.ts:7`
-**Issue:** The file header comment says `host_permissions === ['https://discord.com/*']` but the actual assertion on line 79-81 expects `['https://app.slack.com/*', 'https://discord.com/*']`. The comment no longer matches the code, which could mislead future developers reading the header to understand the contract.
-
-**Fix:**
-```typescript
-// Line 7: update comment
-//   - host_permissions === ['https://app.slack.com/*', 'https://discord.com/*'] (NO `<all_urls>` ever)
-```
-
-### WR-05: Test perpetuates hardcoded Chinese string instead of testing i18n
-
-**File:** `tests/unit/adapters/slack-format.spec.ts:23`
-**Issue:** The test asserts `expect(result).toContain('> 采集时间: 2026-05-01T12:00:00.000Z')` which hardcodes the Chinese timestamp label. This test will break if the default is fixed to use i18n (CR-01). The test should either pass an explicit `timestampLabel` or verify the label is parameterized.
-
-**Fix:** Pass explicit `timestampLabel` in test:
-```typescript
-const result = composeSlackMrkdwn({
-  prompt: 'Summarize this',
-  snapshot: fullSnapshot,
-  timestampLabel: 'Captured at:',
-});
-// Then assert:
-expect(result).toContain('> Captured at: 2026-05-01T12:00:00.000Z');
+const rawContent = snapshot.content ? convertMarkdownToMrkdwn(snapshot.content) : '';
+let truncatedContent: string;
+if (rawContent.length > TRUNCATE_LIMIT) {
+  const cut = rawContent.lastIndexOf('\n', TRUNCATE_LIMIT);
+  truncatedContent = rawContent.slice(0, cut > 0 ? cut : TRUNCATE_LIMIT) + '\n...[truncated]';
+} else {
+  truncatedContent = rawContent;
+}
 ```
 
 ## Info
 
-### IN-01: Redundant `waitForEditor` function duplicates `waitForReady` logic
+### IN-01: No test for asterisk list items containing italic text
 
-**File:** `entrypoints/slack.content.ts:194-219`
-**Issue:** `waitForEditor()` (lines 194-219) is a simplified version of `waitForReady()` (lines 135-171) that only waits for the editor without login-wall detection. `waitForReady` already handles the editor-found case. The only difference is `waitForEditor` returns `null` on timeout instead of `{ kind: 'timeout' }`. The fallback path at line 288-289 (`waitForEditor(remainingBudget)`) could be replaced by a second `waitForReady` call with adjusted timeout, eliminating ~25 lines of near-duplicate code.
-
-**Fix:** Extract a shared `createObserver` helper or reuse `waitForReady` in the fallback path with a modified timeout.
-
-### IN-02: No test for bare `@channel` mention escaping
-
-**File:** `tests/unit/adapters/slack-format.spec.ts`
-**Issue:** The `escapeSlackMentions` tests cover bare `@everyone` and `@here`, and bracketed `<!channel>`, but there is no test for bare `@channel`. While `@channel` is less commonly used outside of bracket syntax, Slack does trigger on bare `@channel` in some contexts. The regex `(?<!\w)@(everyone|here)\b` only matches `everyone` and `here`, not `channel` -- this is correct per Slack's behavior (bare `@channel` does not trigger a mention; only `<!channel>` does). However, adding an explicit test for `@channel` being unchanged would document this design decision.
+**File:** `tests/unit/adapters/slack-format.spec.ts:188-194`
+**Issue:** The test suite has individual tests for `* item` (asterisk list) conversion and `*italic*` conversion, but no combined test case. The CR-01 bug would have been caught by a test like `'* first item *important* here'`.
 
 **Fix:** Add test:
 ```typescript
-it('@channel unchanged (bare @channel is not a Slack mention)', () => {
-  expect(escapeSlackMentions('@channel')).toBe('@channel');
+it('correctly handles asterisk list items containing italic text', () => {
+  const input = '* item with *important* text';
+  // List marker should be stripped, italic preserved
+  const result = convertMarkdownToMrkdwn(input);
+  // After fix: should be 'item with _important_ text'
+  expect(result).not.toMatch(/^_/); // should not start with italic marker
 });
 ```
 
-### IN-03: Mention regex only covers U/W user ID prefixes
+### IN-02: MAIN world post-Enter cleanup race with content script poll
 
-**File:** `shared/adapters/slack-format.ts:29`
-**Issue:** The regex `/<@([UW][A-Z0-9]+)>/g` only matches Slack user IDs starting with `U` or `W`. Slack also has `B`-prefixed bot IDs, but `<@B...>` is not a valid mention target in Slack (bots are mentioned by their user ID, not bot ID). The regex is correct for practical purposes. However, future Slack API changes could introduce new ID prefixes. Consider using a more permissive pattern like `/<@([A-Z][A-Z0-9]+)>/g` if broader coverage is desired.
+**File:** `background/injectors/slack-main-world.ts:53-75`
+**Issue:** The MAIN world injector has a 200ms post-Enter cleanup check (line 66) that dispatches `deleteContentBackward` if residual text remains. Meanwhile, the content script starts polling editor textContent 300ms after the paste response arrives. Since the content script only sees the paste response after the MAIN world script finishes (minimum 500ms), the polling timeline is: first poll at ~800ms, last poll at ~2000ms. The 200ms cleanup in MAIN world fires at ~500ms, well before the first poll, so it does not interfere. This is safe but the timing relationship is implicit and fragile -- if delays change independently, the race could break.
+
+**Fix:** Add a comment in `slack.content.ts` near the polling loop documenting the timing dependency:
+```typescript
+// Polling assumes MAIN world script takes >= 500ms (300ms + 200ms internal delays).
+// The 200ms post-Enter cleanup in MAIN world fires before our first poll (~800ms).
+// Do NOT reduce CONFIRM_POLL_INTERVAL_MS without verifying this invariant.
+```
 
 ---
 
-_Reviewed: 2026-05-13T00:52:00Z_
+## Appendix: Gap Closure Resolution Status
+
+| Prev Finding | Status | Notes |
+|---|---|---|
+| CR-01 (hardcoded Chinese timestamp) | RESOLVED | `timestampLabel` is now a required parameter; caller passes `t('slack_timestamp_label')` |
+| WR-03 (subteam mentions) | RESOLVED | `<!subteam^...>` escaping added at line 35-38 |
+| WR-01 (beforeinput race) | STILL PRESENT | Comment acknowledges best-effort nature; acceptable |
+| WR-02 (i18n omits Slack) | OUT OF SCOPE | Not in gap closure files |
+| WR-04 (stale comment) | OUT OF SCOPE | Not in gap closure files |
+| WR-05 (test hardcoded Chinese) | RESOLVED | Tests now pass explicit `timestampLabel` parameter |
+
+_Reviewed: 2026-05-14T01:30:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: deep_
