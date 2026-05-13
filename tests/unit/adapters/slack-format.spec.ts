@@ -29,7 +29,10 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
     expect(result).toContain('https://example.com/article');
     expect(result).toContain('> A test description');
     expect(result).toContain('> Captured at: 2026-05-01T12:00:00.000Z');
-    expect(result).toContain('# Content\n\nParagraph here.');
+    // Content is converted from Markdown to mrkdwn: # Content -> *Content*
+    expect(result).toContain('*Content*');
+    expect(result).toContain('Paragraph here.');
+    expect(result).not.toContain('# Content');
   });
 
   it('omits empty fields entirely', () => {

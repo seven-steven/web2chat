@@ -13,6 +13,7 @@ export interface Snapshot {
 }
 
 const ZWS = '​';
+const TRUNCATE_LIMIT = 35000;
 
 /**
  * Break Slack mention patterns via zero-width space (U+200B) insertion (D-130).
@@ -40,9 +41,62 @@ export function escapeSlackMentions(text: string): string {
   return result;
 }
 
-// Stub — TDD RED phase
-export function convertMarkdownToMrkdwn(_text: string): string {
-  return _text;
+/**
+ * Convert CommonMark Markdown to Slack mrkdwn (T-10-05-01 — uses lazy quantifiers).
+ * Order matters: extract code blocks first to prevent conversion inside them.
+ */
+export function convertMarkdownToMrkdwn(text: string): string {
+  // Unique placeholder prefix — unlikely to collide with web content
+  const PH = (tag: string, idx: number) => `@@W2C_${tag}_${idx}@@`;
+
+  // 1. Extract fenced code blocks — protect from all conversion
+  const fencedBlocks: string[] = [];
+  let result = text.replace(/```[\s\S]*?```/g, (m) => {
+    fencedBlocks.push(m);
+    return PH('FENCED', fencedBlocks.length - 1);
+  });
+
+  // 2. Extract inline code — protect from all conversion
+  const inlineCodes: string[] = [];
+  result = result.replace(/`[^`]+`/g, (m) => {
+    inlineCodes.push(m);
+    return PH('INLINE', inlineCodes.length - 1);
+  });
+
+  // 3. Convert bold: **text** -> *text* (protect with placeholder to prevent italic match)
+  const boldTokens: string[] = [];
+  result = result.replace(/\*\*(.+?)\*\*/g, (_, content: string) => {
+    boldTokens.push(`*${content}*`);
+    return PH('BOLD', boldTokens.length - 1);
+  });
+
+  // 4. Convert headings: ## text -> *text* (protect with placeholder)
+  const headingTokens: string[] = [];
+  result = result.replace(/^#{1,6}\s+(.+)$/gm, (_, content: string) => {
+    headingTokens.push(`*${content}*`);
+    return PH('HEADING', headingTokens.length - 1);
+  });
+
+  // 5. Convert links: [text](url) -> <url|text>
+  result = result.replace(/\[(.+?)\]\((.+?)\)/g, '<$2|$1>');
+
+  // 6. Convert italic: *text* -> _text_
+  //    Bold and heading results are protected, so only original Markdown *italic* matches.
+  result = result.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '_$1_');
+
+  // 7. Convert list items: remove leading "- " or "* " at line start
+  result = result.replace(/^[-*]\s+/gm, '');
+
+  // 8. Convert horizontal rules: --- (or more) on own line -> empty line
+  result = result.replace(/^-{3,}$/gm, '');
+
+  // 9. Restore placeholders
+  result = result.replace(/@@W2C_BOLD_(\d+)@@/g, (_, i) => boldTokens[Number(i)] ?? '');
+  result = result.replace(/@@W2C_HEADING_(\d+)@@/g, (_, i) => headingTokens[Number(i)] ?? '');
+  result = result.replace(/@@W2C_INLINE_(\d+)@@/g, (_, i) => inlineCodes[Number(i)] ?? '');
+  result = result.replace(/@@W2C_FENCED_(\d+)@@/g, (_, i) => fencedBlocks[Number(i)] ?? '');
+
+  return result;
 }
 
 /**
@@ -50,7 +104,7 @@ export function convertMarkdownToMrkdwn(_text: string): string {
  * - Title uses *bold* (mrkdwn syntax, NOT **bold**).
  * - Empty fields are omitted entirely.
  * - escapeSlackMentions applied to prompt, title, description, content (NOT url or create_at).
- * - No truncation (D-129): Slack 40K char limit far exceeds actual web content.
+ * - Content converted from Markdown to mrkdwn, then truncated at 35000 chars.
  */
 export function composeSlackMrkdwn(payload: {
   prompt: string;
@@ -63,7 +117,14 @@ export function composeSlackMrkdwn(payload: {
   const safePrompt = prompt ? escapeSlackMentions(prompt) : '';
   const safeTitle = snapshot.title ? escapeSlackMentions(snapshot.title) : '';
   const safeDescription = snapshot.description ? escapeSlackMentions(snapshot.description) : '';
-  const safeContent = snapshot.content ? escapeSlackMentions(snapshot.content) : '';
+
+  // Convert content Markdown -> mrkdwn, then truncate if needed
+  const rawContent = snapshot.content ? convertMarkdownToMrkdwn(snapshot.content) : '';
+  const truncatedContent =
+    rawContent.length > TRUNCATE_LIMIT
+      ? rawContent.slice(0, TRUNCATE_LIMIT) + '\n...[truncated]'
+      : rawContent;
+  const safeContent = truncatedContent ? escapeSlackMentions(truncatedContent) : '';
 
   // Build lines array — empty fields omitted entirely
   const lines: string[] = [];
