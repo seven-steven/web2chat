@@ -84,15 +84,12 @@ export function convertMarkdownToMrkdwn(text: string): string {
   // 5. Convert links: [text](url) -> <url|text>
   result = result.replace(/\[(.+?)\]\((.+?)\)/g, '<$2|$1>');
 
-  // 6. Extract list markers into placeholders (protect from italic regex)
+  // 6. Strip list markers via placeholders (protect from italic regex)
   //    Turndown default bulletListMarker is '*', so asterisk list markers
   //    would be matched by the italic regex if not protected.
   //    Only the marker ("- "/"* ") is replaced; content remains for italic conversion.
-  const listMarkers: string[] = [];
-  result = result.replace(/^([-*])\s/gm, (m) => {
-    listMarkers.push(m);
-    return PH('LIST', listMarkers.length - 1);
-  });
+  let listIdx = 0;
+  result = result.replace(/^[-*]\s/gm, () => PH('LIST', listIdx++));
 
   // 7. Convert italic: *text* -> _text_
   //    Bold, heading, and list markers are protected, so only original Markdown *italic* matches.
