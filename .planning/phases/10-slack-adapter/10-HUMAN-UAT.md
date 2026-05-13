@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 10-slack-adapter
 source: [10-VERIFICATION.md]
 started: "2026-05-13T01:05:00+08:00"
-updated: "2026-05-13T22:32:00+08:00"
+updated: "2026-05-13T22:40:00+08:00"
 ---
 
 ## Current Test
@@ -38,7 +38,18 @@ blocked: 0
   reason: "User reported: 文本内容成功填入 slack 输入框但未发出，popup 投递超时。格式化消息未转义，有大量 **markdown** 格式残留。疑似文本长度超限。"
   severity: blocker
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: |
+    Two distinct root causes:
+    1. NO MARKDOWN-TO-MRKDWN CONVERSION: composeSlackMrkdwn (slack-format.ts:70) passes content field through raw — no conversion from Markdown **bold** → Slack mrkdwn *bold*. Only title (line 66) gets mrkdwn wrapping and description (line 68) gets blockquote prefix. The content body retains original Turndown Markdown syntax.
+    2. SEND CONFIRMATION FAILS ON LONG TEXT: slack.content.ts:324-337 checks editor textContent clearance after 500ms to confirm send. When message is long, Slack may: (a) reject silently due to internal limits, or (b) need more time to process. The editor retains text → confirmation check fails → TIMEOUT code returned to popup.
+  artifacts:
+    - path: "shared/adapters/slack-format.ts"
+      issue: "composeSlackMrkdwn does not convert Markdown syntax (##, **, -, >, etc.) in content field to Slack mrkdwn"
+    - path: "entrypoints/slack.content.ts"
+      issue: "Send confirmation (line 324-337) only waits 500ms and checks editor textContent — insufficient for long messages or Slack rejection scenarios"
+    - path: "background/injectors/slack-main-world.ts"
+      issue: "Enter keydown dispatched immediately after paste (line 53) — Quill may not have finished processing long text"
+  missing:
+    - "Markdown-to-mrkdwn converter for content field (bold **→*, headers ##→*, lists, code blocks, links)"
+    - "Content length truncation or splitting for Slack's practical message limit"
+    - "Longer or smarter send confirmation (check for Slack error indicators, not just editor clearance)"
