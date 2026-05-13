@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: 多渠道适配
-status: executing
-stopped_at: Phase 10 execution started
-last_updated: "2026-05-13T00:00:00+08:00"
-last_activity: 2026-05-12
+status: ready
+stopped_at: Phase 10 complete; ready for Phase 11
+last_updated: "2026-05-13T01:10:00+08:00"
+last_activity: 2026-05-13
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 14
-  completed_plans: 10
+  completed_phases: 4
+  total_plans: 18
+  completed_plans: 14
   percent: 100
 ---
 
@@ -21,13 +21,13 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-05-09)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** v1.1 多渠道适配 — Phase 10 planned (4 plans / 2 waves)
+**当前焦点：** v1.1 多渠道适配 — Phase 10 verified, ready for Phase 11
 
 ## Current Position
 
-Phase: 10 (Slack 适配器) — EXECUTING
-Plan: 0/4 executed
-Status: Execution started (Wave 1 of 2)
+Phase: 11 (Telegram 适配器) — NEXT
+Plan: 0/? planned
+Status: Phase 10 complete (4/4 plans, 4/4 must-haves verified, 2 human tests pending)
 Last activity: 2026-05-13
 
 Progress: [##########] 100%
@@ -45,7 +45,7 @@ Progress: [##########] 100%
 |-------|-------|-------|----------|
 | 8. 架构泛化 | 5/5 | — | — |
 | 9. 投递鲁棒性 | 5/5 | — | — |
-| 10. Slack 适配器 | 0/4 | — | — |
+| 10. Slack 适配器 | 4/4 | — | — |
 | 11. Telegram 适配器 | 0/? | — | — |
 | 12. 飞书/Lark 适配器 | 0/? | — | — |
 
@@ -77,9 +77,16 @@ Phase 9 verification:
 - 09-VERIFICATION.md status: 4/4 must-haves verified.
 - UAT found 2 bugs, both fixed: SelectorWarningDialog overlay + badge.
 
+Phase 10 verification:
+
+- 10-VERIFICATION.md status: human_needed; 4/4 must-haves verified.
+- 10-HUMAN-UAT.md status: partial; 2 pending (live dispatch + icon display).
+- 10-REVIEW.md: 1 CR (hardcoded CN timestamp), 5 WR, 3 Info.
+
 ### Pending Todos
 
-- Research + plan Phase 10 (Slack 适配器).
+- Fix CR-01: composeSlackMrkdwn 硬编码中文时间戳标签需走 i18n
+- Research + plan Phase 11 (Telegram 适配器).
 
 ### Blockers/Concerns
 
@@ -102,6 +109,6 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-09:
 
 ## Session Continuity
 
-Last session: 2026-05-11T15:50:00+08:00
-Stopped at: Phase 10 context gathered; ready for planning
-Resume file: .planning/phases/10-slack-adapter/10-CONTEXT.md
+Last session: 2026-05-13T01:10:00+08:00
+Stopped at: Phase 10 complete; ready for Phase 11
+Resume file: .planning/phases/11-telegram-adapter/11-CONTEXT.md (if exists)
