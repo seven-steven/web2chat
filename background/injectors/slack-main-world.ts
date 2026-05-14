@@ -51,15 +51,38 @@ export async function slackMainWorldPaste(text: string): Promise<boolean> {
     }),
   );
 
-  // Synthetic KeyboardEvent has isTrusted=false — Slack's Quill send handler
-  // ignores untrusted events (only saves draft). Click the send button instead.
-  const sendBtn =
-    document.querySelector<HTMLButtonElement>('button[data-qa="texty_send_button"]') ??
-    document.querySelector<HTMLButtonElement>('[aria-label="Send"]') ??
-    document.querySelector<HTMLButtonElement>('#msg_input button[type="submit"]');
+  // Wait for Quill to process the paste and render the send button.
+  await new Promise<void>((resolve) => setTimeout(resolve, 300));
 
-  if (sendBtn) {
-    sendBtn.click();
+  // Primary: click send button (retry up to 3 times, 150ms apart)
+  let sent = false;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const sendBtn =
+      document.querySelector<HTMLButtonElement>('button[data-qa="texty_send_button"]') ??
+      document.querySelector<HTMLButtonElement>('[aria-label="Send now"]') ??
+      document.querySelector<HTMLButtonElement>('#msg_input button[type="submit"]');
+    if (sendBtn) {
+      sendBtn.click();
+      sent = true;
+      break;
+    }
+    if (attempt < 2) await new Promise<void>((resolve) => setTimeout(resolve, 150));
+  }
+
+  // Fallback: synthetic Enter if button not found/clicked
+  if (!sent) {
+    const enterProps = {
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13,
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    };
+    editor.dispatchEvent(new KeyboardEvent('keydown', enterProps));
+    editor.dispatchEvent(new KeyboardEvent('keypress', enterProps));
+    editor.dispatchEvent(new KeyboardEvent('keyup', enterProps));
   }
 
   // Post-Enter clear: wait 200ms then dispatch beforeinput[deleteContent] ONLY

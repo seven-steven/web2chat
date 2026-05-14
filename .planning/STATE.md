@@ -79,8 +79,8 @@ Phase 9 verification:
 
 Phase 10 verification:
 
-- 10-VERIFICATION.md status: human_needed; 4/4 must-haves verified.
-- 10-HUMAN-UAT.md status: partial; 2 pending (live dispatch + icon display).
+- 10-VERIFICATION.md status: passed; 8/8 truths verified.
+- 10-HUMAN-UAT.md status: complete; 2 passed, 0 issues.
 - 10-REVIEW.md: 1 CR (hardcoded CN timestamp), 5 WR, 3 Info.
 
 ### Pending Todos
