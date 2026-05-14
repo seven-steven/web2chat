@@ -85,6 +85,7 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
     expect(result).not.toContain('## Title');
     expect(result).not.toContain('**bold**');
     expect(result).not.toContain('- list item');
+    expect(result).toContain('• list item');
   });
 });
 
@@ -185,12 +186,12 @@ describe('adapters/slack — convertMarkdownToMrkdwn', () => {
     );
   });
 
-  it('converts - item (hyphen list) to plain text', () => {
-    expect(convertMarkdownToMrkdwn('- first item')).toBe('first item');
+  it('converts - item (hyphen list) to bullet', () => {
+    expect(convertMarkdownToMrkdwn('- first item')).toBe('• first item');
   });
 
-  it('converts * item (asterisk list) to plain text', () => {
-    expect(convertMarkdownToMrkdwn('* first item')).toBe('first item');
+  it('converts * item (asterisk list) to bullet', () => {
+    expect(convertMarkdownToMrkdwn('* first item')).toBe('• first item');
   });
 
   it('preserves inline code unchanged', () => {
@@ -214,20 +215,35 @@ describe('adapters/slack — convertMarkdownToMrkdwn', () => {
   it('correctly handles asterisk list items containing italic text', () => {
     const input = '* item with *important* text';
     const result = convertMarkdownToMrkdwn(input);
-    // List marker stripped, italic preserved, no corruption
-    expect(result).toBe('item with _important_ text');
+    expect(result).toBe('• item with _important_ text');
   });
 
   it('correctly handles hyphen list items containing italic text', () => {
     const input = '- item with *emphasized* word';
     const result = convertMarkdownToMrkdwn(input);
-    expect(result).toBe('item with _emphasized_ word');
+    expect(result).toBe('• item with _emphasized_ word');
   });
 
   it('correctly handles multiline asterisk list with mixed italic', () => {
     const input = '* first\n* second with *bold-like*';
     const result = convertMarkdownToMrkdwn(input);
-    expect(result).toBe('first\nsecond with _bold-like_');
+    expect(result).toBe('• first\n• second with _bold-like_');
+  });
+
+  it('strips image syntax ![alt](url) entirely', () => {
+    expect(convertMarkdownToMrkdwn('text ![badge](https://img.shields.io/stars) more')).toBe(
+      'text  more',
+    );
+  });
+
+  it('strips multiple images', () => {
+    const input = '![a](http://a) middle ![b](http://b)';
+    expect(convertMarkdownToMrkdwn(input)).toBe(' middle ');
+  });
+
+  it('preserves links but strips images in same input', () => {
+    const input = '![img](http://img) and [link](http://link)';
+    expect(convertMarkdownToMrkdwn(input)).toBe(' and <http://link|link>');
   });
 });
 
