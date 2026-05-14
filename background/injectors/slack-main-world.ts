@@ -51,22 +51,16 @@ export async function slackMainWorldPaste(text: string): Promise<boolean> {
     }),
   );
 
-  // Dispatch Enter immediately after paste (same-frame, matching Discord pattern).
-  // Quill processes paste synchronously; a delayed Enter may miss Quill's event context.
-  // Dispatch both keydown and keypress for maximum Quill compatibility.
-  const enterOpts: KeyboardEventInit = {
-    key: 'Enter',
-    code: 'Enter',
-    keyCode: 13,
-    which: 13,
-    charCode: 13,
-    bubbles: true,
-    cancelable: true,
-    composed: true,
-  };
-  editor.dispatchEvent(new KeyboardEvent('keydown', enterOpts));
-  editor.dispatchEvent(new KeyboardEvent('keypress', enterOpts));
-  editor.dispatchEvent(new KeyboardEvent('keyup', enterOpts));
+  // Synthetic KeyboardEvent has isTrusted=false — Slack's Quill send handler
+  // ignores untrusted events (only saves draft). Click the send button instead.
+  const sendBtn =
+    document.querySelector<HTMLButtonElement>('button[data-qa="texty_send_button"]') ??
+    document.querySelector<HTMLButtonElement>('[aria-label="Send"]') ??
+    document.querySelector<HTMLButtonElement>('#msg_input button[type="submit"]');
+
+  if (sendBtn) {
+    sendBtn.click();
+  }
 
   // Post-Enter clear: wait 200ms then dispatch beforeinput[deleteContent] ONLY
   // if residual text is still present.
