@@ -14,7 +14,7 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
     content: '# Content\n\nParagraph here.',
   };
 
-  it('formats prompt-first with *bold* title (mrkdwn)', () => {
+  it('formats prompt-first with plain text title', () => {
     const result = composeSlackMrkdwn({
       prompt: 'Summarize this',
       snapshot: fullSnapshot,
@@ -23,15 +23,12 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
     const lines = result.split('\n');
     expect(lines[0]).toBe('Summarize this');
     expect(lines[1]).toBe('');
-    // mrkdwn bold: *text* (NOT **text**)
-    expect(result).toContain('*Test Article*');
-    expect(result).not.toContain('**Test Article**');
+    expect(result).toContain('Test Article');
+    expect(result).not.toContain('*Test Article*');
     expect(result).toContain('https://example.com/article');
-    expect(result).toContain('> A test description');
-    expect(result).toContain('> Captured at: 2026-05-01T12:00:00.000Z');
-    // Content is converted from Markdown to mrkdwn: # Content -> *Content*
-    expect(result).toContain('*Content*');
-    expect(result).toContain('Paragraph here.');
+    expect(result).toContain('A test description');
+    expect(result).toContain('Captured at: 2026-05-01T12:00:00.000Z');
+    expect(result).toContain('Content');
     expect(result).not.toContain('# Content');
   });
 
@@ -42,7 +39,7 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
       snapshot: sparse,
       timestampLabel: 'Captured at:',
     });
-    expect(result).toBe('*Only Title*');
+    expect(result).toBe('Only Title');
     expect(result).not.toContain('Captured at');
     expect(result).not.toContain('> ');
   });
@@ -53,7 +50,7 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
       snapshot: fullSnapshot,
       timestampLabel: 'Captured at:',
     });
-    expect(result.startsWith('*Test Article*')).toBe(true);
+    expect(result.startsWith('Test Article')).toBe(true);
   });
 
   it('does NOT truncate content under 35000 chars (D-129)', () => {
@@ -69,7 +66,7 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
     expect(result).not.toContain('[truncated]');
   });
 
-  it('converts Markdown syntax in content to Slack mrkdwn', () => {
+  it('converts Markdown syntax in content to plain text', () => {
     const snapshot = {
       ...fullSnapshot,
       content: '## Title\n\n**bold** text and *italic*\n\n- list item',
@@ -79,12 +76,12 @@ describe('adapters/slack — composeSlackMrkdwn (D-128, D-131)', () => {
       snapshot,
       timestampLabel: 'Captured at:',
     });
-    expect(result).toContain('*Title*');
-    expect(result).toContain('*bold*');
-    expect(result).toContain('_italic_');
+    expect(result).toContain('Title');
+    expect(result).toContain('bold');
+    expect(result).toContain('italic');
     expect(result).not.toContain('## Title');
     expect(result).not.toContain('**bold**');
-    expect(result).not.toContain('- list item');
+    expect(result).not.toContain('*Title*');
     expect(result).toContain('• list item');
   });
 });
@@ -158,31 +155,29 @@ describe('adapters/slack — escapeSlackMentions (D-130)', () => {
 });
 
 describe('adapters/slack — convertMarkdownToMrkdwn', () => {
-  it('converts **bold** to *bold*', () => {
-    expect(convertMarkdownToMrkdwn('say **hello** world')).toBe('say *hello* world');
+  it('strips **bold** to plain text', () => {
+    expect(convertMarkdownToMrkdwn('say **hello** world')).toBe('say hello world');
   });
 
-  it('converts *italic* to _italic_', () => {
-    expect(convertMarkdownToMrkdwn('this is *important*')).toBe('this is _important_');
+  it('strips *italic* to plain text', () => {
+    expect(convertMarkdownToMrkdwn('this is *important*')).toBe('this is important');
   });
 
-  it('does NOT double-convert **bold** as italic', () => {
-    expect(convertMarkdownToMrkdwn('**bold** and *italic*')).toBe('*bold* and _italic_');
+  it('strips both **bold** and *italic* in same line', () => {
+    expect(convertMarkdownToMrkdwn('**bold** and *italic*')).toBe('bold and italic');
   });
 
-  it('converts ## heading to *heading*', () => {
-    expect(convertMarkdownToMrkdwn('## Section Title\nparagraph')).toBe(
-      '*Section Title*\nparagraph',
-    );
+  it('converts ## heading to plain text (strips markers)', () => {
+    expect(convertMarkdownToMrkdwn('## Section Title\nparagraph')).toBe('Section Title\nparagraph');
   });
 
-  it('converts # heading to *heading*', () => {
-    expect(convertMarkdownToMrkdwn('# Main Title\nparagraph')).toBe('*Main Title*\nparagraph');
+  it('converts # heading to plain text (strips markers)', () => {
+    expect(convertMarkdownToMrkdwn('# Main Title\nparagraph')).toBe('Main Title\nparagraph');
   });
 
-  it('converts [text](url) to <url|text>', () => {
+  it('converts [text](url) to bare url', () => {
     expect(convertMarkdownToMrkdwn('visit [example](https://example.com)')).toBe(
-      'visit <https://example.com|example>',
+      'visit https://example.com',
     );
   });
 
@@ -215,19 +210,19 @@ describe('adapters/slack — convertMarkdownToMrkdwn', () => {
   it('correctly handles asterisk list items containing italic text', () => {
     const input = '* item with *important* text';
     const result = convertMarkdownToMrkdwn(input);
-    expect(result).toBe('• item with _important_ text');
+    expect(result).toBe('• item with important text');
   });
 
   it('correctly handles hyphen list items containing italic text', () => {
     const input = '- item with *emphasized* word';
     const result = convertMarkdownToMrkdwn(input);
-    expect(result).toBe('• item with _emphasized_ word');
+    expect(result).toBe('• item with emphasized word');
   });
 
   it('correctly handles multiline asterisk list with mixed italic', () => {
     const input = '* first\n* second with *bold-like*';
     const result = convertMarkdownToMrkdwn(input);
-    expect(result).toBe('• first\n• second with _bold-like_');
+    expect(result).toBe('• first\n• second with bold-like');
   });
 
   it('strips image syntax ![alt](url) entirely', () => {
@@ -243,7 +238,7 @@ describe('adapters/slack — convertMarkdownToMrkdwn', () => {
 
   it('preserves links but strips images in same input', () => {
     const input = '![img](http://img) and [link](http://link)';
-    expect(convertMarkdownToMrkdwn(input)).toBe(' and <http://link|link>');
+    expect(convertMarkdownToMrkdwn(input)).toBe(' and http://link');
   });
 });
 

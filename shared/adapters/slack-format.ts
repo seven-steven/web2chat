@@ -67,25 +67,21 @@ export function convertMarkdownToMrkdwn(text: string): string {
     return PH('INLINE', inlineCodes.length - 1);
   });
 
-  // 3. Convert bold: **text** -> *text* (protect with placeholder to prevent italic match)
-  const boldTokens: string[] = [];
-  result = result.replace(/\*\*(.+?)\*\*/g, (_, content: string) => {
-    boldTokens.push(`*${content}*`);
-    return PH('BOLD', boldTokens.length - 1);
-  });
+  // 3. Strip bold: **text** -> plain text (Quill paste doesn't support *text* bold)
+  result = result.replace(/\*\*(.+?)\*\*/g, '$1');
 
-  // 4. Convert headings: ## text -> *text* (protect with placeholder)
+  // 4. Strip headings: ## text -> plain text (no bold — content headings don't need emphasis)
   const headingTokens: string[] = [];
   result = result.replace(/^#{1,6}\s+(.+)$/gm, (_, content: string) => {
-    headingTokens.push(`*${content}*`);
+    headingTokens.push(content);
     return PH('HEADING', headingTokens.length - 1);
   });
 
   // 5. Strip images: ![alt](url) -> empty (Slack mrkdwn does not support inline images)
   result = result.replace(/!\[(.+?)\]\((.+?)\)/g, '');
 
-  // 6. Convert links: [text](url) -> <url|text>
-  result = result.replace(/\[(.+?)\]\((.+?)\)/g, '<$2|$1>');
+  // 6. Convert links: [text](url) -> url (Slack auto-links bare URLs; <url|text> doesn't work in paste)
+  result = result.replace(/\[(.+?)\]\((.+?)\)/g, '$2');
 
   // 7. Strip list markers via placeholders (protect from italic regex)
   //    Turndown default bulletListMarker is '*', so asterisk list markers
@@ -94,16 +90,14 @@ export function convertMarkdownToMrkdwn(text: string): string {
   let listIdx = 0;
   result = result.replace(/^[-*]\s/gm, () => PH('LIST', listIdx++));
 
-  // 8. Convert italic: *text* -> _text_
-  //    Bold, heading, and list markers are protected, so only original Markdown *italic* matches.
-  result = result.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '_$1_');
+  // 8. Strip italic: *text* -> plain text (Quill paste doesn't support _text_ italic)
+  result = result.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '$1');
 
   // 9. Convert horizontal rules: --- (or more) on own line -> empty line
   result = result.replace(/^-{3,}$/gm, '');
 
   // 10. Restore placeholders (LIST markers restored as Slack bullet •)
   result = result.replace(/@@W2C_LIST_(\d+)@@/g, () => '• ');
-  result = result.replace(/@@W2C_BOLD_(\d+)@@/g, (_, i) => boldTokens[Number(i)] ?? '');
   result = result.replace(/@@W2C_HEADING_(\d+)@@/g, (_, i) => headingTokens[Number(i)] ?? '');
   result = result.replace(/@@W2C_INLINE_(\d+)@@/g, (_, i) => inlineCodes[Number(i)] ?? '');
   result = result.replace(/@@W2C_FENCED_(\d+)@@/g, (_, i) => fencedBlocks[Number(i)] ?? '');
@@ -141,10 +135,10 @@ export function composeSlackMrkdwn(payload: {
   // Build lines array — empty fields omitted entirely
   const lines: string[] = [];
   if (safePrompt) lines.push(safePrompt, '');
-  if (safeTitle) lines.push(`*${safeTitle}*`, ''); // mrkdwn bold: *text*
+  if (safeTitle) lines.push(safeTitle, '');
   if (snapshot.url) lines.push(snapshot.url, '');
-  if (safeDescription) lines.push(`> ${safeDescription}`, '');
-  if (snapshot.create_at) lines.push(`> ${timestampLabel} ${snapshot.create_at}`, '');
+  if (safeDescription) lines.push(safeDescription, '');
+  if (snapshot.create_at) lines.push(`${timestampLabel} ${snapshot.create_at}`, '');
   if (safeContent) lines.push(safeContent);
 
   return lines.join('\n').trim();
