@@ -536,22 +536,13 @@ export function detectLoginWall(): boolean {
 | A4 | Telegram Web K uses hash-based routing (`#/auth` for login) | Common Pitfalls | If Telegram changes to pathname-based routing, `loggedOutPathPatterns` would become more effective. DOM-layer detection remains primary defense regardless. |
 | A5 | Editor textContent clears after successful send in Telegram Web K | Common Pitfalls / Send Confirmation | If Telegram doesn't clear the editor, confirmation polling would time out. Mitigation: test with actual Telegram Web K before shipping. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Telegram Web K editor selector stability**
-   - What we know: Multiple automation projects reference `.input-message-input[contenteditable="true"]`, `.rows-wrapper`, and `.new-message-wrapper` as container classes.
-   - What's unclear: Telegram may use CSS module hashing (`.a`, `.b1`) in some builds. The exact class names could vary by deployment.
-   - Recommendation: Use three-tier fallback with progressively broader selectors. Include `data-*` attribute selectors if any stable ones are found during implementation.
+1. **Telegram Web K editor selector stability** — RESOLVED: Three-tier fallback in 11-04 provides resilience. Tier 1 (`.input-message-input[contenteditable="true"]`) is primary; Tier 2/3 use broader selectors. CSS module hashing mitigated by fallback chain.
 
-2. **Telegram Web K send button activation after paste**
-   - What we know: Custom contenteditable editors often require an `input` event dispatch after paste to update their internal state machines.
-   - What's unclear: Whether Telegram's editor specifically needs this, or if the ClipboardEvent paste alone is sufficient.
-   - Recommendation: Include `editor.dispatchEvent(new Event('input', { bubbles: true }))` after paste in MAIN world injector as a defensive measure.
+2. **Telegram Web K send button activation after paste** — RESOLVED: Plan 11-03 MAIN world injector includes defensive `editor.dispatchEvent(new Event('input', { bubbles: true }))` after paste. Send button click with fallback Enter keydown in same injector.
 
-3. **Login wall DOM markers on Telegram Web K**
-   - What we know: Telegram login pages typically have phone number inputs and "Next" buttons.
-   - What's unclear: Exact class names and structure of the login form in the `/a/` version.
-   - Recommendation: Start with broad selectors (`input[type="tel"]`, `input[name="phone"]`) and refine during implementation testing.
+3. **Login wall DOM markers on Telegram Web K** — RESOLVED: Plan 11-02 uses broad selectors (`input[type="tel"]`, `input[name="phone"]`, `[class*="login"]`) with guarded checks (editor must NOT be present). Refined selectors tested against fixture HTML.
 
 ## Environment Availability
 
