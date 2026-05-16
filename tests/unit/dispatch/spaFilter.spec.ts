@@ -90,4 +90,49 @@ describe('buildSpaUrlFilters (D-103 / D-104 / D-105)', () => {
     ];
     expect(buildSpaUrlFilters(entries)).toEqual([]);
   });
+
+  it('emits hostSuffix when spaNavigationUseHostSuffix is true', () => {
+    const entries = [
+      defineAdapter({
+        id: 'feishu',
+        match: () => false,
+        scriptFile: 'feishu.js',
+        hostMatches: [],
+        iconKey: 'feishu',
+        spaNavigationHosts: ['feishu.cn', 'larksuite.com'],
+        spaNavigationUseHostSuffix: true,
+      }),
+    ];
+    expect(buildSpaUrlFilters(entries)).toEqual([
+      { hostSuffix: 'feishu.cn' },
+      { hostSuffix: 'larksuite.com' },
+    ]);
+  });
+
+  it('mixes hostEquals and hostSuffix in combined registry', () => {
+    const entries = [
+      defineAdapter({
+        id: 'discord',
+        match: () => false,
+        scriptFile: 'discord.js',
+        hostMatches: [],
+        iconKey: 'discord',
+        spaNavigationHosts: ['discord.com'],
+      }),
+      defineAdapter({
+        id: 'feishu',
+        match: () => false,
+        scriptFile: 'feishu.js',
+        hostMatches: [],
+        iconKey: 'feishu',
+        spaNavigationHosts: ['feishu.cn', 'larksuite.com'],
+        spaNavigationUseHostSuffix: true,
+      }),
+    ];
+    expect(buildSpaUrlFilters(entries)).toEqual([
+      { hostEquals: 'discord.com' },
+      { hostSuffix: 'feishu.cn' },
+      { hostSuffix: 'larksuite.com' },
+    ]);
+  });
 });
