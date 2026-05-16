@@ -123,7 +123,7 @@ Plans:
 Plans:
 **Wave 1** *(all independent, parallel)*
 - [x] 11-01-PLAN.md — Telegram format + metadata-first truncation at 4096 (TDD)
-- [ ] 11-02-PLAN.md — Telegram login detection + URL match tests (TDD)
+- [x] 11-02-PLAN.md — Telegram login detection + URL match tests (TDD)
 - [ ] 11-03-PLAN.md — Registry + config + i18n + icon + fixture
 
 **Wave 2** *(blocked on Wave 1 completion)*
