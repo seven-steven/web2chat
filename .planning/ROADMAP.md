@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 8: 架构泛化** — PlatformId branded type + MAIN world 桥接泛化 + SPA filter 动态构建 + ErrorCode 命名空间，review/verification closed 2026-05-10
 - [ ] **Phase 9: 投递鲁棒性** — 超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度
 - [ ] **Phase 10: Slack 适配器** — Slack URL 匹配 + 登录检测 + Quill 编辑器注入 + 发送确认 + 图标/i18n, 4 plans + 1 gap closure
-- [ ] **Phase 11: Telegram 适配器** — Telegram Web K URL 匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n
+- [x] **Phase 11: Telegram 适配器** — Telegram Web K URL 匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n, 4 plans complete
 - [ ] **Phase 12: 飞书/Lark 适配器** — 双域名匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n
 
 ## Phase Details
@@ -127,7 +127,7 @@ Plans:
 - [x] 11-03-PLAN.md — Registry + config + i18n + icon + fixture
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 11-04-PLAN.md — Telegram content script + selector tests
+- [x] 11-04-PLAN.md — Telegram content script + selector tests
 
 ### Phase 12: 飞书/Lark 适配器
 **Goal**: 用户可以向飞书或 Lark 的任意对话投递格式化网页信息（双域名统一适配）
@@ -151,7 +151,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 | 8. 架构泛化 | v1.1 | 5/5 | Complete / reviewed | 2026-05-10 |
 | 9. 投递鲁棒性 | v1.1 | 5/5 | Ready for verification | - |
 | 10. Slack 适配器 | v1.1 | 4/6 | Gap closure in progress | - |
-| 11. Telegram 适配器 | v1.1 | 3/4 | In progress | - |
+| 11. Telegram 适配器 | v1.1 | 4/4 | Complete | 2026-05-16 |
 | 12. 飞书/Lark 适配器 | v1.1 | 0/? | Not started | - |
 
 ---
