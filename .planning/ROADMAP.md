@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 9: 投递鲁棒性** — 超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度, 5/5 plans, verified 2026-05-16
 - [x] **Phase 10: Slack 适配器** — Slack URL 匹配 + 登录检测 + Quill 编辑器注入 + 发送确认 + 图标/i18n, 6/6 plans complete
 - [x] **Phase 11: Telegram 适配器** — Telegram Web K URL 匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n, 4 plans complete
-- [ ] **Phase 12: 飞书/Lark 适配器** — 双域名匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n
+- [x] **Phase 12: 飞书/Lark 适配器** — 双域名匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n, 5/5 plans complete, verified 2026-05-16
 
 ## Phase Details
 
@@ -141,13 +141,13 @@ Plans:
 **Plans:** 5 plans
 Plans:
 **Wave 1** *(all independent / 12-04 depends on 12-03)*
-- [ ] 12-01-PLAN.md — Feishu format + plain text output (TDD)
-- [ ] 12-02-PLAN.md — Feishu login detection + URL match tests (TDD)
-- [ ] 12-03-PLAN.md — Registry + SPA filter hostSuffix + MAIN world injector
-- [ ] 12-04-PLAN.md — i18n + icon + manifest host_permissions + verify-manifest
+- [x] 12-01-PLAN.md — Feishu format + plain text output (TDD)
+- [x] 12-02-PLAN.md — Feishu login detection + URL match tests (TDD)
+- [x] 12-03-PLAN.md — Registry + SPA filter hostSuffix + MAIN world injector
+- [x] 12-04-PLAN.md — i18n + icon + manifest host_permissions + verify-manifest
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 12-05-PLAN.md — Feishu content script + selector tests + fixture
+- [x] 12-05-PLAN.md — Feishu content script + selector tests + fixture
 
 ## Progress
 
@@ -161,7 +161,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 | 9. 投递鲁棒性 | v1.1 | 5/5 | Verified / passed | 2026-05-16 |
 | 10. Slack 适配器 | v1.1 | 6/6 | Complete | 2026-05-16 |
 | 11. Telegram 适配器 | v1.1 | 4/4 | Complete | 2026-05-16 |
-| 12. 飞书/Lark 适配器 | v1.1 | 0/5 | Planned | - |
+| 12. 飞书/Lark 适配器 | v1.1 | 5/5 | Verified / human_needed | 2026-05-16 |
 
 ---
 
