@@ -79,6 +79,7 @@ export function assertManifest(manifest: Manifest, errors: string[]): void {
     expectSet('host_permissions', manifest.host_permissions, [
       'https://app.slack.com/*',
       'https://discord.com/*',
+      'https://web.telegram.org/*',
     ]);
   } catch (e) {
     errors.push((e as Error).message);

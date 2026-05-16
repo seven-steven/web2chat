@@ -106,6 +106,22 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     spaNavigationHosts: ['app.slack.com'],
     loggedOutPathPatterns: ['/check-login*', '/signin*', '/workspace-signin*'],
   }),
+  defineAdapter({
+    id: 'telegram',
+    match: (url: string): boolean => {
+      try {
+        const u = new URL(url);
+        return u.hostname === 'web.telegram.org' && u.pathname.startsWith('/a/');
+      } catch {
+        return false;
+      }
+    },
+    scriptFile: 'content-scripts/telegram.js',
+    hostMatches: ['https://web.telegram.org/*'],
+    iconKey: 'platform_icon_telegram',
+    spaNavigationHosts: ['web.telegram.org'],
+    loggedOutPathPatterns: ['/', '/login*'],
+  }),
 ];
 
 /**

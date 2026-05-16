@@ -13,8 +13,10 @@
  */
 import { discordMainWorldPaste } from '@/background/injectors/discord-main-world';
 import { slackMainWorldPaste } from '@/background/injectors/slack-main-world';
+import { telegramMainWorldPaste } from '@/background/injectors/telegram-main-world';
 
 export const mainWorldInjectors = new Map<string, (text: string) => Promise<boolean>>([
   ['discord', discordMainWorldPaste],
   ['slack', slackMainWorldPaste],
+  ['telegram', telegramMainWorldPaste],
 ]);

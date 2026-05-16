@@ -25,8 +25,13 @@ export default defineConfig({
     // simulate for action popups.
     host_permissions:
       mode === 'development'
-        ? ['https://app.slack.com/*', 'https://discord.com/*', '<all_urls>']
-        : ['https://app.slack.com/*', 'https://discord.com/*'],
+        ? [
+            'https://app.slack.com/*',
+            'https://discord.com/*',
+            'https://web.telegram.org/*',
+            '<all_urls>',
+          ]
+        : ['https://app.slack.com/*', 'https://discord.com/*', 'https://web.telegram.org/*'],
     optional_host_permissions: ['<all_urls>'],
     action: {
       default_title: '__MSG_action_default_title__',
