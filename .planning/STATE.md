@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: 多渠道适配
 status: executing
-stopped_at: "11-02 complete (2/4 plans)"
-last_updated: "2026-05-16T10:20:30+08:00"
+stopped_at: "11-03 complete (3/4 plans)"
+last_updated: "2026-05-16T10:38:06+08:00"
 last_activity: 2026-05-16
 progress:
   total_phases: 5
@@ -26,8 +26,8 @@ progress:
 ## Current Position
 
 Phase: 11 (Telegram 适配器) — EXECUTING
-Plan: 2/4 complete (11-01, 11-02 done)
-Status: Plan 11-02 complete (login wall detection); 11-03..11-04 remaining
+Plan: 3/4 complete (11-01, 11-02, 11-03 done)
+Status: Plan 11-03 complete (registry + config + i18n + icon); 11-04 remaining
 Last activity: 2026-05-16
 
 Progress: [##########] 100%
@@ -46,7 +46,7 @@ Progress: [##########] 100%
 | 8. 架构泛化 | 5/5 | — | — |
 | 9. 投递鲁棒性 | 5/5 | — | — |
 | 10. Slack 适配器 | 4/4 | — | — |
-| 11. Telegram 适配器 | 2/4 | — | — |
+| 11. Telegram 适配器 | 3/4 | — | — |
 | 12. 飞书/Lark 适配器 | 0/? | — | — |
 
 ## Accumulated Context
@@ -96,6 +96,7 @@ Phase 11 execution:
 
 - 11-01 complete: Telegram plain-text formatting + metadata-first 4096-char truncation (TDD RED+GREEN)
 - 11-02 complete: Telegram login wall DOM detection with guarded login-class marker (TDD RED+GREEN)
+- 11-03 complete: Telegram adapter registry + MAIN world injector + manifest host_permissions + i18n + PlatformIcon + SendForm ToS
 
 ### Quick Tasks Completed
 
@@ -114,6 +115,6 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-09:
 
 ## Session Continuity
 
-Last session: 2026-05-16T10:20:30+08:00
-Stopped at: 11-02 complete (2/4 plans)
+Last session: 2026-05-16T10:38:06+08:00
+Stopped at: 11-03 complete (3/4 plans)
 Resume file: .planning/phases/11-telegram-adapter/11-PLAN.md (use /gsd-execute-phase 11)
