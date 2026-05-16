@@ -188,6 +188,8 @@ platform_icon_discord:
   message: 'Discord'
 platform_icon_slack:
   message: 'Slack'
+platform_icon_telegram:
+  message: 'Telegram'
 platform_icon_unsupported:
   message: 'Unsupported platform'
 
@@ -195,7 +197,7 @@ platform_icon_unsupported:
 combobox_send_to_label:
   message: 'Send to'
 combobox_send_to_placeholder:
-  message: 'Paste a Discord channel, Slack channel, or OpenClaw chat URL…'
+  message: 'Paste a Discord channel, Slack channel, Telegram chat, or OpenClaw chat URL…'
 combobox_prompt_label:
   message: 'Prompt'
 combobox_prompt_placeholder:
@@ -257,6 +259,15 @@ slack_tos_details:
 
 slack_timestamp_label:
   message: 'Captured at'
+
+telegram_timestamp_label:
+  message: 'Captured at'
+
+# Group M — Telegram ToS (D-146)
+telegram_tos_warning:
+  message: 'Telegram dispatch uses DOM injection and may violate Telegram Terms of Service.'
+telegram_tos_details:
+  message: 'Details'
 
 # Group K — Options page Language section (Phase 6, I18N-02)
 options_language_heading:

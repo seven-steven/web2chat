@@ -188,6 +188,8 @@ platform_icon_discord:
   message: 'Discord'
 platform_icon_slack:
   message: 'Slack'
+platform_icon_telegram:
+  message: 'Telegram'
 platform_icon_unsupported:
   message: '不支持的平台'
 
@@ -195,7 +197,7 @@ platform_icon_unsupported:
 combobox_send_to_label:
   message: '投递到'
 combobox_send_to_placeholder:
-  message: '粘贴 Discord 频道、Slack 频道或 OpenClaw 会话 URL…'
+  message: '粘贴 Discord 频道、Slack 频道、Telegram 聊天或 OpenClaw 会话 URL…'
 combobox_prompt_label:
   message: '提示词'
 combobox_prompt_placeholder:
@@ -257,6 +259,15 @@ slack_tos_details:
 
 slack_timestamp_label:
   message: '采集时间'
+
+telegram_timestamp_label:
+  message: '采集时间'
+
+# Group M — Telegram ToS (D-146)
+telegram_tos_warning:
+  message: 'Telegram 投递使用 DOM 注入，可能违反 Telegram 服务条款。'
+telegram_tos_details:
+  message: '详情'
 
 # Group K — Options page Language section (Phase 6, I18N-02)
 options_language_heading:

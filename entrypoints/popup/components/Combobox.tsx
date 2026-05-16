@@ -11,7 +11,7 @@ import { PlatformIcon } from './PlatformIcon';
 export interface ComboboxOption {
   key: string;
   label: string;
-  iconVariant: 'mock' | 'openclaw' | 'discord' | 'unsupported' | 'none';
+  iconVariant: 'mock' | 'openclaw' | 'discord' | 'slack' | 'telegram' | 'unsupported' | 'none';
   removable: boolean;
 }
 
@@ -26,7 +26,7 @@ interface ComboboxProps {
   onDelete?: (key: string) => void; // called on delete button click; optional
   onBlur?: () => void; // delegated to parent (e.g. binding upsert debounce)
   emptyStateText?: string; // shown when options.length === 0 and listOpen
-  leadingIcon?: 'mock' | 'openclaw' | 'discord' | 'unsupported' | 'none';
+  leadingIcon?: 'mock' | 'openclaw' | 'discord' | 'slack' | 'telegram' | 'unsupported' | 'none';
   // platform icon left of input (DSP-01)
   disabled?: boolean;
 }
