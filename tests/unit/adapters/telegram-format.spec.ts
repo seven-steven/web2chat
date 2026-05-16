@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  composeTelegramMessage,
-  type Snapshot,
-} from '@/shared/adapters/telegram-format';
+import { composeTelegramMessage, type Snapshot } from '@/shared/adapters/telegram-format';
 
 describe('adapters/telegram — composeTelegramMessage', () => {
   const fullSnapshot: Snapshot = {
@@ -129,7 +126,7 @@ describe('adapters/telegram — composeTelegramMessage', () => {
     // Now we know the base length; fill content to reach exactly 4096
     // But we need to build a full message that hits 4096 exactly
     // Let's construct it more precisely
-    const content = 'x'.repeat(4096 - baseResult.length - 1); // -1 for newline separator
+    const content = 'x'.repeat(4096 - baseResult.length - 2); // -2 for \n\n separator from join
     const exactSnapshot = { ...snapshot, content };
     const result = composeTelegramMessage({
       prompt: 'P',
