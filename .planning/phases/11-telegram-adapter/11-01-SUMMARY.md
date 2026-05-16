@@ -120,3 +120,12 @@ None - no external service configuration required.
 ---
 *Phase: 11-telegram-adapter*
 *Completed: 2026-05-16*
+
+## Self-Check: PASSED
+
+- FOUND: shared/adapters/telegram-format.ts
+- FOUND: shared/adapters/telegram-login-detect.ts
+- FOUND: tests/unit/adapters/telegram-format.spec.ts
+- FOUND: 11-01-SUMMARY.md
+- FOUND: d4f2e36 (RED)
+- FOUND: 3eb7e11 (GREEN)
