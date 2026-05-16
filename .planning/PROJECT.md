@@ -30,10 +30,15 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ### 进行中 (Active)
 
-<!-- v1.1 假设。当前在朝这些目标推进。 -->
+<!-- v1.1 剩余工作 -->
 
-- [ ] 新增 IM 平台适配器（具体平台由可行性调研决定） — v1.1
-- [ ] 投递体验优化（网络延迟、SPA 路由、编辑器兼容性等） — v1.1
+- [ ] 飞书/Lark 适配器（双域名匹配 + 编辑器注入） — Phase 12
+
+### 已验证 (Validated, v1.1)
+
+- [x] 投递超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度 — Validated in Phase 9（DSPT-01..04, 5/5 plans, verification passed）
+- [x] Slack 适配器（URL 匹配 + Quill 编辑器注入 + mrkdwn 格式化）— Validated in Phase 10（SLK-01..05, 6/6 plans）
+- [x] Telegram 适配器（Web K URL 匹配 + contenteditable 编辑器注入 + 4096-char 截断）— Validated in Phase 11（TG-01..05, 4/4 plans）
 
 ### 不在范围 (Out of Scope)
 
@@ -44,6 +49,7 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - 自建 IM 后端 / Server-to-Server 发送 — 走"新开 tab + 注入会话"路径，不引入服务器
 - 内容 OCR / 图片附件抽取 — v1 只处理文本与基础 metadata，图片与 OCR 推后
 - AI 内容总结 / 改写 — 用户自带 prompt 由下游 Agent 处理，扩展本身不调用 LLM
+
 
 ### 推迟事项 (Deferred — v2 候选)
 
@@ -114,4 +120,4 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ---
 
-_最近更新：2026-05-09，v1.1 milestone 启动。_
+_最近更新：2026-05-16，Phase 9 verified, Phases 8-11 complete。_
