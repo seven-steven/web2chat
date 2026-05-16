@@ -138,15 +138,16 @@ Plans:
   2. 用户未登录飞书/Lark 时 popup 收到 NOT_LOGGED_IN 错误提示
   3. 用户确认投递后消息成功注入飞书 contenteditable 编辑器并发送，popup 显示投递成功
   4. 飞书平台图标和 i18n key 在中英双语 locale 中 100% 覆盖
-**Plans:** 4 plans
+**Plans:** 5 plans
 Plans:
-**Wave 1** *(all independent, parallel)*
+**Wave 1** *(all independent / 12-04 depends on 12-03)*
 - [ ] 12-01-PLAN.md — Feishu format + plain text output (TDD)
 - [ ] 12-02-PLAN.md — Feishu login detection + URL match tests (TDD)
-- [ ] 12-03-PLAN.md — Registry + config + i18n + icon + MAIN world injector + SPA filter hostSuffix
+- [ ] 12-03-PLAN.md — Registry + SPA filter hostSuffix + MAIN world injector
+- [ ] 12-04-PLAN.md — i18n + icon + manifest host_permissions + verify-manifest
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 12-04-PLAN.md — Feishu content script + selector tests + fixture
+- [ ] 12-05-PLAN.md — Feishu content script + selector tests + fixture
 
 ## Progress
 
@@ -160,7 +161,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 | 9. 投递鲁棒性 | v1.1 | 5/5 | Verified / passed | 2026-05-16 |
 | 10. Slack 适配器 | v1.1 | 6/6 | Complete | 2026-05-16 |
 | 11. Telegram 适配器 | v1.1 | 4/4 | Complete | 2026-05-16 |
-| 12. 飞书/Lark 适配器 | v1.1 | 0/4 | Planned | - |
+| 12. 飞书/Lark 适配器 | v1.1 | 0/5 | Planned | - |
 
 ---
 

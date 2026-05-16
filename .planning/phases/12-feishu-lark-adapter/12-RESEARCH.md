@@ -420,20 +420,23 @@ function extractFeishuChatId(url: string): string | null {
 
 ## Open Questions
 
-1. **飞书 Web 聊天的实际 URL 结构是什么？**
+1. **飞书 Web 聊天的实际 URL 结构是什么？** (RESOLVED via Plan 02/03)
    - What we know: 飞书 Web 版入口在 `feishu.cn/next/messenger`，企业子域名格式为 `{tenant}.feishu.cn/next/messenger`
    - What's unclear: 具体的 chat 路由格式（是 hash 路由还是 path 路由？chat_id 如何出现在 URL 中？）
    - Recommendation: match 函数宽松匹配 `/next/messenger` 或 `/messenger` 路径前缀，不要求精确的 chat_id 路径。用户只需粘贴飞书 messenger URL 即可。
+   - Resolution: Plan 02 tests validate match function with broad path matching (`/next/messenger`, `/messenger`). Plan 03 registers the match function in the adapter registry. No chat_id extraction needed -- rate limit uses full `send_to` URL.
 
-2. **`buildSpaUrlFilters()` 是否支持子域名匹配？**
+2. **`buildSpaUrlFilters()` 是否支持子域名匹配？** (RESOLVED via Plan 03)
    - What we know: 现有实现使用 `hostEquals`（精确匹配），Discord 使用裸域名 `discord.com` 不需要子域名
    - What's unclear: 飞书使用 `{tenant}.feishu.cn` 子域名，`hostEquals: 'feishu.cn'` 不会匹配 `acme.feishu.cn`
    - Recommendation: 验证 `chrome.webNavigation.onHistoryStateUpdated` 的 `hostEquals` filter 是否匹配子域名。如果不匹配，需要修改 `buildSpaUrlFilters()` 或使用不同的 filter 策略。
+   - Resolution: Plan 03 adds `spaNavigationUseHostSuffix?: boolean` field to AdapterRegistryEntry. When true, buildSpaUrlFilters emits `{ hostSuffix: host }` instead of `{ hostEquals: host }`. Feishu registry entry sets `spaNavigationUseHostSuffix: true`. Existing adapters (discord, slack, telegram) default to false -- backward compatible.
 
-3. **飞书 Web 编辑器的具体 DOM 结构和发送按钮选择器？**
+3. **飞书 Web 编辑器的具体 DOM 结构和发送按钮选择器？** (ASSUMED — selector stability depends on DevTools verification)
    - What we know: 使用 L1 数据驱动 contenteditable，类 Slate/ProseMirror 架构
    - What's unclear: 具体的 `role`、`class`、`data-*` 属性和发送按钮 DOM
    - Recommendation: 实现阶段时在飞书 Web 上通过 DevTools 检查，然后创建 fixture HTML
+   - Resolution: Plans use ARIA-first three-tier fallback with low-confidence warning on tier3 match. Selectors must be verified on actual Feishu Web via DevTools during execution. If A6 (editor clear after send) is invalidated during DevTools verification, fallback to MutationObserver watching for new message nodes.
 
 ## Environment Availability
 
