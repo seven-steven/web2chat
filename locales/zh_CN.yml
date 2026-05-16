@@ -129,7 +129,7 @@ error_code_RATE_LIMITED_retry:
 error_code_PLATFORM_UNSUPPORTED_heading:
   message: '不支持的平台'
 error_code_PLATFORM_UNSUPPORTED_body:
-  message: 'v1 支持 Discord、Slack 与 OpenClaw，其他平台后续版本支持。'
+  message: 'v1 支持 Discord、Slack、Telegram 与 OpenClaw，其他平台后续版本支持。'
 error_code_INTERNAL_heading:
   message: '出错了'
 error_code_INTERNAL_body:

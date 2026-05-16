@@ -22,12 +22,11 @@
 export function detectLoginWall(): boolean {
   // Unconditional markers — these only appear on the login page
   if (document.querySelector('input[name="phone"], input[type="tel"]')) return true;
-  if (document.querySelector('[class*="auth"]')) return true;
-
-  // Guarded marker — [class*="login"] is broad and may match
-  // elements on logged-in pages. Only treat as login wall if
+  // Guarded markers — [class*="auth"] and [class*="login"] are broad and
+  // may match elements on logged-in pages. Only treat as login wall if
   // the Telegram editor (.input-message-input) is NOT present.
   if (!document.querySelector('.input-message-input[contenteditable="true"]')) {
+    if (document.querySelector('[class*="auth"]')) return true;
     if (document.querySelector('[class*="login"]')) return true;
   }
 

@@ -54,6 +54,16 @@ describe('Telegram login wall detection (TG-02)', () => {
     expect(detectLoginWall()).toBe(true);
   });
 
+  it('returns false when auth class present but editor exists (guard)', () => {
+    document.body.innerHTML = `
+      <div class="input-message-input" contenteditable="true" role="textbox" aria-label="Message">
+        <br>
+      </div>
+      <div class="auth-settings-panel">Account settings</div>
+    `;
+    expect(detectLoginWall()).toBe(false);
+  });
+
   it('returns false when login class present but editor exists (guard)', () => {
     // Logged-in page may have elements with "login" class fragments.
     // The guard ensures we only match [class*="login"] when the editor is absent.
