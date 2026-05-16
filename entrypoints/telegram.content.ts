@@ -83,6 +83,14 @@ function extractChatId(url: string): string | null {
     if (parts[0] === 'a' && parts.length >= 2) {
       return parts[parts.length - 1] ?? null;
     }
+    // Hash-based routing: #<chatId> or #/im/<chatId>
+    if (parts[0] === 'a' && u.hash.length > 1) {
+      const hashParts = u.hash.slice(1).split('/').filter(Boolean);
+      // #123456 (bare chat ID)
+      if (hashParts.length === 1) return hashParts[0] ?? null;
+      // #/im/p123456 or #/im/u123456 (hash path with chat ID)
+      if (hashParts.length >= 2) return hashParts[hashParts.length - 1] ?? null;
+    }
     return null;
   } catch {
     return null;
