@@ -122,6 +122,27 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     spaNavigationHosts: ['web.telegram.org'],
     loggedOutPathPatterns: ['/', '/login*'],
   }),
+  defineAdapter({
+    id: 'feishu',
+    match: (url: string): boolean => {
+      try {
+        const u = new URL(url);
+        const isFeishuHost = u.hostname === 'feishu.cn' || u.hostname.endsWith('.feishu.cn');
+        const isLarkHost = u.hostname === 'larksuite.com' || u.hostname.endsWith('.larksuite.com');
+        if (!isFeishuHost && !isLarkHost) return false;
+        // Match /next/messenger or /messenger path prefix
+        return u.pathname.startsWith('/next/messenger') || u.pathname.startsWith('/messenger');
+      } catch {
+        return false;
+      }
+    },
+    scriptFile: 'content-scripts/feishu.js',
+    hostMatches: ['https://*.feishu.cn/*', 'https://*.larksuite.com/*'],
+    iconKey: 'platform_icon_feishu',
+    spaNavigationHosts: ['feishu.cn', 'larksuite.com'],
+    spaNavigationUseHostSuffix: true,
+    loggedOutPathPatterns: ['/accounts/page/login*', '/login*', '/passport*'],
+  }),
 ];
 
 /**
@@ -140,15 +161,21 @@ export function detectPlatformId(url: string): PlatformId | null {
 /**
  * Build chrome.events.UrlFilter[] from registry entries that opt-in to SPA handling.
  * Pure synchronous function — safe for top-level SW registration (MV3 requirement).
- * Uses hostEquals (exact match, per D-105) — never hostSuffix.
+ * Uses hostEquals by default (per D-105). When spaNavigationUseHostSuffix is true,
+ * emits hostSuffix instead for wildcard subdomain matching.
  */
 export function buildSpaUrlFilters(
   registry: readonly AdapterRegistryEntry[],
-): { hostEquals: string }[] {
+): ({ hostEquals: string } | { hostSuffix: string })[] {
   return registry
     .filter(
       (e): e is AdapterRegistryEntry & { spaNavigationHosts: readonly string[] } =>
         Array.isArray(e.spaNavigationHosts) && e.spaNavigationHosts.length > 0,
     )
-    .flatMap((e) => e.spaNavigationHosts.map((host) => ({ hostEquals: host })));
+    .flatMap((e) => {
+      const useSuffix = e.spaNavigationUseHostSuffix === true;
+      return e.spaNavigationHosts.map((host) =>
+        useSuffix ? { hostSuffix: host } : { hostEquals: host },
+      );
+    });
 }

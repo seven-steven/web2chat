@@ -57,6 +57,8 @@ export interface AdapterRegistryEntry {
   readonly mainWorldInjector?: (text: string) => Promise<boolean>;
   /** Exact hostnames that trigger SPA history listener. Empty/absent = no SPA handling. Per D-104. */
   readonly spaNavigationHosts?: readonly string[];
+  /** When true, buildSpaUrlFilters emits hostSuffix instead of hostEquals for SPA hosts. */
+  readonly spaNavigationUseHostSuffix?: boolean;
   /** Platform-specific error codes declared by this adapter. Per D-110. */
   readonly errorCodes?: readonly string[];
   /** True for adapters that need runtime origin permission (e.g. self-hosted platforms). */
