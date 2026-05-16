@@ -33,7 +33,7 @@ Requirements for v1.1 milestone — multi-channel adapter support + dispatch rob
 
 - [ ] **TG-01**: Telegram Web K URL 模式匹配（`https://web.telegram.org/a/`），注册表条目含 `hostMatches: ['https://web.telegram.org/*']`
 - [ ] **TG-02**: Telegram 登录墙检测（URL 层：登录页面路径；DOM 层：登录表单元素），`waitForReady` 竞速登录探测
-- [ ] **TG-03**: Telegram Web K contenteditable 编辑器 DOM 注入 — ClipboardEvent paste 或 property-descriptor setter
+- [x] **TG-03**: Telegram Web K contenteditable 编辑器 DOM 注入 — ClipboardEvent paste 或 property-descriptor setter
 - [ ] **TG-04**: Telegram 消息发送确认 — 发送按钮点击或 Enter 触发后 MutationObserver 等待新消息节点
 - [ ] **TG-05**: Telegram 平台图标 + `platform_icon_telegram` i18n key（zh_CN + en 100% 覆盖）
 
@@ -99,7 +99,7 @@ Requirements for v1.1 milestone — multi-channel adapter support + dispatch rob
 | SLK-05 | Phase 10 | Pending |
 | TG-01 | Phase 11 | Pending |
 | TG-02 | Phase 11 | Pending |
-| TG-03 | Phase 11 | Pending |
+| TG-03 | Phase 11 | Complete |
 | TG-04 | Phase 11 | Pending |
 | TG-05 | Phase 11 | Pending |
 | FSL-01 | Phase 12 | Pending |

@@ -122,7 +122,7 @@ Plans:
 **Plans**: 4 plans
 Plans:
 **Wave 1** *(all independent, parallel)*
-- [ ] 11-01-PLAN.md — Telegram format + metadata-first truncation at 4096 (TDD)
+- [x] 11-01-PLAN.md — Telegram format + metadata-first truncation at 4096 (TDD)
 - [ ] 11-02-PLAN.md — Telegram login detection + URL match tests (TDD)
 - [ ] 11-03-PLAN.md — Registry + config + i18n + icon + fixture
 
@@ -151,7 +151,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 | 8. 架构泛化 | v1.1 | 5/5 | Complete / reviewed | 2026-05-10 |
 | 9. 投递鲁棒性 | v1.1 | 5/5 | Ready for verification | - |
 | 10. Slack 适配器 | v1.1 | 4/6 | Gap closure in progress | - |
-| 11. Telegram 适配器 | v1.1 | 0/4 | Planned | - |
+| 11. Telegram 适配器 | v1.1 | 1/4 | In progress | - |
 | 12. 飞书/Lark 适配器 | v1.1 | 0/? | Not started | - |
 
 ---
