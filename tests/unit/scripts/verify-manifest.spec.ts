@@ -8,6 +8,8 @@ function validManifest(overrides: Partial<Manifest> = {}): Manifest {
     default_locale: 'en',
     permissions: ['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation'],
     host_permissions: [
+      'https://*.feishu.cn/*',
+      'https://*.larksuite.com/*',
       'https://app.slack.com/*',
       'https://discord.com/*',
       'https://web.telegram.org/*',
