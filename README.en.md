@@ -20,7 +20,7 @@ web2chat is a Chrome extension that helps users quickly deliver structured web p
 
 ## Design Intent
 
-web2chat was originally designed for the [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern — conveniently sending web page information through common IM tools (Discord, Feishu, Lark, Google Chat, LINE, Microsoft Teams, Nextcloud Talk, Signal, Slack, Telegram, WhatsApp, Zalo, QQ, WeCom) to AI Agent platforms like openclaw and hermes-agent that host llm-wiki knowledge bases. During implementation, the project evolved into a general-purpose web-to-chat delivery tool.
+web2chat was originally designed for the [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern — conveniently sending web page information through common IM tools (Discord, Google Chat, LINE, Microsoft Teams, Nextcloud Talk, Signal, Slack, Telegram, WhatsApp, Zalo, QQ, WeCom) to AI Agent platforms like openclaw and hermes-agent that host llm-wiki knowledge bases. During implementation, the project evolved into a general-purpose web-to-chat delivery tool.
 
 ## Installation
 

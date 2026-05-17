@@ -94,18 +94,18 @@ describe('buildSpaUrlFilters (D-103 / D-104 / D-105)', () => {
   it('emits hostSuffix when spaNavigationUseHostSuffix is true', () => {
     const entries = [
       defineAdapter({
-        id: 'feishu',
+        id: 'subdomain-platform',
         match: () => false,
-        scriptFile: 'feishu.js',
+        scriptFile: 'subdomain.js',
         hostMatches: [],
-        iconKey: 'feishu',
-        spaNavigationHosts: ['feishu.cn', 'larksuite.com'],
+        iconKey: 'subdomain',
+        spaNavigationHosts: ['example.cn', 'example.com'],
         spaNavigationUseHostSuffix: true,
       }),
     ];
     expect(buildSpaUrlFilters(entries)).toEqual([
-      { hostSuffix: 'feishu.cn' },
-      { hostSuffix: 'larksuite.com' },
+      { hostSuffix: 'example.cn' },
+      { hostSuffix: 'example.com' },
     ]);
   });
 
@@ -120,19 +120,19 @@ describe('buildSpaUrlFilters (D-103 / D-104 / D-105)', () => {
         spaNavigationHosts: ['discord.com'],
       }),
       defineAdapter({
-        id: 'feishu',
+        id: 'subdomain-platform',
         match: () => false,
-        scriptFile: 'feishu.js',
+        scriptFile: 'subdomain.js',
         hostMatches: [],
-        iconKey: 'feishu',
-        spaNavigationHosts: ['feishu.cn', 'larksuite.com'],
+        iconKey: 'subdomain',
+        spaNavigationHosts: ['example.cn', 'example.com'],
         spaNavigationUseHostSuffix: true,
       }),
     ];
     expect(buildSpaUrlFilters(entries)).toEqual([
       { hostEquals: 'discord.com' },
-      { hostSuffix: 'feishu.cn' },
-      { hostSuffix: 'larksuite.com' },
+      { hostSuffix: 'example.cn' },
+      { hostSuffix: 'example.com' },
     ]);
   });
 });

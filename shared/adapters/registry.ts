@@ -122,27 +122,7 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     spaNavigationHosts: ['web.telegram.org'],
     loggedOutPathPatterns: ['/', '/login*'],
   }),
-  defineAdapter({
-    id: 'feishu',
-    match: (url: string): boolean => {
-      try {
-        const u = new URL(url);
-        const isFeishuHost = u.hostname === 'feishu.cn' || u.hostname.endsWith('.feishu.cn');
-        const isLarkHost = u.hostname === 'larksuite.com' || u.hostname.endsWith('.larksuite.com');
-        if (!isFeishuHost && !isLarkHost) return false;
-        // Match /next/messenger or /messenger path prefix
-        return u.pathname.startsWith('/next/messenger') || u.pathname.startsWith('/messenger');
-      } catch {
-        return false;
-      }
-    },
-    scriptFile: 'content-scripts/feishu.js',
-    hostMatches: ['https://*.feishu.cn/*', 'https://*.larksuite.com/*'],
-    iconKey: 'platform_icon_feishu',
-    spaNavigationHosts: ['feishu.cn', 'larksuite.com'],
-    spaNavigationUseHostSuffix: true,
-    loggedOutPathPatterns: ['/accounts/page/login*', '/login*', '/passport*'],
-  }),
+  // feishu (Lark) removed 2026-05-17: SPA 所有会话共享同一 URL，无法按 URL 定位具体会话
 ];
 
 /**

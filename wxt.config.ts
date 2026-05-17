@@ -26,20 +26,12 @@ export default defineConfig({
     host_permissions:
       mode === 'development'
         ? [
-            'https://*.feishu.cn/*',
-            'https://*.larksuite.com/*',
             'https://app.slack.com/*',
             'https://discord.com/*',
             'https://web.telegram.org/*',
             '<all_urls>',
           ]
-        : [
-            'https://*.feishu.cn/*',
-            'https://*.larksuite.com/*',
-            'https://app.slack.com/*',
-            'https://discord.com/*',
-            'https://web.telegram.org/*',
-          ],
+        : ['https://app.slack.com/*', 'https://discord.com/*', 'https://web.telegram.org/*'],
     optional_host_permissions: ['<all_urls>'],
     action: {
       default_title: '__MSG_action_default_title__',

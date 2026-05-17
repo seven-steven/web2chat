@@ -20,7 +20,7 @@ web2chat 是一个 Chrome 浏览器扩展，帮助用户快速将当前网页的
 
 ## 设计初衷
 
-web2chat 最初为 [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 模式设计 — 通过常用 IM 工具（Discord、Feishu、Lark、Google Chat、LINE、Microsoft Teams、Nextcloud Talk、Signal、Slack、Telegram、WhatsApp、Zalo、QQ、WeCom）便捷地将网页信息发送给 openclaw、hermes-agent 等承载 llm-wiki 的 AI Agent 平台，沉淀为持久化知识库。在实现过程中，项目演变为通用的网页到聊天投递工具。
+web2chat 最初为 [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 模式设计 — 通过常用 IM 工具（Discord、Google Chat、LINE、Microsoft Teams、Nextcloud Talk、Signal、Slack、Telegram、WhatsApp、Zalo、QQ、WeCom）便捷地将网页信息发送给 openclaw、hermes-agent 等承载 llm-wiki 的 AI Agent 平台，沉淀为持久化知识库。在实现过程中，项目演变为通用的网页到聊天投递工具。
 
 ## 安装
 
