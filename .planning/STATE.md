@@ -4,7 +4,7 @@ milestone: v1.1
 milestone_name: 多渠道适配
 status: executing
 stopped_at: "Phase 12 dropped (feishu shared URL blocker), popup bug pending"
-last_updated: "2026-05-17T11:30:00+08:00"
+last_updated: "2026-05-17T16:40:00+08:00"
 last_activity: 2026-05-17
 progress:
   total_phases: 5
@@ -114,6 +114,7 @@ Phase 12 UAT & drop:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260509-ocg | 按照 2 3 更新当前项目规划，构建 changelog 体系，纳入后续发版流程。 | 2026-05-09 | d5a3ddc | [260509-ocg-2-3-changelog](./quick/260509-ocg-2-3-changelog/) |
+| 260517-aa2 | 移除飞书代码，保留移除原因 | 2026-05-17 | — | [260517-aa2-remove-feishu-code](./quick/260517-aa2-remove-feishu-code/) |
 
 ## Deferred Items
 
