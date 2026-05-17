@@ -102,7 +102,7 @@ Phase 12 UAT & drop:
 
 ### Pending Todos
 
-- Remove Phase 12 feishu adapter code (all 5 plans)
+None.
 
 ### Blockers/Concerns
 
