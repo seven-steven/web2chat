@@ -3,7 +3,7 @@
 ## Milestones
 
 - **v1.0 MVP** — Phases 1-7 (shipped 2026-05-09)
-- **v1.1 多渠道适配** — Phases 8-12 (in progress)
+- **v1.1 多渠道适配** — Phases 8-12 (wrapped up)
 
 ## Phases
 
@@ -27,15 +27,17 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 </details>
 
-### v1.1 多渠道适配 (In Progress)
+### v1.1 多渠道适配 (Wrapped Up)
 
-**Milestone Goal:** 扩展 IM 平台覆盖至 Slack、Telegram、Feishu/Lark，同时加固投递链路鲁棒性
+**Milestone Goal:** 扩展 IM 平台覆盖至 Slack、Telegram，并加固投递链路鲁棒性；终态支持平台为 OpenClaw、Discord、Slack、Telegram
 
 - [x] **Phase 8: 架构泛化** — PlatformId branded type + MAIN world 桥接泛化 + SPA filter 动态构建 + ErrorCode 命名空间，review/verification closed 2026-05-10
 - [x] **Phase 9: 投递鲁棒性** — 超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度, 5/5 plans, verified 2026-05-16
 - [x] **Phase 10: Slack 适配器** — Slack URL 匹配 + 登录检测 + Quill 编辑器注入 + 发送确认 + 图标/i18n, 6/6 plans complete
 - [x] **Phase 11: Telegram 适配器** — Telegram Web K URL 匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n, 4 plans complete
-- [x] **Phase 12: 飞书/Lark 适配器** — 双域名匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n, 5/5 plans complete, verified 2026-05-16
+- [x] **Phase 12: 飞书/Lark 适配器** — dropped after UAT shared-URL blocker; code removed in aa2 (a40132f)
+
+**Post-phase quick fixes:** aa3 / `da18746` fixed the `needs_confirmation` popup-close and re-captured snapshot bug without adding a new phase.
 
 ## Phase Details
 
@@ -129,10 +131,11 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 11-04-PLAN.md — Telegram content script + selector tests
 
-### Phase 12: 飞书/Lark 适配器
+### Phase 12: 飞书/Lark 适配器（Dropped）
 **Goal**: 用户可以向飞书或 Lark 的任意对话投递格式化网页信息（双域名统一适配）
 **Depends on**: Phase 9
 **Requirements**: FSL-01, FSL-02, FSL-03, FSL-04, FSL-05
+**Status**: Dropped after UAT; 飞书 SPA 所有聊天共享同一 URL，无法按 URL 定位具体聊天。相关代码已由 aa2 移除（a40132f）。
 **Success Criteria** (what must be TRUE):
   1. 用户在 popup send_to 输入 feishu.cn 或 larksuite.com URL 后均识别为飞书平台并显示统一图标
   2. 用户未登录飞书/Lark 时 popup 收到 NOT_LOGGED_IN 错误提示
@@ -161,7 +164,7 @@ Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
 | 9. 投递鲁棒性 | v1.1 | 5/5 | Verified / passed | 2026-05-16 |
 | 10. Slack 适配器 | v1.1 | 6/6 | Complete | 2026-05-16 |
 | 11. Telegram 适配器 | v1.1 | 4/4 | Complete | 2026-05-16 |
-| 12. 飞书/Lark 适配器 | v1.1 | 5/5 | Verified / human_needed | 2026-05-16 |
+| 12. 飞书/Lark 适配器 | v1.1 | dropped | Dropped / code removed in aa2 | 2026-05-17 |
 
 ---
 

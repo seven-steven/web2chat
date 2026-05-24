@@ -30,15 +30,16 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ### 进行中 (Active)
 
-<!-- v1.1 剩余工作 -->
+<!-- 当前无 v1.1 挂起交付项。 -->
 
-- [ ] 飞书/Lark 适配器（双域名匹配 + 编辑器注入） — Phase 12
+- 无
 
 ### 已验证 (Validated, v1.1)
 
 - [x] 投递超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度 — Validated in Phase 9（DSPT-01..04, 5/5 plans, verification passed）
 - [x] Slack 适配器（URL 匹配 + Quill 编辑器注入 + mrkdwn 格式化）— Validated in Phase 10（SLK-01..05, 6/6 plans）
 - [x] Telegram 适配器（Web K URL 匹配 + contenteditable 编辑器注入 + 4096-char 截断）— Validated in Phase 11（TG-01..05, 4/4 plans）
+- [x] 低置信度确认流收尾修复：`needs_confirmation` 时 popup 保持打开并复用原始 snapshot — Quick task 260517-aa3（da18746）
 
 ### 不在范围 (Out of Scope)
 
@@ -55,7 +56,8 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 <!-- 已知未来要做的扩展，但不在 MVP -->
 
-- 其余 IM/协作平台分发：Feishu、Lark、Google Chat、LINE、Microsoft Teams、Nextcloud Talk、Signal、Slack、Telegram、WhatsApp、Zalo、QQ、WeCom
+- 飞书/Lark 适配器重新评估（Phase 12 因共享 URL blocker dropped，需平台 API 或可定位会话方案）
+- 其余 IM/协作平台分发：Google Chat、LINE、Microsoft Teams、Nextcloud Talk、Signal、WhatsApp、Zalo、QQ、WeCom
 - 历史记录搜索 / 收藏管理界面
 - 配置导入导出
 - 自定义模板编辑器
@@ -79,13 +81,14 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - **发送通道**：通过新开/激活 tab + content script 注入目标会话输入框完成发送，不使用平台官方 Bot API（避免 token 管理与服务端依赖）
 - **权限模型**：抓取走 `activeTab`；静态 `host_permissions` 仅声明 v1 已知公共域名（`https://discord.com/*`）；用户自部署的 OpenClaw 与未来 v2 平台通过 `optional_host_permissions: ["<all_urls>"]` + 运行时 `chrome.permissions.request` 动态获取具体 origin 权限。静态 `host_permissions` 中禁止 `<all_urls>`
 
-## Current Milestone: v1.1 多渠道适配
+## Current Milestone: v1.1 多渠道适配（收尾完成）
 
-**Goal:** 扩展 web2chat 的 IM 平台覆盖，同时优化投递链路的鲁棒性
+**Goal:** 扩展 web2chat 的 IM 平台覆盖至 Slack、Telegram，并加固投递链路的鲁棒性；当前支持平台为 OpenClaw / Discord / Slack / Telegram
 
-**Target features:**
-- 新增 IM 平台适配器（具体平台由可行性调研决定）
-- 投递体验优化（网络延迟、SPA 路由、编辑器兼容性等）
+**Delivered:**
+- 新增 Slack、Telegram 两个平台适配器
+- 完成投递鲁棒性加固（网络延迟、SPA 路由、编辑器兼容性、低置信度确认流）
+- Feishu/Lark 因共享 URL blocker 延后到 v2 重新评估
 
 ## 关键决策 (Key Decisions)
 
@@ -120,4 +123,4 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ---
 
-_最近更新：2026-05-16，Phase 9 verified, Phases 8-11 complete。_
+_最近更新：2026-05-24，v1.1 收尾同步完成；支持平台为 OpenClaw / Discord / Slack / Telegram，Phase 12 dropped。_

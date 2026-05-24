@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: 多渠道适配
-status: executing
-stopped_at: "Phase 12 dropped (feishu shared URL blocker), popup bug pending"
-last_updated: "2026-05-17T16:40:00+08:00"
-last_activity: 2026-05-17
+status: complete
+stopped_at: "v1.1 wrapped up: Phase 12 dropped, Feishu code removed, popup low-confidence flow fixed"
+last_updated: "2026-05-24T00:00:00+08:00"
+last_activity: 2026-05-24
 progress:
   total_phases: 5
   completed_phases: 4
@@ -20,17 +20,17 @@ progress:
 
 ## 项目引用
 
-参见：`.planning/PROJECT.md` (更新于 2026-05-09)
+参见：`.planning/PROJECT.md` (更新于 2026-05-24)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** v1.1 多渠道适配 — Phase 12 dropped (feishu shared URL blocker), popup bug pending
+**当前焦点：** v1.1 多渠道适配已收尾 — 支持平台 OpenClaw / Discord / Slack / Telegram；Phase 12 dropped，当前无挂起 blocker
 
 ## Current Position
 
-Phase: 12 (飞书/Lark 适配器) — DROPPED
-Reason: 飞书 SPA 所有聊天共享同一 URL，无法按 URL 定位具体聊天（blocker）
-Popup bug: needs_confirmation 时 popup 关闭 + 重捕覆盖 snapshot（影响所有平台）
-Last activity: 2026-05-17
+Phase: v1.1 milestone wrap-up
+Reason: Phase 12 飞书/Lark 适配器因共享 URL blocker dropped；aa2 已移除相关代码（a40132f）
+Popup bug: needs_confirmation 流程已修复；popup 保持打开并复用原始 snapshot（aa3 / da18746）
+Last activity: 2026-05-24
 
 Progress: [████████░░] 80% (4/5 phases)
 
@@ -49,7 +49,7 @@ Progress: [████████░░] 80% (4/5 phases)
 | 9. 投递鲁棒性 | 5/5 | — | — | verified 2026-05-16 |
 | 10. Slack 适配器 | 6/6 | — | — | complete |
 | 11. Telegram 适配器 | 4/4 | — | — | complete |
-| 12. 飞书/Lark 适配器 | 5/5 | — | — | verified 2026-05-16 |
+| 12. 飞书/Lark 适配器 | dropped | — | — | code removed via aa2 |
 
 ## Accumulated Context
 
@@ -87,18 +87,20 @@ Phase 11 execution:
 
 - 11-01..11-04 complete: Telegram adapter full implementation
 - Registry-driven architecture validated: zero pipeline/SW changes
+- 11-VERIFICATION.md status: human_needed; 4/4 roadmap truths verified
+- Live Telegram dispatch 未做人工测试：当前无可用账号，结论仅基于自动化验证
 
 Phase 12 execution:
 - 12-01..12-05 complete: Feishu/Lark adapter full implementation
 - Registry-driven architecture validated: zero pipeline/SW changes
 - Code review: 0 CRITICAL, 3 WARNING (all systemic patterns shared with Slack/Telegram)
-- Verification: 4/4 must-haves verified, 4 items pending human testing
+- Verification: 4/4 must-haves verified before UAT blocker surfaced
 
-Phase 12 UAT & drop:
+Phase 12 drop & wrap-up:
 - 12-HUMAN-UAT.md status: diagnosed; 1 passed, 3 issues
 - Blocker: 飞书 SPA 所有聊天共享同一 URL，无法按 URL 定位具体聊天
-- Decision: drop feishu adapter, remove all Phase 12 code
-- Popup bug discovered: needs_confirmation closes popup + re-capture overwrites snapshot (affects all platforms)
+- Decision: drop feishu adapter; aa2 removed all related code (a40132f)
+- aa3 fixed the cross-platform needs_confirmation popup/snapshot bug (da18746)
 
 ### Pending Todos
 
@@ -113,8 +115,9 @@ None.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260509-ocg | 按照 2 3 更新当前项目规划，构建 changelog 体系，纳入后续发版流程。 | 2026-05-09 | d5a3ddc | [260509-ocg-2-3-changelog](./quick/260509-ocg-2-3-changelog/) |
-| 260517-aa2 | 移除飞书代码，保留移除原因 | 2026-05-17 | — | [260517-aa2-remove-feishu-code](./quick/260517-aa2-remove-feishu-code/) |
-| 260517-aa3 | 修复 popup needs_confirmation bug | 2026-05-17 | 71826b1 | [260517-aa3-fix-popup-needs-confirmation-bug](./quick/260517-aa3-fix-popup-needs-confirmation-bug/) |
+| 260517-aa2 | 移除飞书代码，保留移除原因 | 2026-05-17 | a40132f | [260517-aa2-remove-feishu-code](./quick/260517-aa2-remove-feishu-code/) |
+| 260517-aa3 | 修复 popup needs_confirmation bug | 2026-05-17 | da18746 | [260517-aa3-fix-popup-needs-confirmation-bug](./quick/260517-aa3-fix-popup-needs-confirmation-bug/) |
+| 260524-v1d | 同步 v1.1 收尾文档：更新 STATE/PROJECT/ROADMAP，并纳入 aa2/aa3 结果 | 2026-05-24 | — | [260524-v1d-sync-v1-1-wrapup-docs](./quick/260524-v1d-sync-v1-1-wrapup-docs/) |
 
 ## Deferred Items
 
@@ -127,6 +130,6 @@ Items acknowledged and deferred at v1.0 milestone close on 2026-05-09:
 
 ## Session Continuity
 
-Last session: 2026-05-17T12:00:00+08:00
-Stopped at: Popup bug fixed, feishu code removal pending
-Resume file: .planning/phases/12-feishu-lark-adapter/12-HUMAN-UAT.md
+Last session: 2026-05-24T00:00:00+08:00
+Stopped at: v1.1 docs synced to terminal state
+Resume file: .planning/reports/MILESTONE_SUMMARY-v1.1.md
