@@ -30,7 +30,7 @@ progress:
 Phase: v1.1 milestone wrap-up
 Reason: Phase 12 飞书/Lark 适配器因共享 URL blocker dropped；aa2 已移除相关代码（a40132f）
 Popup bug: needs_confirmation 流程已修复；popup 保持打开并复用原始 snapshot（aa3 / da18746）
-Last activity: 2026-05-24
+Last activity: 2026-05-24 - Completed quick task 260524-9lb: 新增一个 doc 目录，放置 chrome web store 上架相关物料。
 
 Progress: [████████░░] 80% (4/5 phases)
 
@@ -118,6 +118,7 @@ None.
 | 260517-aa2 | 移除飞书代码，保留移除原因 | 2026-05-17 | a40132f | [260517-aa2-remove-feishu-code](./quick/260517-aa2-remove-feishu-code/) |
 | 260517-aa3 | 修复 popup needs_confirmation bug | 2026-05-17 | da18746 | [260517-aa3-fix-popup-needs-confirmation-bug](./quick/260517-aa3-fix-popup-needs-confirmation-bug/) |
 | 260524-v1d | 同步 v1.1 收尾文档：更新 STATE/PROJECT/ROADMAP，并纳入 aa2/aa3 结果 | 2026-05-24 | — | [260524-v1d-sync-v1-1-wrapup-docs](./quick/260524-v1d-sync-v1-1-wrapup-docs/) |
+| 260524-9lb | 新增一个 doc 目录，放置 chrome web store 上架相关物料。 | 2026-05-24 | ae3ac25 | [260524-9lb-doc-chrome-web-store](./quick/260524-9lb-doc-chrome-web-store/) |
 
 ## Deferred Items
 
