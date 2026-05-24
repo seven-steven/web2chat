@@ -2,7 +2,7 @@
 
 /* global console, process */
 /**
- * Screenshot all .store-assets/*.html templates to .output/store-assets/*.png
+ * Screenshot all doc/chrome-web-store/assets/templates/*.html templates to .output/store-assets/*.png
  * Uses Playwright (already a devDependency for e2e tests).
  */
 
@@ -12,7 +12,7 @@ import { resolve, basename } from 'node:path';
 import { mkdir } from 'node:fs/promises';
 
 const ROOT = resolve(import.meta.dirname, '..');
-const SRC = resolve(ROOT, '.store-assets');
+const SRC = resolve(ROOT, 'doc', 'chrome-web-store', 'assets', 'templates');
 const OUT = resolve(ROOT, '.output', 'store-assets');
 
 const VIEWPORTS = {
@@ -30,7 +30,7 @@ function viewportFor(name) {
 async function main() {
   const files = (await readdir(SRC)).filter((f) => f.endsWith('.html'));
   if (!files.length) {
-    console.error('No HTML templates found in .store-assets/');
+    console.error('No HTML templates found in doc/chrome-web-store/assets/templates/');
     process.exit(1);
   }
 
