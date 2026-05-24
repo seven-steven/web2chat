@@ -28,6 +28,8 @@ web2chat was originally designed for the [llm-wiki](https://gist.github.com/karp
 
 [web2chat - Chrome Web Store](https://chromewebstore.google.com/detail/web2chat/kglpjocckfgpephljffgkamnfpnmkdnc)
 
+Related store assets and references: [Chrome Web Store materials index](./doc/chrome-web-store/README.md)
+
 ### Download from Release
 
 1. Go to the [Releases page](../../releases) and download the latest `web2chat-*-chrome.zip`
@@ -59,10 +61,6 @@ web2chat was originally designed for the [llm-wiki](https://gist.github.com/karp
    - Enable **Developer mode** in the top right
    - Click **Load unpacked** and select the `.output/chrome-mv3/` directory
 4. The web2chat icon appears in the toolbar
-
-### Chrome Web Store
-
-[web2chat - Chrome Web Store](https://chromewebstore.google.com/detail/web2chat/kglpjocckfgpephljffgkamnfpnmkdnc)
 
 ## Usage
 
