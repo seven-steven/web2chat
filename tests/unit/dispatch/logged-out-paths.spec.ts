@@ -3,10 +3,13 @@ import { adapterRegistry } from '@/shared/adapters/registry';
 import * as dispatchPolicy from '@/shared/adapters/dispatch-policy';
 
 const discord = adapterRegistry.find((entry) => entry.id === 'discord')!;
+const slack = adapterRegistry.find((entry) => entry.id === 'slack')!;
+const telegram = adapterRegistry.find((entry) => entry.id === 'telegram')!;
 const openclaw = adapterRegistry.find((entry) => entry.id === 'openclaw')!;
 
 type AdapterWithFutureLoggedOutPolicy = typeof discord & {
   readonly loggedOutPathPatterns?: readonly string[];
+  readonly loggedOutHostMatches?: readonly string[];
 };
 
 const discordWithPolicy = discord as AdapterWithFutureLoggedOutPolicy;
@@ -30,6 +33,14 @@ describe('loggedOutPathPatterns URL policy (D-115..D-117)', () => {
     expect(discordWithPolicy.loggedOutPathPatterns).toEqual(['/', '/login*', '/register*']);
   });
 
+  it('declares Slack loggedOutPathPatterns for login redirects', () => {
+    expect(slack.loggedOutPathPatterns).toEqual([
+      '/check-login*',
+      '/signin*',
+      '/workspace-signin*',
+    ]);
+  });
+
   it('supports exact and trailing-star pathname matches without RegExp semantics', () => {
     expect(pathMatches?.('/', '/')).toBe(true);
     expect(pathMatches?.('/', '/login')).toBe(false);
@@ -49,6 +60,16 @@ describe('loggedOutPathPatterns URL policy (D-115..D-117)', () => {
     expect(isLoggedOutUrlForAdapter?.(discord, 'https://discord.com/register')).toBe(true);
   });
 
+  it('detects Slack check-login URLs as NOT_LOGGED_IN candidates', () => {
+    expect(
+      isLoggedOutUrlForAdapter?.(
+        slack,
+        'https://slack.com/check-login?redir=%2Fclient%2FT123%2FC456',
+      ),
+    ).toBe(true);
+    expect(isLoggedOutUrlForAdapter?.(slack, 'https://app.slack.com/check-login')).toBe(true);
+  });
+
   it('does not treat same-host non-matching Discord paths as logged out unless patterns match', () => {
     expect(isLoggedOutUrlForAdapter?.(discord, 'https://discord.com/channels/@me')).toBe(false);
     expect(isLoggedOutUrlForAdapter?.(discord, 'https://discord.com/app')).toBe(false);
@@ -64,8 +85,9 @@ describe('loggedOutPathPatterns URL policy (D-115..D-117)', () => {
     ).toBe(false);
   });
 
-  it('requires adapter host match and ignores invalid URLs', () => {
-    expect(isLoggedOutUrlForAdapter?.(discord, 'https://example.com/login')).toBe(false);
-    expect(isLoggedOutUrlForAdapter?.(discord, 'not a url')).toBe(false);
+  it('keeps Telegram and non-Slack hosts outside Slack login detection', () => {
+    expect(isLoggedOutUrlForAdapter?.(telegram, 'https://web.telegram.org/login')).toBe(true);
+    expect(isLoggedOutUrlForAdapter?.(slack, 'https://example.com/check-login')).toBe(false);
+    expect(isLoggedOutUrlForAdapter?.(slack, 'not a url')).toBe(false);
   });
 });

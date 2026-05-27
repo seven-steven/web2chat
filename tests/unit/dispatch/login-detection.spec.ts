@@ -20,6 +20,8 @@ const DISCORD_LOGIN_URL = 'https://discord.com/login?redirect_to=%2Fchannels%2F1
 const DISCORD_ROOT_URL = 'https://discord.com/';
 const DISCORD_REGISTER_URL = 'https://discord.com/register';
 const DISCORD_SAME_HOST_NON_LOGIN_URL = 'https://discord.com/channels/@me';
+const SLACK_CHANNEL_URL = 'https://app.slack.com/client/T123/C456';
+const SLACK_LOGIN_URL = 'https://slack.com/check-login?redir=%2Fclient%2FT123%2FC456';
 const OPENCLAW_URL = 'http://localhost:18789/chat?session=agent:test:s1';
 const OPENCLAW_LOGIN_URL = 'http://localhost:18789/login?redirect=/chat%3Fsession%3Dagent:test:s1';
 
@@ -112,6 +114,24 @@ describe('dispatch-pipeline loggedOutPathPatterns detection (D-115..D-118)', () 
     expect(updated?.state).toBe('error');
     expect(updated?.error?.code).toBe('NOT_LOGGED_IN');
     expect(updated?.error?.message).toContain('register');
+    expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
+  });
+
+  it('remaps tab complete to NOT_LOGGED_IN when Slack redirects to slack.com/check-login before injection', async () => {
+    const record = makeRecord({
+      dispatchId: 'test-dispatch-slack-complete',
+      send_to: SLACK_CHANNEL_URL,
+      platform_id: definePlatformId('slack'),
+    });
+    await dispatchRepo.set(record);
+    stubChromeForAwaitingComplete(SLACK_LOGIN_URL);
+
+    await onTabComplete(TAB_ID, { status: 'complete' }, {} as chrome.tabs.Tab);
+
+    const updated = await dispatchRepo.get(record.dispatchId);
+    expect(updated?.state).toBe('error');
+    expect(updated?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(updated?.error?.message).toContain('slack.com/check-login');
     expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
   });
 
@@ -242,6 +262,27 @@ describe('dispatch-pipeline INPUT_NOT_FOUND URL remap', () => {
     expect(stored?.state).toBe('error');
     expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
     expect(stored?.error?.message).toContain('discord.com');
+    expect(stored?.error?.retriable).toBe(true);
+  });
+
+  it('remaps INPUT_NOT_FOUND to NOT_LOGGED_IN when Slack tab URL redirects to slack.com/check-login', async () => {
+    stubChrome({
+      sendTo: SLACK_CHANNEL_URL,
+      tabsGetUrl: SLACK_LOGIN_URL,
+      sendMessageResponse: {
+        ok: false,
+        code: 'INPUT_NOT_FOUND',
+        message: 'Channel mismatch',
+        retriable: false,
+      },
+    });
+
+    await startDispatch(baseStartInput(SLACK_CHANNEL_URL));
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.state).toBe('error');
+    expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(stored?.error?.message).toContain('slack.com/check-login');
     expect(stored?.error?.retriable).toBe(true);
   });
 
