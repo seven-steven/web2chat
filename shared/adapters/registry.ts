@@ -105,6 +105,7 @@ export const adapterRegistry: readonly AdapterRegistryEntry[] = [
     iconKey: 'platform_icon_slack',
     spaNavigationHosts: ['app.slack.com'],
     loggedOutPathPatterns: ['/check-login*', '/signin*', '/workspace-signin*'],
+    loggedOutHostMatches: ['https://app.slack.com/*', 'https://slack.com/*'],
   }),
   defineAdapter({
     id: 'telegram',

@@ -9,6 +9,7 @@ function validManifest(overrides: Partial<Manifest> = {}): Manifest {
     permissions: ['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation'],
     host_permissions: [
       'https://app.slack.com/*',
+      'https://slack.com/*',
       'https://discord.com/*',
       'https://web.telegram.org/*',
     ],

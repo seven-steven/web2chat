@@ -34,8 +34,8 @@ export function pathMatches(pattern: string, pathname: string): boolean {
   return pathname === pattern;
 }
 
-function isOnAdapterHost(adapter: AdapterRegistryEntry, actualUrl: URL): boolean {
-  return adapter.hostMatches.some((pattern) => {
+function isOnConfiguredHost(patterns: readonly string[], actualUrl: URL): boolean {
+  return patterns.some((pattern) => {
     try {
       const patternHost = new URL(pattern.replace(/\*/g, 'x')).hostname;
       return actualUrl.hostname === patternHost || actualUrl.hostname.endsWith('.' + patternHost);
@@ -59,7 +59,8 @@ export function isLoggedOutUrlForAdapter(
     return false;
   }
 
-  if (!isOnAdapterHost(adapter, parsed)) return false;
+  const hostMatches = adapter.loggedOutHostMatches ?? adapter.hostMatches;
+  if (!isOnConfiguredHost(hostMatches, parsed)) return false;
   return patterns.some((pattern) => pathMatches(pattern, parsed.pathname));
 }
 

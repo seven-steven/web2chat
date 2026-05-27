@@ -72,6 +72,8 @@ export interface AdapterRegistryEntry {
   readonly adapterResponseTimeoutMs?: number;
   /** Pathname-only logged-out URL patterns, e.g. '/', '/login*'. */
   readonly loggedOutPathPatterns?: readonly string[];
+  /** Optional host glob list used only for logged-out redirect classification. */
+  readonly loggedOutHostMatches?: readonly string[];
 }
 
 // ── defineAdapter helper (D-97) ────────────────────────────────────────────
