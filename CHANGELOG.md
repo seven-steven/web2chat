@@ -2,6 +2,40 @@
 
 All notable changes to this project are documented in this file.
 
+## [v1.1] - 2026-05-31
+
+
+### Features
+
+- Add Slack and Telegram adapters, expanding the shipped platform set to OpenClaw, Discord, Slack, and Telegram.
+
+
+### Architecture
+
+- Generalize platform registration with PlatformId branded types, registry-driven platform metadata, per-adapter MAIN world injectors, and registry-defined SPA navigation filters.
+
+
+### Improvements
+
+- Add per-platform dispatch timeout controls, generalized logged-out path detection, popup-driven retry flow, and selector confidence warnings before potentially unsafe sends.
+
+
+### Bug Fixes
+
+- Close Slack login redirect gaps by remapping workspace-signin, delayed redirect, BFCache, and closed-channel failures to `NOT_LOGGED_IN`.
+
+- Preserve the original source snapshot when reopening the popup after dispatch errors so login pages do not overwrite captured page data.
+
+
+### Removed
+
+- Drop the Feishu/Lark adapter from the shipped v1.1 scope after UAT confirmed that all chats share the same URL, which breaks URL-targeted dispatch.
+
+
+### Known Issues
+
+- Telegram automation coverage passes, but a real logged-in headed-browser UAT artifact has not yet been recorded.
+
 ## [v1.0.1] - 2026-05-09
 
 
