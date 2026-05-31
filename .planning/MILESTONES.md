@@ -1,5 +1,32 @@
 # Milestones
 
+## v1.1 多渠道适配 — SHIPPED 2026-05-31
+
+**Phases:** 6 | **Plans:** 27 | **Requirements:** 18/23 satisfied in shipped scope review
+**Commits:** 534 total repo commits at close | **LOC:** 18,837 TS/TSX/JS/JSX | **Timeline:** 19 days
+
+### Key Accomplishments
+
+1. 完成适配器架构泛化，新增平台无需再改 dispatch pipeline 或 service worker 入口。
+2. 完成投递鲁棒性加固，统一覆盖超时分层、登录态检测、可重试 UI 与低置信度确认流。
+3. Slack 适配器 shipped，覆盖 URL 匹配、登录检测、富文本注入、发送确认与中英文本地化。
+4. Slack logged-out redirect 历史 blocker 已闭环，真实回归确认 `NOT_LOGGED_IN` 语义与 popup 原始 snapshot 保留。
+5. Telegram 适配器 shipped，覆盖 Web K URL、contenteditable 注入、4096 字截断、发送确认与 i18n。
+6. Feishu/Lark 已完成实现验证，但因共享 URL blocker 被明确移出最终 shipped scope。
+
+### Known Gaps
+
+- Telegram live dispatch 仍缺真实登录会话 headed-browser UAT 证据
+- FSL-01..05 dropped，不属于最终 shipped scope
+- Phase 11 / 12 Nyquist closeout 仍为 partial
+
+### Archive
+
+- [v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
+- [v1.1-REQUIREMENTS.md](milestones/v1.1-REQUIREMENTS.md)
+
+---
+
 ## v1.0 MVP — SHIPPED 2026-05-09
 
 **Phases:** 7 | **Plans:** 41 | **Requirements:** 47/47

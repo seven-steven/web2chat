@@ -16,8 +16,6 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ### 已验证 (Validated)
 
-<!-- 已发布并确认有价值。 -->
-
 - [x] Chrome MV3 扩展骨架：manifest、popup、background service worker、content script — Validated in Phase 1（FND-01..06、STG-01/02）
 - [x] i18n 国际化：至少支持 zh_CN / en — Validated in Phase 1（FND-06、@wxt-dev/i18n + en/zh_CN locale 100% 同构）
 - [x] 全部配置本地存储于 `chrome.storage.local` — Validated in Phase 1（STG-01/02、`metaItem` typed repo + 版本化 schema + migration 框架）
@@ -27,23 +25,17 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - [x] 用户点击"确认"后：新开 tab / 唤起本地应用，导航到目标会话并把格式化信息 + prompt 发送到该会话 — Validated in Phase 3（DSP-07..10、STG-03）
 - [x] MVP 渠道：OpenClaw Web UI（`http://localhost:18789/chat?session=agent:<agent_name>:<session_name>`）— Validated in Phase 4（ADO-01..07、optional_host_permissions 动态授权）
 - [x] MVP 渠道：Discord Web（`https://discord.com/channels/<server_id>/<channel_id>`）— Validated in Phase 5（ADD-01..09、ClipboardEvent 粘贴注入 + MAIN world bridge + ToS 声明）
+- [x] 投递超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度 — Validated in Phase 9（DSPT-01..04）
+- [x] Slack 适配器（URL 匹配 + 登录检测 + 富文本注入 + 发送确认）— Validated in Phase 10 / 10.1（SLK-01..05）
+- [x] Telegram 适配器（Web K URL 匹配 + contenteditable 注入 + 4096-char 截断）— Validated in Phase 11（TG-01..05，live UAT 待补）
+- [x] 低置信度确认流收尾修复：`needs_confirmation` 时 popup 保持打开并复用原始 snapshot — Quick task 260517-aa3（da18746）
 
 ### 进行中 (Active)
 
-<!-- 当前无 v1.1 挂起交付项。 -->
-
-- 无
-
-### 已验证 (Validated, v1.1)
-
-- [x] 投递超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度 — Validated in Phase 9（DSPT-01..04, 5/5 plans, verification passed）
-- [x] Slack 适配器（URL 匹配 + Quill 编辑器注入 + mrkdwn 格式化）— Validated in Phase 10（SLK-01..05, 6/6 plans）
-- [x] Telegram 适配器（Web K URL 匹配 + contenteditable 编辑器注入 + 4096-char 截断）— Validated in Phase 11（TG-01..05, 4/4 plans）
-- [x] 低置信度确认流收尾修复：`needs_confirmation` 时 popup 保持打开并复用原始 snapshot — Quick task 260517-aa3（da18746）
+- [ ] 为 Telegram 补真实登录会话 headed-browser UAT，决定是否将其从“自动化充分”提升为完整 closeout
+- [ ] 启动下一个 milestone 的 requirements 定义与 roadmap 规划
 
 ### 不在范围 (Out of Scope)
-
-<!-- 显式排除范围与理由 -->
 
 - Firefox / Safari 适配 — v1 仅 Chromium MV3，避免分裂工程精力
 - 云端同步配置 / 用户账户 — 本地存储足够覆盖个人使用，云同步推后
@@ -51,12 +43,9 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - 内容 OCR / 图片附件抽取 — v1 只处理文本与基础 metadata，图片与 OCR 推后
 - AI 内容总结 / 改写 — 用户自带 prompt 由下游 Agent 处理，扩展本身不调用 LLM
 
-
 ### 推迟事项 (Deferred — v2 候选)
 
-<!-- 已知未来要做的扩展，但不在 MVP -->
-
-- 飞书/Lark 适配器重新评估（Phase 12 因共享 URL blocker dropped，需平台 API 或可定位会话方案）
+- 飞书/Lark 适配器重新评估（Phase 12 因共享 URL blocker dropped，需平台 API、稳定 chat identity 或新的目标定位方案）
 - 其余 IM/协作平台分发：Google Chat、LINE、Microsoft Teams、Nextcloud Talk、Signal、WhatsApp、Zalo、QQ、WeCom
 - 历史记录搜索 / 收藏管理界面
 - 配置导入导出
@@ -70,6 +59,7 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - **本地化**：作者母语 zh_CN，目标用户至少覆盖 zh / en
 - **存储**：所有持久化配置仅写入 `chrome.storage.local`（无云端、无后端）
 - **已交付 v1.0**：313 commits, 11,399 LOC TypeScript/TSX, 225 单元测试, 7 phases / 41 plans
+- **已交付 v1.1**：支持平台扩展到 OpenClaw / Discord / Slack / Telegram；27 plans 收尾，Feishu/Lark 经 UAT 证伪后不进入 shipped scope
 - **技术栈**：WXT 0.20.x + Preact 10.29 + @preact/signals + Tailwind v4 + Vitest 3 + Playwright 1.58
 
 ## 约束 (Constraints)
@@ -79,48 +69,44 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - **本地优先**：所有配置 / 历史 / 密钥仅落地在 `chrome.storage.local`，禁止默认上行
 - **i18n**：所有 UI 文案必须走 `chrome.i18n` 或同等 i18n 框架，禁止硬编码字符串
 - **发送通道**：通过新开/激活 tab + content script 注入目标会话输入框完成发送，不使用平台官方 Bot API（避免 token 管理与服务端依赖）
-- **权限模型**：抓取走 `activeTab`；静态 `host_permissions` 仅声明 v1 已知公共域名（`https://discord.com/*`）；用户自部署的 OpenClaw 与未来 v2 平台通过 `optional_host_permissions: ["<all_urls>"]` + 运行时 `chrome.permissions.request` 动态获取具体 origin 权限。静态 `host_permissions` 中禁止 `<all_urls>`
+- **权限模型**：抓取走 `activeTab`；静态 `host_permissions` 仅声明已知公共平台域名；用户自部署 OpenClaw 与未来平台通过 `optional_host_permissions: ["<all_urls>"]` + 运行时 `chrome.permissions.request` 动态获取具体 origin 权限。静态 `host_permissions` 中禁止 `<all_urls>`
 
-## Current Milestone: v1.1 多渠道适配（收尾完成）
+## Current State
 
-**Goal:** 扩展 web2chat 的 IM 平台覆盖至 Slack、Telegram，并加固投递链路的鲁棒性；当前支持平台为 OpenClaw / Discord / Slack / Telegram
+**Shipped versions:**
+- v1.0 — OpenClaw + Discord MVP
+- v1.1 — 多渠道适配：Slack / Telegram + dispatch robustness hardening
 
-**Delivered:**
-- 新增 Slack、Telegram 两个平台适配器
-- 完成投递鲁棒性加固（网络延迟、SPA 路由、编辑器兼容性、低置信度确认流）
-- Feishu/Lark 因共享 URL blocker 延后到 v2 重新评估
+**Current shipped platform set:** OpenClaw / Discord / Slack / Telegram
+
+**Known closeout gaps:**
+- Telegram 缺真实登录会话 headed UAT 证据
+- Feishu/Lark 已正式 dropped，不属于当前 shipped scope
+
+## Next Milestone Goals
+
+- 定义下一个 milestone 的用户价值与 requirements baseline
+- 决定 Telegram live UAT 是补做为 v1.1.x closeout，还是留作下一 milestone 的 reliability work
+- 评估 Feishu/Lark 是否存在脱离 URL targeting 的可行方案
 
 ## 关键决策 (Key Decisions)
 
-| 决策                                                    | 理由                                                                                                                                                                                                                                                                                                                                     | 结果     |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| Chrome MV3 only（v1）                                   | 用户首发只覆盖 Chrome；MV3 是 2025 年 Chromium 主推标准，Firefox/Safari 推后避免分散精力                                                                                                                                                                                                                                                 | ✓ 验证：v1 全程 Chrome MV3，无兼容性阻塞 |
-| MVP 仅集成 OpenClaw + Discord                           | 这两个平台的 URL pattern 已确定，可优先打通主链路；其余平台沉淀适配模式后批量补齐                                                                                                                                                                                                                                                        | ✓ 验证：两个适配器均完整交付，`IMAdapter` 接口已被证明可复用 |
-| 通过新开 tab + content script 注入消息（非 Bot API）    | 不需要管理服务端 token / OAuth，符合"本地优先"约束，但需要为每个平台维护 DOM 适配器                                                                                                                                                                                                                                                      | ✓ 验证：ClipboardEvent 粘贴注入 + property-descriptor setter 在 OpenClaw/Discord 均稳定工作 |
-| 所有配置 `chrome.storage.local`                         | 隐私优先 + 单设备使用；云同步推到 v2                                                                                                                                                                                                                                                                                                     | ✓ 验证：全部 storage 写入走 typed repo，无直接 chrome.storage 调用 |
-| Quality 模型档（GSD agents）                            | 项目核心抽象（适配器架构、i18n 边界）需要更深入的研究与规划                                                                                                                                                                                                                                                                              | ✓ 验证：7 phase / 46 plan / 47 req 全部完成 |
-| send_to / prompt 绑定 + 历史                            | 让重复任务（如"沉淀到知识库 Agent"）一次配置反复使用，是 Core Value 的关键 UX                                                                                                                                                                                                                                                            | ✓ 验证：MRU 历史 + 绑定在 Phase 3 UAT 通过 |
-| OpenClaw origin 走 `optional_host_permissions` 动态申请 | 用户自部署的 OpenClaw 落在任意域名 / IP+端口（如 `http://192.168.1.100:18789`、`https://openclaw.mycompany.com`），无法在 manifest 静态枚举。静态 `host_permissions` 只放 Discord；用户首次配置 OpenClaw 实例 URL 时通过 `chrome.permissions.request` 动态申请该具体 origin。Capture 仍走 `activeTab`，不会因此让出 Web Store 评审优势。 | ✓ 验证：Phase 4 UAT 通过，popup 关闭时权限对话仍可完成授权 |
+| 决策 | 理由 | 结果 |
+| ---- | ---- | ---- |
+| Chrome MV3 only（v1） | 用户首发只覆盖 Chrome；MV3 是 2025 年 Chromium 主推标准，Firefox/Safari 推后避免分散精力 | ✓ 验证：v1 全程 Chrome MV3，无兼容性阻塞 |
+| MVP 仅集成 OpenClaw + Discord | 这两个平台的 URL pattern 已确定，可优先打通主链路；其余平台沉淀适配模式后批量补齐 | ✓ 验证：两个适配器均完整交付，`IMAdapter` 接口已被证明可复用 |
+| 通过新开 tab + content script 注入消息（非 Bot API） | 不需要管理服务端 token / OAuth，符合"本地优先"约束，但需要为每个平台维护 DOM 适配器 | ✓ 验证：ClipboardEvent 粘贴注入 + property-descriptor setter 在 OpenClaw/Discord 均稳定工作 |
+| 所有配置 `chrome.storage.local` | 隐私优先 + 单设备使用；云同步推到 v2 | ✓ 验证：全部 storage 写入走 typed repo，无直接 chrome.storage 调用 |
+| Quality 模型档（GSD agents） | 项目核心抽象（适配器架构、i18n 边界）需要更深入的研究与规划 | ✓ 验证：7 phase / 46 plan / 47 req 全部完成 |
+| send_to / prompt 绑定 + 历史 | 让重复任务一次配置反复使用，是 Core Value 的关键 UX | ✓ 验证：MRU 历史 + 绑定在 Phase 3 UAT 通过 |
+| OpenClaw origin 走 `optional_host_permissions` 动态申请 | 用户自部署的 OpenClaw 落在任意域名 / IP+端口，无法在 manifest 静态枚举 | ✓ 验证：Phase 4 UAT 通过 |
+| Registry-driven adapter architecture | 新平台只改适配器层，避免 pipeline / SW 扩散 | ✓ 验证：Slack / Telegram / Feishu 试验都未要求改 SW 主干 |
+| Slack redirect host 单独声明可观测权限 | 最小权限面下修复 app.slack.com → slack.com 登录跳转检测 | ✓ 验证：Phase 10.1 regression 关闭 |
+| Feishu/Lark 从 shipped scope 移除 | 共享 URL blocker 让 URL-based targeting 不可靠 | ✓ 验证：避免不稳定能力进入 v1.1 |
 
 ## 演进 (Evolution)
 
 本文档在 phase 切换与 milestone 边界处更新。
 
-**每次 phase 切换后**（通过 `/gsd-transition`）：
-
-1. 需求被证伪？→ 移到 "不在范围"，附原因
-2. 需求已被验证？→ 移到 "已验证"，并标注对应 phase
-3. 出现了新需求？→ 加入 "进行中"
-4. 有需要记录的决策？→ 写入 "关键决策"
-5. "这是什么" 还准确吗？→ 如已偏离则更新
-
-**每个 milestone 完成后**（通过 `/gsd-complete-milestone`）：
-
-1. 全文审阅
-2. Core Value 检查 — 优先级是否仍正确
-3. 审计 "不在范围" — 排除理由是否仍成立
-4. 用最新状况更新 "上下文"
-
 ---
-
-_最近更新：2026-05-24，v1.1 收尾同步完成；支持平台为 OpenClaw / Discord / Slack / Telegram，Phase 12 dropped。_
+*Last updated: 2026-05-31 after v1.1 milestone*

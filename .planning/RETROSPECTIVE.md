@@ -51,16 +51,63 @@
 
 ---
 
+## Milestone: v1.1 — 多渠道适配
+
+**Shipped:** 2026-05-31
+**Phases:** 6 | **Plans:** 27 | **Timeline:** 19 days
+
+### What Was Built
+
+- 适配器架构泛化，新增平台无需改 dispatch pipeline / service worker 主干
+- 投递鲁棒性加固：超时分层、登录检测泛化、重试 UI、低置信度确认流
+- Slack 适配器与后续 10.1 gap closure，闭合 logged-out redirect 历史 blocker
+- Telegram 适配器：Web K URL、contenteditable 注入、发送确认与 4096 字截断
+- Feishu/Lark 适配器完整实现与验证，但最终因共享 URL blocker 未纳入 shipped scope
+
+### What Worked
+
+- **Registry-driven 扩展模式**：Phase 8 先改架构，再落 Slack / Telegram / Feishu，证明“先抽象后扩平台”是对的
+- **Gap closure 可控**：Slack 的 Phase 10 → 10.1 形成了先自动化回归、再真实会话补证据的闭环
+- **结构克隆策略**：Telegram 与 Feishu 内容脚本大量复用 Slack 模式，显著降低新增平台成本
+- **Milestone 审计驱动收尾**：审计先暴露 shipped scope 与 requirements baseline 的偏差，避免带着错误基线直接归档
+
+### What Was Inefficient
+
+- **REQUIREMENTS 基线漂移再次出现**：Phase 完成后没有及时把 DSPT / SLK / dropped FSL 写回 REQUIREMENTS，导致 closeout 时仍是旧状态
+- **Telegram 人工验证缺位**：自动化充分但 live UAT 缺失，使 milestone audit 只能停在 partial
+- **Feishu/Lark 过晚暴露根本 blocker**：直到 UAT 才确认共享 URL 让 targeting 模型失效，前面 5 个 plan 的产出最终未进入 shipped scope
+
+### Patterns Established
+
+- **Adapter metadata 驱动登录检测**：`loggedOutPathPatterns` / `loggedOutHostMatches` 让跨平台登录跳转进入统一策略层
+- **低置信度选择器必须显式用户确认**：把“可能误投递”的风险转成 UI contract，而不是平台内静默猜测
+- **平台可行性必须尽早验证 identity 模型**：仅能注入还不够，必须先证明“能稳定定位目标会话”
+
+### Key Lessons
+
+1. **先验证 chat identity，再投入完整适配实现**：Feishu/Lark 说明 URL / route 是否唯一比 DOM 注入本身更早决定项目成败
+2. **Closeout 文档不能滞后于 shipped reality**：requirements / roadmap / audit 基线如果不一起更新，milestone 结束时清算成本会很高
+3. **Slack 类登录跳转问题需要从 transport 和 tab URL 层建模**：不能只靠 content script waitForReady
+4. **自动化充分不等于 closeout 完整**：涉及真实平台登录态时，仍需要真实会话证据来完成最后一公里
+
+### Cost Observations
+
+- Model mix: 以 quality profile 为主，gap closure 与文档同步占比明显高于 v1.0
+- Sessions: milestone 内含 inserted Phase 10.1 与多次 closeout / audit / quick task 收尾
+- Notable: Slack 与 Telegram 的平台扩展成本可控，但 Feishu/Lark 的 wasted execution 暴露了“先做可行性门禁”的必要性
+
+---
+
 ## Cross-Milestone Trends
 
-| Metric | v1.0 |
-|--------|------|
-| Phases | 7 |
-| Plans | 41 |
-| Plans/Phase | 5.9 avg |
-| Timeline (days) | 11 |
-| Commits | 313 |
-| LOC | 11,399 |
-| Unit tests | 225 |
-| Gap closure plans | 4 (10%) |
-| Avg plan duration | ~6 min |
+| Metric | v1.0 | v1.1 |
+|--------|------|------|
+| Phases | 7 | 6 |
+| Plans | 41 | 27 |
+| Plans/Phase | 5.9 avg | 4.5 avg |
+| Timeline (days) | 11 | 19 |
+| Commits | 313 | 534 total repo commits at close |
+| LOC | 11,399 | 18,837 |
+| Unit tests | 225 | extensive adapter + regression coverage |
+| Gap closure plans | 4 (10%) | 3 explicit gap closures + 1 inserted phase |
+| Avg plan duration | ~6 min | mixed; platform work + audit tail longer |

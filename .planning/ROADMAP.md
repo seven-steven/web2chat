@@ -2,21 +2,14 @@
 
 ## Milestones
 
-- **v1.0 MVP** — Phases 1-7 (shipped 2026-05-09)
-- **v1.1 多渠道适配** — Phases 8-12 (wrapped up)
+- ✅ **v1.0 MVP** — Phases 1-7 (shipped 2026-05-09)
+- ✅ **v1.1 多渠道适配** — Phases 8-12 + inserted Phase 10.1 (shipped 2026-05-31)
+- 📋 **v2.0 待规划** — 从新的 REQUIREMENTS / ROADMAP 周期定义
 
 ## Phases
 
-**Phase Numbering:**
-
-- Integer phases (1-7): v1.0 MVP (shipped)
-- Integer phases (8-12): v1.1 多渠道适配
-- Decimal phases (8.1, 9.1): Urgent insertions (marked with INSERTED)
-
-Decimal phases appear between their surrounding integers in numeric order.
-
 <details>
-<summary>v1.0 MVP (Phases 1-7) — SHIPPED 2026-05-09</summary>
+<summary>✅ v1.0 MVP (Phases 1-7) — SHIPPED 2026-05-09</summary>
 
 - [x] Phase 1: 扩展骨架 (4/4 plans) — completed 2026-04-29
 - [x] Phase 2: 抓取流水线 (7/7 plans) — completed 2026-04-30
@@ -26,191 +19,50 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] Phase 6: i18n 加固 + 打磨 (6/6 plans) — completed 2026-05-07
 - [x] Phase 7: 分发上架 (4/4 plans) — completed 2026-05-07
 
+Archive: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
+
 </details>
 
-### v1.1 多渠道适配 (Wrapped Up)
+<details>
+<summary>✅ v1.1 多渠道适配 (Phases 8-12 + inserted Phase 10.1) — SHIPPED 2026-05-31</summary>
 
-**Milestone Goal:** 扩展 IM 平台覆盖至 Slack、Telegram，并加固投递链路鲁棒性；终态支持平台为 OpenClaw、Discord、Slack、Telegram
+- [x] Phase 8: 架构泛化 (5/5 plans) — completed 2026-05-10
+- [x] Phase 9: 投递鲁棒性 (5/5 plans) — completed 2026-05-16
+- [x] Phase 10: Slack 适配器 (6/6 plans) — completed 2026-05-16
+- [x] Phase 10.1: Slack logged-out redirect gap closure (2/2 plans) — completed 2026-05-29
+- [x] Phase 11: Telegram 适配器 (4/4 plans) — completed 2026-05-16
+- [x] Phase 12: 飞书/Lark 适配器 (5/5 plans, dropped from shipped scope) — completed 2026-05-17
 
-- [x] **Phase 8: 架构泛化** — PlatformId branded type + MAIN world 桥接泛化 + SPA filter 动态构建 + ErrorCode 命名空间，review/verification closed 2026-05-10
-- [x] **Phase 9: 投递鲁棒性** — 超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度, 5/5 plans, verified 2026-05-16
-- [x] **Phase 10: Slack 适配器** — Slack URL 匹配 + 登录检测 + Quill 编辑器注入 + 发送确认 + 图标/i18n, 6/6 plans complete
-- [x] **Phase 11: Telegram 适配器** — Telegram Web K URL 匹配 + 登录检测 + 编辑器注入 + 发送确认 + 图标/i18n, 4 plans complete
-- [x] **Phase 12: 飞书/Lark 适配器** — dropped after UAT shared-URL blocker; code removed in aa2 (a40132f)
+Archive: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 
-**Post-phase quick fixes:** aa3 / `da18746` fixed the `needs_confirmation` popup-close and re-captured snapshot bug without adding a new phase.
+</details>
 
-## Phase Details
+### 📋 v2.0 待规划
 
-### Phase 8: 架构泛化
-
-**Goal**: 多平台并行开发的架构基础就绪，新增平台无需改动 pipeline 或 SW 入口文件
-**Depends on**: Phase 7 (v1.0 已交付)
-**Requirements**: ARCH-01, ARCH-02, ARCH-03, ARCH-04
-**Success Criteria** (what must be TRUE):
-
-  1. PlatformId 为 branded string type，通过 registry 条目 id 字段约束合法值，新增平台不引起合并冲突
-  2. MAIN world paste 桥接基于 port.name 前缀路由到 per-adapter mainWorldInjector，SW 不含任何平台特定 DOM 逻辑
-  3. SPA 路由检测 filter 从 adapterRegistry 动态构建，新增 SPA 平台只需在 registry 添加条目
-  4. ErrorCode 按平台命名空间组织，新平台可追加错误码而不影响现有错误处理
-
-**Plans:** 5/5 plans executed; review and verification closed
-Plans:
-**Wave 1**
-
-- [x] 08-01-PLAN.md — Branded PlatformId + defineAdapter + buildSpaUrlFilters (TDD)
-- [x] 08-02-PLAN.md — ErrorCode namespace + isErrorCode runtime guard (TDD)
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 08-03-PLAN.md — MAIN world bridge generalization + SPA filter integration
-- [x] 08-04-PLAN.md — SendForm registry-driven icon lookup + ErrorBanner default cases
-
-**Wave 3** *(blocked on Wave 2 completion)*
-
-- [x] 08-05-PLAN.md — Gap closure: popup bundle isolation + SW discipline + review fixes
-
-### Phase 9: 投递鲁棒性
-
-**Goal**: 投递链路对网络延迟、DOM 变化、登录状态变化具备分层防护和用户可操作的重试能力
-**Depends on**: Phase 8
-**Requirements**: DSPT-01, DSPT-02, DSPT-03, DSPT-04
-**Success Criteria** (what must be TRUE):
-
-  1. 每个平台有独立的超时配置（dispatchTimeoutMs / adapterResponseTimeoutMs），pipeline 从 registry 读取而非硬编码
-  2. 登录检测从 Discord 硬编码泛化为 registry 的 loggedOutPathPatterns，pipeline 层 URL 对比使用此配置
-  3. 投递失败时 popup 对 retriable 错误显示"重试"按钮，用户点击后以新 dispatchId 重新发起投递
-  4. 适配器选择器使用分层置信度，低置信度匹配在 popup 显示警告提示用户确认
-
-**Plans:** 5 plans
-Plans:
-**Wave 1**
-
-- [x] 09-01-PLAN.md — Registry timeout policy + adapter response timeout (TDD)
-- [x] 09-03-PLAN.md — Retriable-driven popup Retry flow (TDD)
-
-**Wave 2** *(blocked on 09-01 completion)*
-
-- [x] 09-02-PLAN.md — Registry logged-out path detection (TDD)
-
-**Wave 3** *(blocked on 09-01 and 09-02 completion)*
-
-- [x] 09-04-PLAN.md — Selector low-confidence warning protocol + Discord adapter guard (TDD)
-
-**Wave 4** *(blocked on 09-03 and 09-04 completion)*
-
-- [x] 09-05-PLAN.md — Low-confidence confirmation UI + i18n
-
-### Phase 10: Slack 适配器
-
-**Goal**: 用户可以向 Slack workspace 的任意 channel 投递格式化网页信息
-**Depends on**: Phase 9
-**Requirements**: SLK-01, SLK-02, SLK-03, SLK-04, SLK-05
-**Success Criteria** (what must be TRUE):
-
-  1. 用户在 popup send_to 输入 Slack URL 后自动识别为 Slack 平台并显示平台图标
-  2. 用户未登录 Slack 时 popup 收到 NOT_LOGGED_IN 错误提示
-  3. 用户确认投递后消息成功注入 Slack Quill 编辑器并发送，popup 显示投递成功
-  4. Slack 平台图标和 i18n key 在中英双语 locale 中 100% 覆盖
-
-**Plans:** 6 plans (4 executed + 2 gap closure)
-Plans:
-**Wave 1** *(all independent, parallel)*
-
-- [x] 10-01-PLAN.md — Slack mrkdwn formatting + mention escaping (TDD)
-- [x] 10-02-PLAN.md — Slack login detection + URL match tests (TDD)
-- [x] 10-03-PLAN.md — Registry + config + i18n + icon + fixture
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 10-04-PLAN.md — Slack content script + selector tests
-
-**Wave 3** *(gap closure — UAT blocker)*
-
-- [ ] 10-05-PLAN.md — Markdown-to-mrkdwn converter + send confirmation fix (gap closure)
-
-**Wave 4** *(gap closure — CR-01 italic-list corruption)*
-
-- [ ] 10-06-PLAN.md — Fix italic regex corrupting asterisk list items with italic text (gap closure, TDD)
-
-### Phase 10.1: Close gap: DSPT-02 / SLK-02 — Slack logged-out redirect (INSERTED)
-
-**Goal:** 恢复 Slack logged-out redirect 在 pre-injection dispatch 阶段的 `NOT_LOGGED_IN` 语义，避免错误落成 `INPUT_NOT_FOUND`，并保持 Discord / Telegram 既有登录态检测不回归
-**Requirements**: DSPT-02, SLK-02
-**Depends on:** Phase 10
-**Plans:** 2 plans
-
-Plans:
-
-- [x] 10.1-01-PLAN.md — Slack cross-host logged-out redirect remap + minimum permission-surface fix (TDD)
-- [x] 10.1-02-PLAN.md — Live Slack logged-out workspace-signin/check-login remap + shared-contract alignment (TDD)
-
-### Phase 11: Telegram 适配器
-
-**Goal**: 用户可以向 Telegram Web K 的任意对话投递格式化网页信息
-**Depends on**: Phase 9
-**Requirements**: TG-01, TG-02, TG-03, TG-04, TG-05
-**Success Criteria** (what must be TRUE):
-
-  1. 用户在 popup send_to 输入 Telegram Web K URL 后自动识别为 Telegram 平台并显示平台图标
-  2. 用户未登录 Telegram 时 popup 收到 NOT_LOGGED_IN 错误提示
-  3. 用户确认投递后消息成功注入 Telegram contenteditable 编辑器并发送，popup 显示投递成功
-  4. Telegram 平台图标和 i18n key 在中英双语 locale 中 100% 覆盖
-
-**Plans**: 4 plans
-Plans:
-**Wave 1** *(all independent, parallel)*
-
-- [x] 11-01-PLAN.md — Telegram format + metadata-first truncation at 4096 (TDD)
-- [x] 11-02-PLAN.md — Telegram login detection + URL match tests (TDD)
-- [x] 11-03-PLAN.md — Registry + config + i18n + icon + fixture
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 11-04-PLAN.md — Telegram content script + selector tests
-
-### Phase 12: 飞书/Lark 适配器（Dropped）
-
-**Goal**: 用户可以向飞书或 Lark 的任意对话投递格式化网页信息（双域名统一适配）
-**Depends on**: Phase 9
-**Requirements**: FSL-01, FSL-02, FSL-03, FSL-04, FSL-05
-**Status**: Dropped after UAT; 飞书 SPA 所有聊天共享同一 URL，无法按 URL 定位具体聊天。相关代码已由 aa2 移除（a40132f）。
-**Success Criteria** (what must be TRUE):
-
-  1. 用户在 popup send_to 输入 feishu.cn 或 larksuite.com URL 后均识别为飞书平台并显示统一图标
-  2. 用户未登录飞书/Lark 时 popup 收到 NOT_LOGGED_IN 错误提示
-  3. 用户确认投递后消息成功注入飞书 contenteditable 编辑器并发送，popup 显示投递成功
-  4. 飞书平台图标和 i18n key 在中英双语 locale 中 100% 覆盖
-
-**Plans:** 5 plans
-Plans:
-**Wave 1** *(all independent / 12-04 depends on 12-03)*
-
-- [x] 12-01-PLAN.md — Feishu format + plain text output (TDD)
-- [x] 12-02-PLAN.md — Feishu login detection + URL match tests (TDD)
-- [x] 12-03-PLAN.md — Registry + SPA filter hostSuffix + MAIN world injector
-- [x] 12-04-PLAN.md — i18n + icon + manifest host_permissions + verify-manifest
-
-**Wave 2** *(blocked on Wave 1 completion)*
-
-- [x] 12-05-PLAN.md — Feishu content script + selector tests + fixture
+- [ ] 用 `/gsd:new-milestone` 启动新的 requirements / roadmap 周期
+- [ ] 重新评估 Feishu/Lark 是否存在可稳定定位会话的新技术路径
+- [ ] 为 Telegram 补 live session headed-browser UAT，决定是否作为 v1.1.x closeout 补证据
 
 ## Progress
 
-**Execution Order:**
-Phases execute in numeric order: 8 → 9 → 10 → 11 → 12
-(Phase 11 and 12 may run in parallel after Phase 9 completes)
-
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 8. 架构泛化 | v1.1 | 5/5 | Complete / reviewed | 2026-05-10 |
-| 9. 投递鲁棒性 | v1.1 | 5/5 | Verified / passed | 2026-05-16 |
+| 1. 扩展骨架 | v1.0 | 4/4 | Complete | 2026-04-29 |
+| 2. 抓取流水线 | v1.0 | 7/7 | Complete | 2026-04-30 |
+| 3. 投递核心 + Popup UI | v1.0 | 8/8 | Complete | 2026-05-01 |
+| 4. OpenClaw 适配器 | v1.0 | 6/6 | Complete | 2026-05-03 |
+| 5. Discord 适配器 | v1.0 | 6/6 | Complete | 2026-05-06 |
+| 6. i18n 加固 + 打磨 | v1.0 | 6/6 | Complete | 2026-05-07 |
+| 7. 分发上架 | v1.0 | 4/4 | Complete | 2026-05-07 |
+| 8. 架构泛化 | v1.1 | 5/5 | Complete | 2026-05-10 |
+| 9. 投递鲁棒性 | v1.1 | 5/5 | Complete | 2026-05-16 |
 | 10. Slack 适配器 | v1.1 | 6/6 | Complete | 2026-05-16 |
+| 10.1. Slack logged-out redirect | v1.1 | 2/2 | Complete | 2026-05-29 |
 | 11. Telegram 适配器 | v1.1 | 4/4 | Complete | 2026-05-16 |
-| 12. 飞书/Lark 适配器 | v1.1 | dropped | Dropped / code removed in aa2 | 2026-05-17 |
+| 12. 飞书/Lark 适配器 | v1.1 | 5/5 | Dropped from shipped scope | 2026-05-17 |
 
 ---
 
 _Roadmap created: 2026-04-28_
 _v1.0 archived: 2026-05-09_
-_v1.1 roadmap defined: 2026-05-09_
+_v1.1 archived: 2026-05-31_
