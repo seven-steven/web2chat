@@ -3,17 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: 多渠道适配
 status: complete
-stopped_at: "v1.1 wrapped up: Phase 12 dropped, Feishu code removed, popup low-confidence flow fixed"
-last_updated: "2026-05-24T00:00:00+08:00"
-last_activity: 2026-05-24
+stopped_at: v1.1 docs synced to terminal state
+last_updated: "2026-05-25T14:21:47.835Z"
+last_activity: "2026-05-24 - Completed quick task 260524-q2p: 精简文档入口并清理 README.en 重复的 Chrome Web Store 段落。"
 progress:
-  total_phases: 5
-  completed_phases: 4
-  dropped_phases: 1
+  total_phases: 6
+  completed_phases: 5
   total_plans: 25
-  completed_plans: 20
-  dropped_plans: 5
-  percent: 80
+  completed_plans: 25
+  percent: 83
 ---
 
 # 项目状态
@@ -27,12 +25,12 @@ progress:
 
 ## Current Position
 
-Phase: v1.1 milestone wrap-up
-Reason: Phase 12 飞书/Lark 适配器因共享 URL blocker dropped；aa2 已移除相关代码（a40132f）
-Popup bug: needs_confirmation 流程已修复；popup 保持打开并复用原始 snapshot（aa3 / da18746）
-Last activity: 2026-05-24 - Completed quick task 260524-q2p: 精简文档入口并清理 README.en 重复的 Chrome Web Store 段落。
+Phase: 10.1 urgent insertion verified and ready for closeout
+Reason: Slack logged-out redirect gap closure completed; real Slack session and popup reopen regressions now pass
+Popup bug: needs_confirmation 流程已修复；Slack dispatch error 后 popup 重开也保持原始 snapshot
+Last activity: 2026-05-29 - Closed Phase 10.1 live Slack logged-out redirect gap with real-session Playwright verification.
 
-Progress: [████████░░] 80% (4/5 phases)
+Progress: [██████████] 100% (5/5 phases)
 
 ## Performance Metrics
 
@@ -52,6 +50,10 @@ Progress: [████████░░] 80% (4/5 phases)
 | 12. 飞书/Lark 适配器 | dropped | — | — | code removed via aa2 |
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 10.1 inserted after Phase 10: Close gap: DSPT-02 / SLK-02 — Slack logged-out redirect (URGENT)
 
 ### Decisions
 
@@ -91,12 +93,14 @@ Phase 11 execution:
 - Live Telegram dispatch 未做人工测试：当前无可用账号，结论仅基于自动化验证
 
 Phase 12 execution:
+
 - 12-01..12-05 complete: Feishu/Lark adapter full implementation
 - Registry-driven architecture validated: zero pipeline/SW changes
 - Code review: 0 CRITICAL, 3 WARNING (all systemic patterns shared with Slack/Telegram)
 - Verification: 4/4 must-haves verified before UAT blocker surfaced
 
 Phase 12 drop & wrap-up:
+
 - 12-HUMAN-UAT.md status: diagnosed; 1 passed, 3 issues
 - Blocker: 飞书 SPA 所有聊天共享同一 URL，无法按 URL 定位具体聊天
 - Decision: drop feishu adapter; aa2 removed all related code (a40132f)

@@ -130,16 +130,24 @@ export function App() {
         const activeId = await dispatchRepo.getActive();
         if (cancelled) return;
         let wasInFlight = false;
+        let failedDispatchSnapshot: ArticleSnapshot | null = null;
         if (activeId) {
           const rec = await dispatchRepo.get(activeId);
           if (cancelled) return;
           if (rec && rec.state === 'error') {
-            // Last dispatch failed — show error banner above SendForm
+            // Last dispatch failed — show error banner above SendForm and preserve
+            // the source-page snapshot that produced the failed dispatch instead of
+            // re-capturing from the now-redirected target page.
             dispatchErrorSig.value = {
               code: (rec.error?.code as ErrorCode) ?? 'INTERNAL',
               message: rec.error?.message ?? '',
               retriable: rec.error?.retriable ?? false,
             };
+            failedDispatchSnapshot = rec.snapshot;
+            snapshotSig.value = rec.snapshot;
+            titleSig.value = rec.snapshot.title;
+            descriptionSig.value = rec.snapshot.description;
+            contentSig.value = rec.snapshot.content;
           } else if (rec && isSelectorLowConfidenceRecord(rec)) {
             selectorWarningSig.value = rec;
           } else if (rec) {
@@ -159,10 +167,11 @@ export function App() {
         if (cancelled) return;
 
         if (captureRes.ok) {
-          snapshotSig.value = captureRes.data;
-          titleSig.value = captureRes.data.title;
-          descriptionSig.value = captureRes.data.description;
-          contentSig.value = captureRes.data.content;
+          const sourceSnapshot = failedDispatchSnapshot ?? captureRes.data;
+          snapshotSig.value = sourceSnapshot;
+          titleSig.value = sourceSnapshot.title;
+          descriptionSig.value = sourceSnapshot.description;
+          contentSig.value = sourceSnapshot.content;
           if (draftRes) {
             // send_to / prompt are URL-independent — always restore (DSP-09)
             sendToSig.value = draftRes.send_to || '';
@@ -171,7 +180,7 @@ export function App() {
             // Draft overrides capture fields ONLY when the draft was recorded
             // for the same page. Without this URL guard, navigating to a new
             // page would render the previous page's capture (popup-stale-capture).
-            if (draftRes.url && draftRes.url === captureRes.data.url) {
+            if (draftRes.url && draftRes.url === sourceSnapshot.url) {
               if (draftRes.title) titleSig.value = draftRes.title;
               if (draftRes.description) descriptionSig.value = draftRes.description;
               if (draftRes.content) contentSig.value = draftRes.content;

@@ -168,7 +168,7 @@ describe('Slack selector confidence warnings (DSPT-04)', () => {
         return result;
       });
 
-      await vi.advanceTimersByTimeAsync(4999);
+      await vi.advanceTimersByTimeAsync(11999);
       expect(settled).toBe(false);
 
       await vi.advanceTimersByTimeAsync(1);
@@ -178,7 +178,7 @@ describe('Slack selector confidence warnings (DSPT-04)', () => {
     } finally {
       vi.useRealTimers();
     }
-  });
+  }, 15000);
 
   it('returns SELECTOR_LOW_CONFIDENCE and does not paste/send for tier3-class-fragment before confirmation', async () => {
     const el = document.querySelector('.ql-editor')!;
@@ -218,7 +218,7 @@ describe('Slack selector confidence warnings (DSPT-04)', () => {
     expect(result.ok).toBe(true);
     expect(result.warnings).toBeUndefined();
     expect(pasteSpy).toHaveBeenCalledTimes(1);
-  });
+  }, 15000);
 });
 
 describe('Slack paste injection (SLK-03)', () => {
@@ -327,6 +327,69 @@ describe('Slack send confirmation (SLK-04)', () => {
 describe('Slack login detection (SLK-02)', () => {
   beforeEach(() => {
     getSlackTesting()?.resetTestOverrides();
+  });
+
+  it('returns NOT_LOGGED_IN when signin UI appears after an initial blank client shell delay', async () => {
+    document.body.innerHTML = '<main></main>';
+    (window as Window & { happyDOM?: { setURL: (url: string) => void } }).happyDOM?.setURL(
+      'https://app.slack.com/client/workspace123/channel456',
+    );
+    vi.useFakeTimers();
+    const testing = getSlackTesting();
+    expect(testing).toBeDefined();
+
+    try {
+      const resultPromise = testing!.handleDispatch(dispatchPayload);
+
+      await vi.advanceTimersByTimeAsync(4000);
+      document.body.innerHTML = `
+        <main>
+          <section class="signin-shell">
+            <button data-qa="sign_in_button">Sign in</button>
+          </section>
+        </main>
+      `;
+
+      await vi.advanceTimersByTimeAsync(1000);
+      const result = await resultPromise;
+
+      expect(result).toMatchObject({ ok: false, code: 'NOT_LOGGED_IN', retriable: true });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('waits long enough for a delayed signin redirect before falling back to INPUT_NOT_FOUND', async () => {
+    document.body.innerHTML = '<main></main>';
+    (window as Window & { happyDOM?: { setURL: (url: string) => void } }).happyDOM?.setURL(
+      'https://app.slack.com/client/workspace123/channel456',
+    );
+    vi.useFakeTimers();
+    const testing = getSlackTesting();
+    expect(testing).toBeDefined();
+
+    try {
+      const resultPromise = testing!.handleDispatch(dispatchPayload);
+
+      await vi.advanceTimersByTimeAsync(9500);
+      (window as Window & { happyDOM?: { setURL: (url: string) => void } }).happyDOM?.setURL(
+        'https://app.slack.com/signin?redir=%2Fgantry%2Fauth%3Fapp%3Dclient',
+      );
+      document.body.innerHTML = `
+        <main>
+          <section class="signin-shell">
+            <button data-qa="sign_in_button">Sign in</button>
+          </section>
+        </main>
+      `;
+
+      await vi.advanceTimersByTimeAsync(3000);
+      const result = await resultPromise;
+
+      expect(result).toMatchObject({ ok: false, code: 'NOT_LOGGED_IN', retriable: true });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('returns NOT_LOGGED_IN when login wall DOM is detected (email input)', async () => {

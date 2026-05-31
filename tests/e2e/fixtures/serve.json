@@ -2,6 +2,8 @@
   "rewrites": [
     { "source": "/channels/**", "destination": "/discord/index.html" },
     { "source": "/discord/channels/**", "destination": "/discord/index.html" },
-    { "source": "/login", "destination": "/discord/login.html" }
+    { "source": "/login", "destination": "/discord/login.html" },
+    { "source": "/slack/client/**", "destination": "/slack/index.html" },
+    { "source": "/slack/signin", "destination": "/slack/signin.html" }
   ]
 }

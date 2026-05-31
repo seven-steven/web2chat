@@ -258,6 +258,17 @@ async function runAdapterDispatch(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (/Cannot access|manifest must request permission/i.test(msg)) {
+      const adapter = findAdapter(updated.send_to);
+      try {
+        const tab = await chrome.tabs.get(tabId);
+        const actualUrl = tab.url;
+        if (adapter && actualUrl && isLoggedOutUrlForAdapter(adapter, actualUrl)) {
+          await failDispatch(updated, 'NOT_LOGGED_IN', `Redirected to ${actualUrl}`, true);
+          return;
+        }
+      } catch {
+        // Tab closed — fall through to original permission error mapping.
+      }
       await failDispatch(updated, 'INPUT_NOT_FOUND', msg, false);
     } else {
       await failDispatch(updated, 'EXECUTE_SCRIPT_FAILED', msg, true);
@@ -297,7 +308,11 @@ async function runAdapterDispatch(
     const msg = err instanceof Error ? err.message : String(err);
 
     // On sendMessage failure, re-check the tab URL for login redirect
-    if (/Receiving end does not exist|Could not establish connection/i.test(msg)) {
+    if (
+      /Receiving end does not exist|Could not establish connection|message channel closed before a response was received|message channel is closed|back\/forward cache/i.test(
+        msg,
+      )
+    ) {
       let actualUrl: string | undefined;
       try {
         const tab = await chrome.tabs.get(tabId);

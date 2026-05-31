@@ -21,6 +21,8 @@ const DISCORD_ROOT_URL = 'https://discord.com/';
 const DISCORD_REGISTER_URL = 'https://discord.com/register';
 const DISCORD_SAME_HOST_NON_LOGIN_URL = 'https://discord.com/channels/@me';
 const SLACK_CHANNEL_URL = 'https://app.slack.com/client/T123/C456';
+const SLACK_WORKSPACE_SIGNIN_URL =
+  'https://app.slack.com/workspace-signin?redir=%2Fclient%2FT123%2FC456';
 const SLACK_LOGIN_URL = 'https://slack.com/check-login?redir=%2Fclient%2FT123%2FC456';
 const OPENCLAW_URL = 'http://localhost:18789/chat?session=agent:test:s1';
 const OPENCLAW_LOGIN_URL = 'http://localhost:18789/login?redirect=/chat%3Fsession%3Dagent:test:s1';
@@ -114,6 +116,24 @@ describe('dispatch-pipeline loggedOutPathPatterns detection (D-115..D-118)', () 
     expect(updated?.state).toBe('error');
     expect(updated?.error?.code).toBe('NOT_LOGGED_IN');
     expect(updated?.error?.message).toContain('register');
+    expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
+  });
+
+  it('remaps tab complete to NOT_LOGGED_IN when Slack redirects to app.slack.com/workspace-signin before injection', async () => {
+    const record = makeRecord({
+      dispatchId: 'test-dispatch-slack-workspace-signin',
+      send_to: SLACK_CHANNEL_URL,
+      platform_id: definePlatformId('slack'),
+    });
+    await dispatchRepo.set(record);
+    stubChromeForAwaitingComplete(SLACK_WORKSPACE_SIGNIN_URL);
+
+    await onTabComplete(TAB_ID, { status: 'complete' }, {} as chrome.tabs.Tab);
+
+    const updated = await dispatchRepo.get(record.dispatchId);
+    expect(updated?.state).toBe('error');
+    expect(updated?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(updated?.error?.message).toContain('workspace-signin');
     expect(chrome.scripting.executeScript).not.toHaveBeenCalled();
   });
 
@@ -244,6 +264,267 @@ describe('dispatch-pipeline INPUT_NOT_FOUND URL remap', () => {
       },
     });
   }
+
+  it('remaps executeScript permission errors to NOT_LOGGED_IN when Slack tab URL is app.slack.com/workspace-signin', async () => {
+    const sendTo = SLACK_CHANNEL_URL;
+    vi.stubGlobal('chrome', {
+      ...chrome,
+      tabs: {
+        ...chrome.tabs,
+        query: vi
+          .fn()
+          .mockResolvedValue([{ id: TAB_ID_REMAP, url: sendTo, status: 'complete', windowId: 1 }]),
+        update: vi.fn().mockResolvedValue(undefined),
+        get: vi.fn().mockResolvedValue({ id: TAB_ID_REMAP, url: SLACK_WORKSPACE_SIGNIN_URL }),
+        sendMessage: vi.fn(),
+      },
+      windows: {
+        ...chrome.windows,
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+      scripting: {
+        ...chrome.scripting,
+        executeScript: vi
+          .fn()
+          .mockRejectedValue(
+            new Error(
+              'Cannot access contents of url "https://app.slack.com/workspace-signin?redir=%2Fclient%2FT123%2FC456". Extension manifest must request permission to access this host.',
+            ),
+          ),
+      },
+      action: {
+        ...chrome.action,
+        setBadgeText: vi.fn().mockResolvedValue(undefined),
+        setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+      },
+      alarms: {
+        ...chrome.alarms,
+        create: vi.fn().mockResolvedValue(undefined),
+        clear: vi.fn().mockResolvedValue(true),
+      },
+      storage: chrome.storage,
+      permissions: {
+        ...chrome.permissions,
+        contains: vi.fn().mockResolvedValue(true),
+      },
+    });
+
+    await startDispatch(baseStartInput(sendTo));
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.state).toBe('error');
+    expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(stored?.error?.message).toContain('workspace-signin');
+  });
+
+  it('remaps executeScript permission errors to NOT_LOGGED_IN when Slack tab URL is slack.com/check-login', async () => {
+    const sendTo = SLACK_CHANNEL_URL;
+    vi.stubGlobal('chrome', {
+      ...chrome,
+      tabs: {
+        ...chrome.tabs,
+        query: vi
+          .fn()
+          .mockResolvedValue([{ id: TAB_ID_REMAP, url: sendTo, status: 'complete', windowId: 1 }]),
+        update: vi.fn().mockResolvedValue(undefined),
+        get: vi.fn().mockResolvedValue({ id: TAB_ID_REMAP, url: SLACK_LOGIN_URL }),
+        sendMessage: vi.fn(),
+      },
+      windows: {
+        ...chrome.windows,
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+      scripting: {
+        ...chrome.scripting,
+        executeScript: vi
+          .fn()
+          .mockRejectedValue(new Error('manifest must request permission to access this host')),
+      },
+      action: {
+        ...chrome.action,
+        setBadgeText: vi.fn().mockResolvedValue(undefined),
+        setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+      },
+      alarms: {
+        ...chrome.alarms,
+        create: vi.fn().mockResolvedValue(undefined),
+        clear: vi.fn().mockResolvedValue(true),
+      },
+      storage: chrome.storage,
+      permissions: {
+        ...chrome.permissions,
+        contains: vi.fn().mockResolvedValue(true),
+      },
+    });
+
+    await startDispatch(baseStartInput(sendTo));
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.state).toBe('error');
+    expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(stored?.error?.message).toContain('slack.com/check-login');
+  });
+
+  it('does not remap executeScript permission errors for same-host Discord non-login paths', async () => {
+    const sendTo = DISCORD_CHANNEL_URL;
+    vi.stubGlobal('chrome', {
+      ...chrome,
+      tabs: {
+        ...chrome.tabs,
+        query: vi
+          .fn()
+          .mockResolvedValue([{ id: TAB_ID_REMAP, url: sendTo, status: 'complete', windowId: 1 }]),
+        update: vi.fn().mockResolvedValue(undefined),
+        get: vi.fn().mockResolvedValue({ id: TAB_ID_REMAP, url: DISCORD_SAME_HOST_NON_LOGIN_URL }),
+        sendMessage: vi.fn(),
+      },
+      windows: {
+        ...chrome.windows,
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+      scripting: {
+        ...chrome.scripting,
+        executeScript: vi
+          .fn()
+          .mockRejectedValue(
+            new Error(
+              'Cannot access contents of url "https://discord.com/channels/@me". Extension manifest must request permission to access this host.',
+            ),
+          ),
+      },
+      action: {
+        ...chrome.action,
+        setBadgeText: vi.fn().mockResolvedValue(undefined),
+        setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+      },
+      alarms: {
+        ...chrome.alarms,
+        create: vi.fn().mockResolvedValue(undefined),
+        clear: vi.fn().mockResolvedValue(true),
+      },
+      storage: chrome.storage,
+      permissions: {
+        ...chrome.permissions,
+        contains: vi.fn().mockResolvedValue(true),
+      },
+    });
+
+    await startDispatch(baseStartInput(sendTo));
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.state).toBe('error');
+    expect(stored?.error?.code).toBe('INPUT_NOT_FOUND');
+    expect(stored?.error?.message).toContain('Cannot access contents of url');
+  });
+
+  it('remaps closed async message channels to NOT_LOGGED_IN when Slack tab URL is app.slack.com/signin', async () => {
+    const sendTo = SLACK_CHANNEL_URL;
+    vi.stubGlobal('chrome', {
+      ...chrome,
+      tabs: {
+        ...chrome.tabs,
+        query: vi
+          .fn()
+          .mockResolvedValue([{ id: TAB_ID_REMAP, url: sendTo, status: 'complete', windowId: 1 }]),
+        update: vi.fn().mockResolvedValue(undefined),
+        get: vi.fn().mockResolvedValue({
+          id: TAB_ID_REMAP,
+          url: 'https://app.slack.com/signin?redir=%2Fgantry%2Fauth%3Fapp%3Dclient',
+        }),
+        sendMessage: vi
+          .fn()
+          .mockRejectedValue(
+            new Error(
+              'A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received',
+            ),
+          ),
+      },
+      windows: {
+        ...chrome.windows,
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+      scripting: {
+        ...chrome.scripting,
+        executeScript: vi.fn().mockResolvedValue([{ result: undefined }]),
+      },
+      action: {
+        ...chrome.action,
+        setBadgeText: vi.fn().mockResolvedValue(undefined),
+        setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+      },
+      alarms: {
+        ...chrome.alarms,
+        create: vi.fn().mockResolvedValue(undefined),
+        clear: vi.fn().mockResolvedValue(true),
+      },
+      storage: chrome.storage,
+      permissions: {
+        ...chrome.permissions,
+        contains: vi.fn().mockResolvedValue(true),
+      },
+    });
+
+    await startDispatch(baseStartInput(sendTo));
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.state).toBe('error');
+    expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(stored?.error?.message).toContain('app.slack.com/signin');
+    expect(stored?.error?.retriable).toBe(true);
+  });
+
+  it('remaps BFCache port-closed sendMessage failures to NOT_LOGGED_IN when Slack tab URL is workspace-signin', async () => {
+    const sendTo = SLACK_CHANNEL_URL;
+    vi.stubGlobal('chrome', {
+      ...chrome,
+      tabs: {
+        ...chrome.tabs,
+        query: vi
+          .fn()
+          .mockResolvedValue([{ id: TAB_ID_REMAP, url: sendTo, status: 'complete', windowId: 1 }]),
+        update: vi.fn().mockResolvedValue(undefined),
+        get: vi.fn().mockResolvedValue({ id: TAB_ID_REMAP, url: SLACK_WORKSPACE_SIGNIN_URL }),
+        sendMessage: vi
+          .fn()
+          .mockRejectedValue(
+            new Error(
+              'The page keeping the extension port is moved into back/forward cache, so the message channel is closed.',
+            ),
+          ),
+      },
+      windows: {
+        ...chrome.windows,
+        update: vi.fn().mockResolvedValue(undefined),
+      },
+      scripting: {
+        ...chrome.scripting,
+        executeScript: vi.fn().mockResolvedValue([{ result: undefined }]),
+      },
+      action: {
+        ...chrome.action,
+        setBadgeText: vi.fn().mockResolvedValue(undefined),
+        setBadgeBackgroundColor: vi.fn().mockResolvedValue(undefined),
+      },
+      alarms: {
+        ...chrome.alarms,
+        create: vi.fn().mockResolvedValue(undefined),
+        clear: vi.fn().mockResolvedValue(true),
+      },
+      storage: chrome.storage,
+      permissions: {
+        ...chrome.permissions,
+        contains: vi.fn().mockResolvedValue(true),
+      },
+    });
+
+    await startDispatch(baseStartInput(sendTo));
+
+    const stored = await dispatchRepo.get(DISPATCH_ID);
+    expect(stored?.state).toBe('error');
+    expect(stored?.error?.code).toBe('NOT_LOGGED_IN');
+    expect(stored?.error?.message).toContain('workspace-signin');
+    expect(stored?.error?.retriable).toBe(true);
+  });
 
   it('remaps INPUT_NOT_FOUND to NOT_LOGGED_IN when tab URL matches Discord root loggedOutPathPatterns', async () => {
     stubChrome({

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Slack Stub — E2E</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 16px;
+        background: #1d1c1d;
+        color: #f8f8f8;
+      }
+      .channel-shell {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .message-list {
+        min-height: 160px;
+        border: 1px solid #3f3f46;
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 16px;
+        background: #222124;
+      }
+      .message {
+        padding: 6px 8px;
+        margin: 4px 0;
+        background: #2b2a2d;
+        border-radius: 4px;
+      }
+      #msg_input {
+        border: 1px solid #4a154b;
+        border-radius: 8px;
+        padding: 8px;
+        background: #fff;
+      }
+      .ql-editor {
+        min-height: 40px;
+        color: #1d1c1d;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="channel-shell">
+      <h1>Slack Channel Stub</h1>
+      <div id="message-list" class="message-list" data-testid="slack-message-list">
+        <div class="message">Welcome to Slack</div>
+      </div>
+      <div id="msg_input">
+        <div
+          class="ql-editor"
+          role="textbox"
+          aria-label="Message #general"
+          contenteditable="true"
+        ></div>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        const messageList = document.getElementById('message-list');
+        const editor = document.querySelector('.ql-editor');
+
+        editor.addEventListener('paste', function (e) {
+          e.preventDefault();
+          const text = e.clipboardData?.getData('text/plain') || '';
+          editor.textContent = text;
+        });
+
+        editor.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const text = (editor.textContent || '').trim();
+            if (!text) return;
+            const msg = document.createElement('div');
+            msg.className = 'message';
+            msg.textContent = text;
+            messageList.appendChild(msg);
+            editor.textContent = '';
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -25,7 +25,7 @@ import { detectLoginWall } from '@/shared/adapters/slack-login-detect';
 import { t } from '@/shared/i18n';
 import type { DispatchWarning, SelectorConfirmation } from '@/shared/messaging';
 
-const WAIT_TIMEOUT_MS = 5000;
+const WAIT_TIMEOUT_MS = 12_000;
 const LOGIN_WALL_PROBE_MS = 1500;
 const RATE_LIMIT_MS = 5000;
 const CONFIRM_POLL_INTERVAL_MS = 300;

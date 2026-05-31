@@ -60,7 +60,13 @@ describe('loggedOutPathPatterns URL policy (D-115..D-117)', () => {
     expect(isLoggedOutUrlForAdapter?.(discord, 'https://discord.com/register')).toBe(true);
   });
 
-  it('detects Slack check-login URLs as NOT_LOGGED_IN candidates', () => {
+  it('detects Slack workspace-signin and check-login URLs as NOT_LOGGED_IN candidates', () => {
+    expect(
+      isLoggedOutUrlForAdapter?.(
+        slack,
+        'https://app.slack.com/workspace-signin?redir=%2Fclient%2FT123%2FC456',
+      ),
+    ).toBe(true);
     expect(
       isLoggedOutUrlForAdapter?.(
         slack,
@@ -68,6 +74,12 @@ describe('loggedOutPathPatterns URL policy (D-115..D-117)', () => {
       ),
     ).toBe(true);
     expect(isLoggedOutUrlForAdapter?.(slack, 'https://app.slack.com/check-login')).toBe(true);
+  });
+
+  it('does not treat Slack channel URLs or non-Slack hosts as logged out', () => {
+    expect(isLoggedOutUrlForAdapter?.(slack, 'https://app.slack.com/client/T1/C1')).toBe(false);
+    expect(isLoggedOutUrlForAdapter?.(slack, 'https://example.com/check-login')).toBe(false);
+    expect(isLoggedOutUrlForAdapter?.(slack, 'not a url')).toBe(false);
   });
 
   it('does not treat same-host non-matching Discord paths as logged out unless patterns match', () => {
@@ -85,9 +97,8 @@ describe('loggedOutPathPatterns URL policy (D-115..D-117)', () => {
     ).toBe(false);
   });
 
-  it('keeps Telegram and non-Slack hosts outside Slack login detection', () => {
+  it('keeps Telegram and Discord guardrails intact', () => {
     expect(isLoggedOutUrlForAdapter?.(telegram, 'https://web.telegram.org/login')).toBe(true);
-    expect(isLoggedOutUrlForAdapter?.(slack, 'https://example.com/check-login')).toBe(false);
-    expect(isLoggedOutUrlForAdapter?.(slack, 'not a url')).toBe(false);
+    expect(isLoggedOutUrlForAdapter?.(discord, 'https://discord.com/channels/@me')).toBe(false);
   });
 });
