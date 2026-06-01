@@ -58,6 +58,13 @@ Archive: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 
 **Requirements:** BUILD-01, BUILD-02, BUILD-03
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 14-01-PLAN.md — 提取共享 design tokens 到 `shared/`，为 extension 与 marketing app 建立仅样式共享边界
+- [ ] 14-02-PLAN.md — 创建 `apps/marketing` workspace app、独立 Vite/TS 配置与根级 `site:*` 代理命令
+- [ ] 14-03-PLAN.md — 增加 marketing build smoke verifier 与 BUILD-03 import 隔离测试
+
 **Success criteria:**
 1. 新增独立 marketing app 目录与专用 Vite 配置 / scripts，输出目录与 WXT extension build 隔离。
 2. `build` / 扩展现有测试命令保持不变；新增 marketing build / preview / smoke test 命令可单独运行。
@@ -114,7 +121,7 @@ Archive: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 | 11. Telegram 适配器 | v1.1 | 4/4 | Complete | 2026-05-16 |
 | 12. 飞书/Lark 适配器 | v1.1 | 5/5 | Dropped from shipped scope | 2026-05-17 |
 | 13. 信息架构与文案事实源 | v1.2 | 1/1 | Complete | 2026-06-02 |
-| 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 0/0 | Planned | — |
+| 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 0/3 | Planned | — |
 | 15. 宣传页内容与视觉实现 | v1.2 | 0/0 | Planned | — |
 | 16. 发布验收与运营基线 | v1.2 | 0/0 | Planned | — |
 
