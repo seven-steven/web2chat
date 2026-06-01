@@ -9,9 +9,9 @@ Requirements for v1.2. Each maps to roadmap phases.
 
 ### Positioning & Messaging
 
-- [ ] **MSG-01**: Visitor can understand from the hero section that web2chat sends the current web page's structured information plus a saved prompt to an IM or AI Agent chat session.
-- [ ] **MSG-02**: Visitor can identify the primary use cases: personal knowledge capture, team sharing, and Agent / llm-wiki workflows.
-- [ ] **MSG-03**: Visitor can understand why web2chat is different from manual copy-paste through a concise structured-payload example.
+- [x] **MSG-01**: Visitor can understand from the hero section that web2chat sends the current web page's structured information plus a saved prompt to an IM or AI Agent chat session. *(Phase 13 — content sources artifact with CLM-HERO-01)*
+- [x] **MSG-02**: Visitor can identify the primary use cases: personal knowledge capture, team sharing, and Agent / llm-wiki workflows. *(Phase 13 — content sources artifact with CLM-USE-01)*
+- [x] **MSG-03**: Visitor can understand why web2chat is different from manual copy-paste through a concise structured-payload example. *(Phase 13 — content sources artifact with CLM-PAYLOAD-01)*
 
 ### Product Proof
 
@@ -21,9 +21,9 @@ Requirements for v1.2. Each maps to roadmap phases.
 
 ### Trust & Constraints
 
-- [ ] **TRUST-01**: Visitor can understand the privacy model: user-triggered capture, local-first storage, direct browser delivery to the chosen chat page, no telemetry, and no third-party analytics.
-- [ ] **TRUST-02**: Visitor can understand the production permission model without dev-only or misleading permission claims.
-- [ ] **TRUST-03**: Visitor can distinguish shipped capabilities from known risks and deferred platforms, including Telegram live UAT and Feishu/Lark scope status.
+- [x] **TRUST-01**: Visitor can understand the privacy model: user-triggered capture, local-first storage, direct browser delivery to the chosen chat page, no telemetry, and no third-party analytics. *(Phase 13 — content sources artifact with CLM-PRIVACY-01)*
+- [x] **TRUST-02**: Visitor can understand the production permission model without dev-only or misleading permission claims. *(Phase 13 — content sources artifact with CLM-PERM-01)*
+- [x] **TRUST-03**: Visitor can distinguish shipped capabilities from known risks and deferred platforms, including Telegram live UAT and Feishu/Lark scope status. *(Phase 13 — content sources artifact with CLM-PLATFORM-01, CLM-LIMIT-01, CLM-LIMIT-02)*
 
 ### Acquisition CTA
 
@@ -32,8 +32,8 @@ Requirements for v1.2. Each maps to roadmap phases.
 
 ### Content Operations
 
-- [ ] **OPS-01**: Maintainer can update the platform list, privacy claims, screenshots, and CTA text from explicit source sections/files without hunting through implementation details.
-- [ ] **OPS-02**: Maintainer can verify that promotional claims match `PROJECT.md`, `PRIVACY.md`, `STORE-LISTING.md`, and production `wxt.config.ts`.
+- [x] **OPS-01**: Maintainer can update the platform list, privacy claims, screenshots, and CTA text from explicit source sections/files without hunting through implementation details. *(Phase 13 — maintenance rules in 13-CONTENT-SOURCES.md)*
+- [x] **OPS-02**: Maintainer can verify that promotional claims match `PROJECT.md`, `PRIVACY.md`, `STORE-LISTING.md`, and production `wxt.config.ts`. *(Phase 13 — verification checklist in 13-CONTENT-SOURCES.md)*
 
 ### Build & Deploy Isolation
 
@@ -78,19 +78,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MSG-01 | Phase 13, Phase 15 | Pending |
-| MSG-02 | Phase 13, Phase 15 | Pending |
-| MSG-03 | Phase 13, Phase 15 | Pending |
+| MSG-01 | Phase 13, Phase 15 | Phase 13 done |
+| MSG-02 | Phase 13, Phase 15 | Phase 13 done |
+| MSG-03 | Phase 13, Phase 15 | Phase 13 done |
 | PROOF-01 | Phase 15 | Pending |
 | PROOF-02 | Phase 15 | Pending |
 | PROOF-03 | Phase 15, Phase 16 | Pending |
-| TRUST-01 | Phase 13, Phase 15, Phase 16 | Pending |
-| TRUST-02 | Phase 13, Phase 15, Phase 16 | Pending |
-| TRUST-03 | Phase 13, Phase 16 | Pending |
+| TRUST-01 | Phase 13, Phase 15, Phase 16 | Phase 13 done |
+| TRUST-02 | Phase 13, Phase 15, Phase 16 | Phase 13 done |
+| TRUST-03 | Phase 13, Phase 16 | Phase 13 done |
 | CTA-01 | Phase 15 | Pending |
 | CTA-02 | Phase 15 | Pending |
-| OPS-01 | Phase 13, Phase 16 | Pending |
-| OPS-02 | Phase 13, Phase 16 | Pending |
+| OPS-01 | Phase 13, Phase 16 | Phase 13 done |
+| OPS-02 | Phase 13, Phase 16 | Phase 13 done |
 | BUILD-01 | Phase 14, Phase 16 | Pending |
 | BUILD-02 | Phase 14, Phase 16 | Pending |
 | BUILD-03 | Phase 14, Phase 16 | Pending |
@@ -102,4 +102,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-01*
-*Last updated: 2026-06-01 after v1.2 roadmap creation*
+*Last updated: 2026-06-02 after Phase 13 Plan 1 execution*

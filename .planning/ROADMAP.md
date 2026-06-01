@@ -113,7 +113,7 @@ Archive: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 | 10.1. Slack logged-out redirect | v1.1 | 2/2 | Complete | 2026-05-29 |
 | 11. Telegram 适配器 | v1.1 | 4/4 | Complete | 2026-05-16 |
 | 12. 飞书/Lark 适配器 | v1.1 | 5/5 | Dropped from shipped scope | 2026-05-17 |
-| 13. 信息架构与文案事实源 | v1.2 | 0/0 | Planned | — |
+| 13. 信息架构与文案事实源 | v1.2 | 1/1 | Complete | 2026-06-02 |
 | 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 0/0 | Planned | — |
 | 15. 宣传页内容与视觉实现 | v1.2 | 0/0 | Planned | — |
 | 16. 发布验收与运营基线 | v1.2 | 0/0 | Planned | — |

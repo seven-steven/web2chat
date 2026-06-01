@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: 添加 web 宣传页面
 status: executing
-stopped_at: defining requirements for v1.2 web landing page
-last_updated: "2026-06-01T17:29:20.327Z"
-last_activity: 2026-06-01 -- Phase 13 planning complete
+stopped_at: completed Phase 13 Plan 1 — content sources artifact
+last_updated: "2026-06-02T21:57:00.000Z"
+last_activity: 2026-06-02 -- Phase 13 Plan 1 executed
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 1
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 25
 ---
 
 # 项目状态
@@ -26,11 +26,11 @@ progress:
 ## Current Position
 
 Phase: 13 — 信息架构与文案事实源
-Plan: —
-Status: Ready to execute
-Last activity: 2026-06-01 -- Phase 13 planning complete
+Plan: 1 (completed)
+Status: Phase 13 complete; ready for Phase 14
+Last activity: 2026-06-02 -- Phase 13 Plan 1 executed
 
-Progress: [░░░░░░░░░░] 0% (0/4 phases)
+Progress: [██░░░░░░░░] 25% (1/4 plans)
 
 ## Performance Metrics
 
@@ -84,6 +84,6 @@ Items acknowledged and deferred at milestone close on 2026-05-31:
 
 ## Session Continuity
 
-Last session: 2026-06-01T00:00:00+08:00
-Stopped at: defining requirements for v1.2 web landing page
-Resume file: .planning/PROJECT.md
+Last session: 2026-06-02T05:57:00+08:00
+Stopped at: completed Phase 13 Plan 1 — content sources artifact
+Resume file: .planning/phases/13-information-architecture-copy-sources/13-01-SUMMARY.md
