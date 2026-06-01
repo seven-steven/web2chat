@@ -78,28 +78,28 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MSG-01 | TBD | Pending |
-| MSG-02 | TBD | Pending |
-| MSG-03 | TBD | Pending |
-| PROOF-01 | TBD | Pending |
-| PROOF-02 | TBD | Pending |
-| PROOF-03 | TBD | Pending |
-| TRUST-01 | TBD | Pending |
-| TRUST-02 | TBD | Pending |
-| TRUST-03 | TBD | Pending |
-| CTA-01 | TBD | Pending |
-| CTA-02 | TBD | Pending |
-| OPS-01 | TBD | Pending |
-| OPS-02 | TBD | Pending |
-| BUILD-01 | TBD | Pending |
-| BUILD-02 | TBD | Pending |
-| BUILD-03 | TBD | Pending |
+| MSG-01 | Phase 13, Phase 15 | Pending |
+| MSG-02 | Phase 13, Phase 15 | Pending |
+| MSG-03 | Phase 13, Phase 15 | Pending |
+| PROOF-01 | Phase 15 | Pending |
+| PROOF-02 | Phase 15 | Pending |
+| PROOF-03 | Phase 15, Phase 16 | Pending |
+| TRUST-01 | Phase 13, Phase 15, Phase 16 | Pending |
+| TRUST-02 | Phase 13, Phase 15, Phase 16 | Pending |
+| TRUST-03 | Phase 13, Phase 16 | Pending |
+| CTA-01 | Phase 15 | Pending |
+| CTA-02 | Phase 15 | Pending |
+| OPS-01 | Phase 13, Phase 16 | Pending |
+| OPS-02 | Phase 13, Phase 16 | Pending |
+| BUILD-01 | Phase 14, Phase 16 | Pending |
+| BUILD-02 | Phase 14, Phase 16 | Pending |
+| BUILD-03 | Phase 14, Phase 16 | Pending |
 
 **Coverage:**
 - v1 requirements: 16 total
-- Mapped to phases: 0
-- Unmapped: 16 ⚠️
+- Mapped to phases: 16
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-01*
-*Last updated: 2026-06-01 after v1.2 requirements definition*
+*Last updated: 2026-06-01 after v1.2 roadmap creation*

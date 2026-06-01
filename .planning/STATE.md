@@ -5,9 +5,9 @@ milestone_name: 添加 web 宣传页面
 status: planning
 stopped_at: defining requirements for v1.2 web landing page
 last_updated: "2026-06-01T00:00:00+08:00"
-last_activity: "2026-06-01 - Started v1.2 milestone for a repository-hosted static web promotional page."
+last_activity: "2026-06-01 - Created v1.2 roadmap with Phases 13-16 for the repository-hosted static web promotional page."
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,16 +21,16 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-06-01)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** v1.2 添加 web 宣传页面；先定义 requirements 与 roadmap，再进入 phase planning。
+**当前焦点：** v1.2 添加 web 宣传页面；Phase 13 已进入待规划状态。
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 13 — 信息架构与文案事实源
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-01 — Milestone v1.2 started
+Status: Ready to plan
+Last activity: 2026-06-01 — Milestone v1.2 roadmap created
 
-Progress: [░░░░░░░░░░] 0% (0/0 phases)
+Progress: [░░░░░░░░░░] 0% (0/4 phases)
 
 ## Performance Metrics
 
