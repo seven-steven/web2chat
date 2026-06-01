@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: 添加 web 宣传页面
-status: planning
+status: executing
 stopped_at: defining requirements for v1.2 web landing page
-last_updated: "2026-06-01T00:00:00+08:00"
-last_activity: "2026-06-01 - Created v1.2 roadmap with Phases 13-16 for the repository-hosted static web promotional page."
+last_updated: "2026-06-01T17:29:20.327Z"
+last_activity: 2026-06-01 -- Phase 13 planning complete
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
+  total_plans: 1
   completed_plans: 0
   percent: 0
 ---
@@ -27,8 +27,8 @@ progress:
 
 Phase: 13 — 信息架构与文案事实源
 Plan: —
-Status: Ready to plan
-Last activity: 2026-06-01 — Milestone v1.2 roadmap created
+Status: Ready to execute
+Last activity: 2026-06-01 -- Phase 13 planning complete
 
 Progress: [░░░░░░░░░░] 0% (0/4 phases)
 
