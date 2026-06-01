@@ -12,6 +12,17 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话——其余功能可以让步，这条主链路必须稳定可用。
 
+## Current Milestone: v1.2 添加 web 宣传页面
+
+**Goal:** 在当前仓库内交付一个可发布的静态 web 宣传页，让首次访问者快速理解 web2chat 的用途、支持平台、核心流程、隐私承诺与安装入口。
+
+**Target features:**
+- 静态产品宣传页，清晰说明 web2chat 的核心价值与使用场景
+- 支持平台与工作流展示：OpenClaw / Discord / Slack / Telegram，以及“网页 → prompt → 聊天会话”的主链路
+- 隐私与本地优先说明：数据本地处理、用户主动发送、无第三方上报
+- 安装 / 获取入口：面向 Chrome/Chromium 用户的下载或安装指引
+- 仓库内维护，随扩展版本一起演进
+
 ## 需求 (Requirements)
 
 ### 已验证 (Validated)
@@ -32,8 +43,8 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ### 进行中 (Active)
 
-- [ ] 为 Telegram 补真实登录会话 headed-browser UAT，决定是否将其从“自动化充分”提升为完整 closeout
-- [ ] 启动下一个 milestone 的 requirements 定义与 roadmap 规划
+- [ ] v1.2 静态 web 宣传页：仓库内交付可发布页面，展示产品定位、支持平台、核心流程、隐私承诺与安装入口
+- [ ] 将 Telegram live UAT / Phase 11-12 Nyquist partial 仅记录为已知风险，不纳入 v1.2 宣传页交付范围
 
 ### 不在范围 (Out of Scope)
 
@@ -42,6 +53,7 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - 自建 IM 后端 / Server-to-Server 发送 — 走"新开 tab + 注入会话"路径，不引入服务器
 - 内容 OCR / 图片附件抽取 — v1 只处理文本与基础 metadata，图片与 OCR 推后
 - AI 内容总结 / 改写 — 用户自带 prompt 由下游 Agent 处理，扩展本身不调用 LLM
+- v1.2 不补 Telegram live UAT / Phase 11-12 Nyquist partial — 仅作为已知风险记录，避免宣传页 milestone 混入扩展可靠性 closeout
 
 ### 推迟事项 (Deferred — v2 候选)
 
@@ -60,6 +72,7 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - **存储**：所有持久化配置仅写入 `chrome.storage.local`（无云端、无后端）
 - **已交付 v1.0**：313 commits, 11,399 LOC TypeScript/TSX, 225 单元测试, 7 phases / 41 plans
 - **已交付 v1.1**：支持平台扩展到 OpenClaw / Discord / Slack / Telegram；27 plans 收尾，Feishu/Lark 经 UAT 证伪后不进入 shipped scope
+- **v1.2 方向**：新增仓库内静态 web 宣传页，用于对外介绍产品、展示支持平台、说明隐私边界并承接安装入口；不改变扩展主链路
 - **技术栈**：WXT 0.20.x + Preact 10.29 + @preact/signals + Tailwind v4 + Vitest 3 + Playwright 1.58
 
 ## 约束 (Constraints)
@@ -85,9 +98,9 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ## Next Milestone Goals
 
-- 定义下一个 milestone 的用户价值与 requirements baseline
-- 决定 Telegram live UAT 是补做为 v1.1.x closeout，还是留作下一 milestone 的 reliability work
-- 评估 Feishu/Lark 是否存在脱离 URL targeting 的可行方案
+- v1.2 聚焦“仓库内静态 web 宣传页”，交付可发布的产品介绍入口
+- 页面必须覆盖：产品定位、核心流程、支持平台、隐私承诺、安装 / 获取入口
+- Telegram live UAT 与 Phase 11-12 Nyquist partial 仅作为已知风险记录，不纳入 v1.2 交付范围
 
 ## 关键决策 (Key Decisions)
 
@@ -103,10 +116,11 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 | Registry-driven adapter architecture | 新平台只改适配器层，避免 pipeline / SW 扩散 | ✓ 验证：Slack / Telegram / Feishu 试验都未要求改 SW 主干 |
 | Slack redirect host 单独声明可观测权限 | 最小权限面下修复 app.slack.com → slack.com 登录跳转检测 | ✓ 验证：Phase 10.1 regression 关闭 |
 | Feishu/Lark 从 shipped scope 移除 | 共享 URL blocker 让 URL-based targeting 不可靠 | ✓ 验证：避免不稳定能力进入 v1.1 |
+| v1.2 聚焦仓库内静态宣传页 | 当前 shipped platform set 已具备对外说明价值；宣传页应随扩展代码同仓维护，避免引入独立站点运维 | — Pending |
 
 ## 演进 (Evolution)
 
 本文档在 phase 切换与 milestone 边界处更新。
 
 ---
-*Last updated: 2026-05-31 after v1.1 milestone*
+*Last updated: 2026-06-01 after starting v1.2 milestone*
