@@ -8,11 +8,12 @@ last_updated: "2026-06-02T21:57:00.000Z"
 last_activity: 2026-06-02 -- Phase 13 Plan 1 executed
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 1
   completed_plans: 1
   percent: 25
 ---
+
 
 # 项目状态
 
@@ -21,16 +22,16 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-06-01)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** v1.2 添加 web 宣传页面；Phase 13 已进入待规划状态。
+**当前焦点：** v1.2 添加 web 宣传页面；Phase 13 已完成，准备进入 Phase 14。
 
 ## Current Position
 
-Phase: 13 — 信息架构与文案事实源
-Plan: 1 (completed)
-Status: Phase 13 complete; ready for Phase 14
-Last activity: 2026-06-02 -- Phase 13 Plan 1 executed
+Phase: 14 — 独立 marketing app 骨架与构建隔离
+Plan: —
+Status: Ready for discuss/plan
+Last activity: 2026-06-02 -- Phase 13 complete, verified
 
-Progress: [██░░░░░░░░] 25% (1/4 plans)
+Progress: [██░░░░░░░░] 25% (1/4 phases)
 
 ## Performance Metrics
 

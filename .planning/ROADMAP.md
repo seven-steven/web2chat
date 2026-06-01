@@ -40,9 +40,9 @@ Archive: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 
 ### 📋 v1.2 添加 web 宣传页面
 
-#### Phase 13: 信息架构与文案事实源
+#### Phase 13: 信息架构与文案事实源 ✅
 
-**Goal:** 锁定宣传页的信息架构、文案事实源、claims / privacy / permission 边界，确保后续实现不夸大 shipped scope。
+**Goal:** 锁定宣传页的信息架构、文案事实源、claims / privacy / permission 边界，确保后续实现不夸大 shipped scope。 *(Completed 2026-06-02)*
 
 **Requirements:** MSG-01, MSG-02, MSG-03, TRUST-01, TRUST-02, TRUST-03, OPS-01, OPS-02
 
