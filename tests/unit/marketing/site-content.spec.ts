@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import en from '../../../apps/marketing/src/i18n/locales/en.json';
+import zhCn from '../../../apps/marketing/src/i18n/locales/zh_CN.json';
 import { setLocale } from '../../../apps/marketing/src/i18n/index';
 import {
   getCtaButtons,
@@ -89,6 +91,12 @@ describe('marketing site content', () => {
 
     expect(ctas.primary.href).toBe('https://github.com/nicholaschenai/web2chat');
     expect(ctas.secondary.href).toBe('https://github.com/nicholaschenai/web2chat#安装');
+  });
+
+  it('keeps locale keys aligned and removes the placeholder nextPhase copy', () => {
+    expect(Object.keys(en).sort()).toEqual(Object.keys(zhCn).sort());
+    expect(Object.keys(en).some((key) => key.startsWith('nextPhase.'))).toBe(false);
+    expect(Object.keys(zhCn).some((key) => key.startsWith('nextPhase.'))).toBe(false);
   });
 
   it('returns the remaining public marketing sections from the data layer', () => {
