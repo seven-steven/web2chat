@@ -8,6 +8,17 @@ import {
 
 let container: HTMLDivElement;
 
+const sourceLabel = 'source:';
+const statusLabel = 'status:';
+const versionLabel = 'version:';
+const primaryLabel = 'Primary CTA';
+const secondaryLabel = 'Secondary CTA';
+const platformLabel = 'Discord';
+const helperText = 'Delivered via browser tab';
+const resultLabel = 'result';
+const statusText = 'marketing demo aligned to current UI contract';
+const messageText = 'title + url + prompt delivered through direct browser interaction';
+
 beforeEach(() => {
   container = document.createElement('div');
   document.body.appendChild(container);
@@ -21,8 +32,6 @@ afterEach(() => {
 describe('marketing proof components', () => {
   it('renders CTA button primary and secondary variants with shared focus and height contract', async () => {
     const { CTAButton } = await import('@/apps/marketing/src/components/cta-button');
-    const primaryLabel = 'Primary CTA';
-    const secondaryLabel = 'Secondary CTA';
 
     render(
       <div>
@@ -69,14 +78,22 @@ describe('marketing proof components', () => {
     const { AssetLabel } = await import('@/apps/marketing/src/components/proof/asset-label');
     const metadata = getProofMetadata();
 
-    render(<AssetLabel metadata={metadata} />, container);
+    render(
+      <AssetLabel
+        metadata={metadata}
+        sourceLabel={sourceLabel}
+        statusLabel={statusLabel}
+        versionLabel={versionLabel}
+      />,
+      container,
+    );
 
     expect(container.textContent).toContain('mockup');
-    expect(container.textContent).toContain('source:');
+    expect(container.textContent).toContain(sourceLabel);
     expect(container.textContent).toContain(metadata.source);
-    expect(container.textContent).toContain('status:');
+    expect(container.textContent).toContain(statusLabel);
     expect(container.textContent).toContain(metadata.status);
-    expect(container.textContent).toContain('version:');
+    expect(container.textContent).toContain(versionLabel);
     expect(container.textContent).toContain(metadata.version);
   });
 
@@ -85,7 +102,14 @@ describe('marketing proof components', () => {
     const payload = getPayloadExample();
 
     render(
-      <PopupMockup title={payload.title} fields={payload.fields} metadata={getProofMetadata()} />,
+      <PopupMockup
+        title={payload.title}
+        fields={payload.fields}
+        metadata={getProofMetadata()}
+        sourceLabel={sourceLabel}
+        statusLabel={statusLabel}
+        versionLabel={versionLabel}
+      />,
       container,
     );
 
@@ -103,12 +127,24 @@ describe('marketing proof components', () => {
 
     render(
       <div>
-        <PopupMockup title={payload.title} fields={payload.fields} metadata={metadata} />
+        <PopupMockup
+          title={payload.title}
+          fields={payload.fields}
+          metadata={metadata}
+          sourceLabel={sourceLabel}
+          statusLabel={statusLabel}
+          versionLabel={versionLabel}
+        />
         <TargetMockup
           metadata={metadata}
-          platform="Discord"
-          status="marketing demo aligned to current UI contract"
-          message="title + url + prompt delivered through direct browser interaction"
+          platform={platformLabel}
+          status={statusText}
+          message={messageText}
+          sourceLabel={sourceLabel}
+          statusLabel={statusLabel}
+          versionLabel={versionLabel}
+          helperText={helperText}
+          resultLabel={resultLabel}
         />
       </div>,
       container,
