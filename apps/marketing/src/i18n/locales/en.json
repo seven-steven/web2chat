@@ -1,0 +1,12 @@
+{
+  "hero.title": "Capture any page. Send to any chat.",
+  "hero.subtitle": "One click to deliver structured page metadata with your prompt into IM or AI Agent sessions.",
+  "hero.cta": "View project source",
+  "supportedPlatforms.title": "Supported Platforms",
+  "supportedPlatforms.openclaw": "OpenClaw — self-hosted AI Agent platform",
+  "supportedPlatforms.discord": "Discord — channel delivery",
+  "supportedPlatforms.slack": "Slack — channel delivery",
+  "supportedPlatforms.telegram": "Telegram — shipped, live UAT pending",
+  "nextPhase.title": "What's Next",
+  "nextPhase.description": "A public product page with installation guide, visual walkthrough, and platform status is coming soon."
+}
