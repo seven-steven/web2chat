@@ -13,9 +13,6 @@ import { tmpdir } from 'node:os';
  *   - No mutation of real build output
  *   - Temporary directories for fixtures
  *   - Error collection via `errors` array
- *
- * TDD RED: The verifier module does not yet export `assertBuildOutput`.
- * These tests will fail until the GREEN task implements it.
  */
 
 // Dynamic import helper — the module is .mjs so TS has no types for it.
@@ -24,6 +21,49 @@ async function loadVerifier(): Promise<any> {
   // @ts-expect-error — .mjs has no type declarations; dynamic import resolves at runtime
   return import('../../../apps/marketing/scripts/verify-build.mjs');
 }
+
+function writeHtmlFixture(distDir: string, html: string) {
+  mkdirSync(distDir, { recursive: true });
+  writeFileSync(resolve(distDir, 'index.html'), html);
+  writeFileSync(resolve(distDir, 'assets.js'), '// asset');
+}
+
+const VALID_MARKETING_HTML = `<!DOCTYPE html>
+<html lang="en">
+  <body>
+    <main>
+      <section data-section="hero">
+        <h1>Capture any page. Send to any chat.</h1>
+        <a href="https://github.com/nicholaschenai/web2chat">View project source</a>
+      </section>
+      <section data-section="use-cases"></section>
+      <section data-section="payload">
+        <span>mockup</span>
+        <span>source: code-generated</span>
+        <span>status: marketing demo aligned to current UI contract</span>
+        <span>version: current repo state</span>
+      </section>
+      <section data-section="platforms">
+        <article>OpenClaw</article>
+        <article>Discord</article>
+        <article>Slack</article>
+        <article>Telegram</article>
+        <article>live UAT pending / known risk</article>
+      </section>
+      <section data-section="flow"></section>
+      <section data-section="trust"></section>
+      <section data-section="limits">
+        <p>Telegram shipped with live UAT pending as a known risk.</p>
+        <p>Feishu/Lark was evaluated and dropped from shipped scope.</p>
+        <p>Phase 11/12 Nyquist partial remains a known risk only.</p>
+      </section>
+      <section data-section="cta">
+        <a href="https://github.com/nicholaschenai/web2chat">View project source</a>
+        <a href="https://github.com/nicholaschenai/web2chat#安装">Install from README</a>
+      </section>
+    </main>
+  </body>
+</html>`;
 
 describe('verify-build assertBuildOutput — D-13 smoke verifier', () => {
   let tmpDir: string;
@@ -66,12 +106,29 @@ describe('verify-build assertBuildOutput — D-13 smoke verifier', () => {
     expect(errors.some((e) => e.includes('index.html'))).toBe(true);
   });
 
-  it('passes when dist contains index.html and at least one file', async () => {
+  it('reports error when built html is missing final-page smoke markers', async () => {
+    const { assertBuildOutput } = await loadVerifier();
+    const distDir = resolve(tmpDir, 'dist-missing-markers');
+    writeHtmlFixture(
+      distDir,
+      `<!DOCTYPE html><html><body><section data-section="hero"><h1>Capture any page. Send to any chat.</h1></section></body></html>`,
+    );
+
+    const errors: string[] = [];
+    assertBuildOutput(distDir, errors);
+
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors.some((e) => e.includes('mockup'))).toBe(true);
+    expect(errors.some((e) => e.includes('OpenClaw'))).toBe(true);
+    expect(errors.some((e) => e.includes('Telegram') || e.includes('known risk'))).toBe(true);
+    expect(errors.some((e) => e.includes('#安装'))).toBe(true);
+  });
+
+  it('passes when dist contains final marketing smoke markers', async () => {
     const { assertBuildOutput } = await loadVerifier();
     const distDir = resolve(tmpDir, 'dist-valid');
-    mkdirSync(distDir, { recursive: true });
-    writeFileSync(resolve(distDir, 'index.html'), '<!DOCTYPE html><html></html>');
-    writeFileSync(resolve(distDir, 'assets'), 'fake-asset');
+    writeHtmlFixture(distDir, VALID_MARKETING_HTML);
+
     const errors: string[] = [];
     assertBuildOutput(distDir, errors);
     expect(errors).toEqual([]);
