@@ -157,4 +157,19 @@ describe('marketing proof components', () => {
     expect(container.textContent?.match(/status:/g)?.length).toBe(2);
     expect(container.textContent?.match(/version:/g)?.length).toBe(2);
   });
+
+  it('does not leave english proof labels in zh_CN locale data', async () => {
+    const { getProofLabels } = await import('@/apps/marketing/src/data/site-content');
+    const { setLocale } = await import('@/apps/marketing/src/i18n/index');
+
+    await setLocale('zh_CN');
+    const proofLabels = getProofLabels();
+
+    expect(proofLabels.source).toBe('来源：');
+    expect(proofLabels.status).toBe('状态：');
+    expect(proofLabels.version).toBe('版本：');
+    expect(Object.values(proofLabels)).not.toContain(sourceLabel);
+    expect(Object.values(proofLabels)).not.toContain(statusLabel);
+    expect(Object.values(proofLabels)).not.toContain(versionLabel);
+  });
 });

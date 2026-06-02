@@ -1,3 +1,4 @@
+import { useState } from 'preact/hooks';
 import type { Signal } from '@preact/signals';
 import {
   getCtaButtons,
@@ -7,6 +8,7 @@ import {
   getKnownLimitsHeading,
   getLocaleToggle,
   getPayloadExample,
+  getProofLabels,
   getProofMetadata,
   getSupportedPlatforms,
   getSupportedPlatformsHeading,
@@ -28,6 +30,7 @@ interface AppProps {
 }
 
 export function App({ locale }: AppProps) {
+  const [, setLocaleVersion] = useState(0);
   const hero = getHero();
   const useCasesHeading = getUseCasesHeading();
   const useCases = getUseCases();
@@ -41,15 +44,15 @@ export function App({ locale }: AppProps) {
   const limitsHeading = getKnownLimitsHeading();
   const limits = getKnownLimits();
   const proofMetadata = getProofMetadata();
+  const proofLabels = getProofLabels();
   const localeToggle = getLocaleToggle();
   const ctas = getCtaButtons();
 
-  const toggleLocale = () => {
+  const toggleLocale = async () => {
     const next = locale.value === 'en' ? 'zh_CN' : 'en';
+    await setLocale(next);
     locale.value = next;
-    void setLocale(next).then(() => {
-      window.dispatchEvent(new CustomEvent('locale-changed'));
-    });
+    setLocaleVersion((value) => value + 1);
   };
 
   return (
@@ -73,7 +76,7 @@ export function App({ locale }: AppProps) {
                 {hero.primaryCta.label}
               </CTAButton>
             </div>
-            <ul class="flex flex-wrap gap-2" aria-label="Shipped platforms">
+            <ul class="flex flex-wrap gap-2" aria-label={hero.platformAriaLabel}>
               {hero.platformChips.map((chip) => (
                 <li
                   key={chip}
@@ -122,9 +125,9 @@ export function App({ locale }: AppProps) {
               platform={platforms[0]?.label ?? ''}
               status={proofMetadata.status}
               message={payload.fields.map((field) => `${field.label}: ${field.value}`).join('\n\n')}
-              sourceLabel="source:"
-              statusLabel="status:"
-              versionLabel="version:"
+              sourceLabel={proofLabels.source}
+              statusLabel={proofLabels.status}
+              versionLabel={proofLabels.version}
               helperText={hero.subtitle}
               resultLabel={hero.platformChips[0] ?? ''}
             />
@@ -163,9 +166,9 @@ export function App({ locale }: AppProps) {
             title={payload.title}
             fields={payload.fields}
             metadata={proofMetadata}
-            sourceLabel="source:"
-            statusLabel="status:"
-            versionLabel="version:"
+            sourceLabel={proofLabels.source}
+            statusLabel={proofLabels.status}
+            versionLabel={proofLabels.version}
           />
         </div>
       </SectionShell>

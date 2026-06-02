@@ -9,6 +9,7 @@ import {
   getKnownLimits,
   getLocaleToggle,
   getPayloadExample,
+  getProofLabels,
   getProofMetadata,
   getSupportedPlatforms,
   getThreeStepFlow,
@@ -29,6 +30,7 @@ describe('marketing site content', () => {
     expect(hero.primaryCta.href).toBe('https://github.com/nicholaschenai/web2chat');
     expect(hero.primaryCta.label).toBeTruthy();
     expect(hero.platformChips).toEqual(['OpenClaw', 'Discord', 'Slack', 'Telegram']);
+    expect(hero.platformAriaLabel).toBe('Shipped platforms');
     expect(hero.payloadPreviewLabel).toBe('Structured payload preview');
     expect(hero.payloadPreviewMeta).toEqual([
       'title',
@@ -80,14 +82,20 @@ describe('marketing site content', () => {
     expect(allFacts).toContain('optional origin grant');
   });
 
-  it('returns proof metadata and both repository and install CTA targets', () => {
+  it('returns proof metadata, localized proof labels, and both repository and install CTA targets', () => {
     const proof = getProofMetadata();
+    const proofLabels = getProofLabels();
     const ctas = getCtaButtons();
 
     expect(proof.label).toBe('mockup');
     expect(proof.source).toBe('code-generated');
     expect(proof.status).toBe('marketing demo aligned to current UI contract');
     expect(proof.version).toBe('current repo state');
+    expect(proofLabels).toEqual({
+      source: 'source:',
+      status: 'status:',
+      version: 'version:',
+    });
 
     expect(ctas.primary.href).toBe('https://github.com/nicholaschenai/web2chat');
     expect(ctas.secondary.href).toBe('https://github.com/nicholaschenai/web2chat#安装');
@@ -97,6 +105,20 @@ describe('marketing site content', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(zhCn).sort());
     expect(Object.keys(en).some((key) => key.startsWith('nextPhase.'))).toBe(false);
     expect(Object.keys(zhCn).some((key) => key.startsWith('nextPhase.'))).toBe(false);
+  });
+
+  it('returns localized labels for shipped platforms and proof metadata in zh_CN', async () => {
+    await setLocale('zh_CN');
+
+    const hero = getHero();
+    const proofLabels = getProofLabels();
+
+    expect(hero.platformAriaLabel).toBe('已发布平台');
+    expect(proofLabels).toEqual({
+      source: '来源：',
+      status: '状态：',
+      version: '版本：',
+    });
   });
 
   it('returns the remaining public marketing sections from the data layer', () => {

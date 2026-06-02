@@ -13,6 +13,7 @@ export interface HeroContent {
   subtitle: string;
   primaryCta: HeroCta;
   platformChips: string[];
+  platformAriaLabel: string;
   payloadPreviewLabel: string;
   payloadPreviewMeta: string[];
 }
@@ -67,6 +68,12 @@ export interface ProofMetadata {
   version: string;
 }
 
+export interface ProofLabels {
+  source: string;
+  status: string;
+  version: string;
+}
+
 export interface LocaleToggleContent {
   label: string;
 }
@@ -102,6 +109,7 @@ export function getHero(): HeroContent {
       t('hero.platformChips.slack'),
       t('hero.platformChips.telegram'),
     ],
+    platformAriaLabel: t('hero.platformChips.ariaLabel'),
     payloadPreviewLabel: t('hero.payloadPreview.label'),
     payloadPreviewMeta: ['title', 'url', 'description', 'create_at', 'content', 'prompt'],
   };
@@ -274,6 +282,14 @@ export function getProofMetadata(): ProofMetadata {
     source: t('proof.source'),
     status: t('proof.status'),
     version: t('proof.version'),
+  };
+}
+
+export function getProofLabels(): ProofLabels {
+  return {
+    source: t('proof.meta.sourceLabel'),
+    status: t('proof.meta.statusLabel'),
+    version: t('proof.meta.versionLabel'),
   };
 }
 

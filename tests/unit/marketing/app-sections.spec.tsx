@@ -79,6 +79,25 @@ describe('marketing app section composition', () => {
     expect(localeToggle?.textContent?.trim()).toBe('中文');
   });
 
+  it('re-renders localized body copy after toggling locale', async () => {
+    await renderApp('en');
+
+    const localeToggle = container.querySelector(
+      '[data-testid="locale-toggle"]',
+    ) as HTMLButtonElement | null;
+    expect(container.textContent).toContain('Structured-payload example');
+    expect(container.textContent).not.toContain('结构化载荷示例');
+
+    await act(async () => {
+      localeToggle?.click();
+      await flush();
+    });
+
+    expect(container.textContent).toContain('结构化载荷示例');
+    expect(container.textContent).not.toContain('Structured-payload example');
+    expect(localeToggle?.textContent?.trim()).toBe('English');
+  });
+
   it('renders hero CTA and payload preview plus shared bottom CTA buttons', async () => {
     await renderApp();
 
