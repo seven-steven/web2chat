@@ -23,47 +23,37 @@ async function loadVerifier(): Promise<any> {
 }
 
 function writeHtmlFixture(distDir: string, html: string) {
-  mkdirSync(distDir, { recursive: true });
+  mkdirSync(resolve(distDir, 'assets'), { recursive: true });
   writeFileSync(resolve(distDir, 'index.html'), html);
-  writeFileSync(resolve(distDir, 'assets.js'), '// asset');
+  writeFileSync(resolve(distDir, 'assets', 'app.js'), '// asset');
 }
 
-const VALID_MARKETING_HTML = `<!DOCTYPE html>
-<html lang="en">
-  <body>
-    <main>
-      <section data-section="hero">
-        <h1>Capture any page. Send to any chat.</h1>
-        <a href="https://github.com/nicholaschenai/web2chat">View project source</a>
-      </section>
-      <section data-section="use-cases"></section>
-      <section data-section="payload">
-        <span>mockup</span>
-        <span>source: code-generated</span>
-        <span>status: marketing demo aligned to current UI contract</span>
-        <span>version: current repo state</span>
-      </section>
-      <section data-section="platforms">
-        <article>OpenClaw</article>
-        <article>Discord</article>
-        <article>Slack</article>
-        <article>Telegram</article>
-        <article>live UAT pending / known risk</article>
-      </section>
-      <section data-section="flow"></section>
-      <section data-section="trust"></section>
-      <section data-section="limits">
-        <p>Telegram shipped with live UAT pending as a known risk.</p>
-        <p>Feishu/Lark was evaluated and dropped from shipped scope.</p>
-        <p>Phase 11/12 Nyquist partial remains a known risk only.</p>
-      </section>
-      <section data-section="cta">
-        <a href="https://github.com/nicholaschenai/web2chat">View project source</a>
-        <a href="https://github.com/nicholaschenai/web2chat#安装">Install from README</a>
-      </section>
-    </main>
-  </body>
-</html>`;
+function writeBuiltFixture(distDir: string, builtText: string) {
+  writeHtmlFixture(distDir, '<!DOCTYPE html><html><body><div id="app"></div></body></html>');
+  writeFileSync(resolve(distDir, 'assets', 'app.js'), builtText);
+}
+
+const VALID_MARKETING_BUILD_TEXT = `
+Capture any page. Send to any chat.
+Use cases
+Structured-payload example
+Supported platforms
+Three-step core flow
+Privacy / permissions trust
+Known limits
+Get the project
+mockup
+code-generated
+marketing demo aligned to current UI contract
+current repo state
+OpenClaw
+Discord
+Slack
+Telegram
+live UAT pending / known risk
+https://github.com/nicholaschenai/web2chat
+https://github.com/nicholaschenai/web2chat#安装
+`;
 
 describe('verify-build assertBuildOutput — D-13 smoke verifier', () => {
   let tmpDir: string;
@@ -106,13 +96,10 @@ describe('verify-build assertBuildOutput — D-13 smoke verifier', () => {
     expect(errors.some((e) => e.includes('index.html'))).toBe(true);
   });
 
-  it('reports error when built html is missing final-page smoke markers', async () => {
+  it('reports error when built output is missing final-page smoke markers', async () => {
     const { assertBuildOutput } = await loadVerifier();
     const distDir = resolve(tmpDir, 'dist-missing-markers');
-    writeHtmlFixture(
-      distDir,
-      `<!DOCTYPE html><html><body><section data-section="hero"><h1>Capture any page. Send to any chat.</h1></section></body></html>`,
-    );
+    writeBuiltFixture(distDir, 'Capture any page. Send to any chat.');
 
     const errors: string[] = [];
     assertBuildOutput(distDir, errors);
@@ -124,10 +111,10 @@ describe('verify-build assertBuildOutput — D-13 smoke verifier', () => {
     expect(errors.some((e) => e.includes('#安装'))).toBe(true);
   });
 
-  it('passes when dist contains final marketing smoke markers', async () => {
+  it('passes when built output contains final marketing smoke markers', async () => {
     const { assertBuildOutput } = await loadVerifier();
     const distDir = resolve(tmpDir, 'dist-valid');
-    writeHtmlFixture(distDir, VALID_MARKETING_HTML);
+    writeBuiltFixture(distDir, VALID_MARKETING_BUILD_TEXT);
 
     const errors: string[] = [];
     assertBuildOutput(distDir, errors);

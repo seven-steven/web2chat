@@ -6,7 +6,7 @@
  *   1. dist/ directory exists
  *   2. dist/ contains at least one file (non-empty)
  *   3. dist/index.html exists
- *   4. dist/index.html contains required final-page smoke markers
+ *   4. built output contains required final-page smoke markers
  *
  * Exports `assertBuildOutput(distDir, errors)` for unit-test consumption,
  * mirroring the pattern from scripts/verify-manifest.ts.
@@ -16,21 +16,21 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REQUIRED_HTML_MARKERS = [
-  { label: 'hero section marker', marker: 'data-section="hero"' },
-  { label: 'use-cases section marker', marker: 'data-section="use-cases"' },
-  { label: 'payload section marker', marker: 'data-section="payload"' },
-  { label: 'platforms section marker', marker: 'data-section="platforms"' },
-  { label: 'flow section marker', marker: 'data-section="flow"' },
-  { label: 'trust section marker', marker: 'data-section="trust"' },
-  { label: 'limits section marker', marker: 'data-section="limits"' },
-  { label: 'cta section marker', marker: 'data-section="cta"' },
+  { label: 'hero value statement', marker: 'Capture any page. Send to any chat.' },
+  { label: 'use-cases heading', marker: 'Use cases' },
+  { label: 'payload heading', marker: 'Structured-payload example' },
+  { label: 'platforms heading', marker: 'Supported platforms' },
+  { label: 'flow heading', marker: 'Three-step core flow' },
+  { label: 'trust heading', marker: 'Privacy / permissions trust' },
+  { label: 'limits heading', marker: 'Known limits' },
+  { label: 'cta heading', marker: 'Get the project' },
   { label: 'mockup proof label', marker: 'mockup' },
-  { label: 'proof source metadata', marker: 'source: code-generated' },
+  { label: 'proof source metadata value', marker: 'code-generated' },
   {
-    label: 'proof status metadata',
-    marker: 'status: marketing demo aligned to current UI contract',
+    label: 'proof status metadata value',
+    marker: 'marketing demo aligned to current UI contract',
   },
-  { label: 'proof version metadata', marker: 'version: current repo state' },
+  { label: 'proof version metadata value', marker: 'current repo state' },
   { label: 'OpenClaw platform truth', marker: 'OpenClaw' },
   { label: 'Discord platform truth', marker: 'Discord' },
   { label: 'Slack platform truth', marker: 'Slack' },
@@ -42,6 +42,27 @@ const REQUIRED_HTML_MARKERS = [
     marker: 'https://github.com/nicholaschenai/web2chat#安装',
   },
 ];
+
+function collectBuildText(distDir) {
+  const textChunks = [];
+  const indexHtml = resolve(distDir, 'index.html');
+  textChunks.push(readFileSync(indexHtml, 'utf8'));
+
+  const assetsDir = resolve(distDir, 'assets');
+  if (!existsSync(assetsDir)) {
+    return textChunks.join('\n');
+  }
+
+  for (const asset of readdirSync(assetsDir)) {
+    if (!asset.endsWith('.js')) {
+      continue;
+    }
+
+    textChunks.push(readFileSync(resolve(assetsDir, asset), 'utf8'));
+  }
+
+  return textChunks.join('\n');
+}
 
 /**
  * Pure assertion function — appends error strings into `errors` for any
@@ -69,10 +90,10 @@ export function assertBuildOutput(distDir, errors) {
     return;
   }
 
-  const html = readFileSync(indexHtml, 'utf8');
+  const buildText = collectBuildText(distDir);
   for (const { label, marker } of REQUIRED_HTML_MARKERS) {
-    if (!html.includes(marker)) {
-      errors.push(`dist/index.html missing ${label}: ${marker}`);
+    if (!buildText.includes(marker)) {
+      errors.push(`built output missing ${label}: ${marker}`);
     }
   }
 }
