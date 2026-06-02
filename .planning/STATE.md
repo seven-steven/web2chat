@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: 添加 web 宣传页面
-status: executing
-stopped_at: Phase 15 context gathered
-last_updated: "2026-06-02T10:30:00.000Z"
-last_activity: 2026-06-02 -- Phase 15 discuss/context captured
+status: ready_to_execute
+stopped_at: Phase 15 planned
+last_updated: "2026-06-02T00:00:00.000Z"
+last_activity: 2026-06-02 -- Phase 15 planned and verified
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 4
+  total_plans: 8
   completed_plans: 4
   percent: 50
 ---
@@ -22,14 +22,14 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-06-01)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** v1.2 添加 web 宣传页面；Phase 15 context 已采集，准备 planning。
+**当前焦点：** v1.2 添加 web 宣传页面；Phase 15 已完成 planning，准备执行。
 
 ## Current Position
 
 Phase: 15 — 宣传页内容与视觉实现
-Plan: —
-Status: Context gathered, ready for planning
-Last activity: 2026-06-02 -- Phase 15 discuss/context captured
+Plan: 15-01 → 15-04
+Status: Planned, ready to execute
+Last activity: 2026-06-02 -- Phase 15 planned and verified
 
 Progress: [████░░░░░░] 50% (2/4 phases)
 
