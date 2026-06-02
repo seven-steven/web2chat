@@ -1,5 +1,5 @@
 import type { Signal } from '@preact/signals';
-import { getHero, getSupportedPlatforms, getNextPhase } from './data/site-content';
+import { getHero, getLocaleToggle, getSupportedPlatforms } from './data/site-content';
 import { t } from './i18n/index';
 
 interface AppProps {
@@ -9,7 +9,7 @@ interface AppProps {
 export function App({ locale }: AppProps) {
   const hero = getHero();
   const platforms = getSupportedPlatforms();
-  const nextPhase = getNextPhase();
+  const localeToggle = getLocaleToggle();
 
   return (
     <div class="min-h-screen bg-[var(--color-canvas)] text-[var(--color-ink-base)]">
@@ -17,10 +17,10 @@ export function App({ locale }: AppProps) {
         <h1 class="text-3xl font-bold text-[var(--color-ink-strong)]">{hero.title}</h1>
         <p class="mt-4 text-lg text-[var(--color-ink-muted)]">{hero.subtitle}</p>
         <a
-          href="https://github.com/nichochar/web2chat"
+          href={hero.primaryCta.href}
           class="mt-8 inline-block rounded-[var(--radius-soft)] bg-[var(--color-accent)] px-6 py-3 font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)]"
         >
-          {hero.cta}
+          {hero.primaryCta.label}
         </a>
       </header>
 
@@ -41,8 +41,10 @@ export function App({ locale }: AppProps) {
       </section>
 
       <section class="mx-auto max-w-3xl px-6 pb-20 text-center">
-        <h2 class="mb-3 text-xl font-semibold text-[var(--color-ink-strong)]">{nextPhase.title}</h2>
-        <p class="text-[var(--color-ink-muted)]">{nextPhase.description}</p>
+        <h2 class="mb-3 text-xl font-semibold text-[var(--color-ink-strong)]">
+          {locale.value === 'en' ? 'Locale' : '语言'}
+        </h2>
+        <p class="text-[var(--color-ink-muted)]">{localeToggle.label}</p>
       </section>
 
       <footer class="border-t border-[var(--color-rule)] py-6 text-center text-sm text-[var(--color-ink-faint)]">
