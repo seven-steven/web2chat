@@ -1,4 +1,3 @@
-import { useState } from 'preact/hooks';
 import type { Signal } from '@preact/signals';
 import {
   getCtaButtons,
@@ -18,7 +17,7 @@ import {
   getUseCases,
   getUseCasesHeading,
 } from './data/site-content';
-import { setLocale } from './i18n/index';
+import { localeSig, setLocale } from './i18n/index';
 import { CTAButton } from './components/cta-button';
 import { Stepper } from './components/flow/stepper';
 import { PopupMockup } from './components/proof/popup-mockup';
@@ -26,11 +25,10 @@ import { TargetMockup } from './components/proof/target-mockup';
 import { SectionShell } from './components/section-shell';
 
 interface AppProps {
-  locale: Signal<string>;
+  locale?: Signal<string>;
 }
 
-export function App({ locale }: AppProps) {
-  const [, setLocaleVersion] = useState(0);
+export function App(_props: AppProps) {
   const hero = getHero();
   const useCasesHeading = getUseCasesHeading();
   const useCases = getUseCases();
@@ -49,10 +47,8 @@ export function App({ locale }: AppProps) {
   const ctas = getCtaButtons();
 
   const toggleLocale = async () => {
-    const next = locale.value === 'en' ? 'zh_CN' : 'en';
+    const next = localeSig.value === 'en' ? 'zh_CN' : 'en';
     await setLocale(next);
-    locale.value = next;
-    setLocaleVersion((value) => value + 1);
   };
 
   return (
@@ -271,7 +267,7 @@ export function App({ locale }: AppProps) {
             aria-label={localeToggle.label}
             onClick={toggleLocale}
           >
-            {locale.value === 'en' ? '中文' : 'English'}
+            {localeSig.value === 'en' ? '中文' : 'English'}
           </button>
         </div>
       </footer>
