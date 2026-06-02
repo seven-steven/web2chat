@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: 添加 web 宣传页面
 status: executing
-stopped_at: completed Phase 13 Plan 1 — content sources artifact
-last_updated: "2026-06-02T21:57:00.000Z"
-last_activity: 2026-06-02 -- Phase 13 Plan 1 executed
+stopped_at: completed Phase 14 — marketing app skeleton & build isolation
+last_updated: "2026-06-02T09:40:00.000Z"
+last_activity: 2026-06-02 -- Phase 14 executed and verified
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 25
+  completed_phases: 2
+  total_plans: 4
+  completed_plans: 4
+  percent: 50
 ---
 
 
@@ -22,16 +22,16 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-06-01)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** v1.2 添加 web 宣传页面；Phase 13 已完成，准备进入 Phase 14。
+**当前焦点：** v1.2 添加 web 宣传页面；Phase 14 已完成，准备进入 Phase 15。
 
 ## Current Position
 
-Phase: 14 — 独立 marketing app 骨架与构建隔离
+Phase: 15 — 宣传页内容与视觉实现
 Plan: —
 Status: Ready for discuss/plan
-Last activity: 2026-06-02 -- Phase 13 complete, verified
+Last activity: 2026-06-02 -- Phase 14 complete, verified
 
-Progress: [██░░░░░░░░] 25% (1/4 phases)
+Progress: [████░░░░░░] 50% (2/4 phases)
 
 ## Performance Metrics
 
@@ -85,6 +85,6 @@ Items acknowledged and deferred at milestone close on 2026-05-31:
 
 ## Session Continuity
 
-Last session: 2026-06-02T05:57:00+08:00
-Stopped at: completed Phase 13 Plan 1 — content sources artifact
-Resume file: .planning/phases/13-information-architecture-copy-sources/13-01-SUMMARY.md
+Last session: 2026-06-02T09:40:00+08:00
+Stopped at: completed Phase 14 — marketing app skeleton & build isolation
+Resume file: .planning/phases/14-marketing-app-skeleton-build-isolation/14-VERIFICATION.md

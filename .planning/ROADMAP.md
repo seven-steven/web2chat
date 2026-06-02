@@ -52,18 +52,18 @@ Archive: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 3. 明确区分 shipped 平台、deferred 平台、known risk，并把 Telegram live UAT / Nyquist partial 留在风险说明而非主卖点。
 4. 截图 / 文案 / 平台列表更新规则写入 planning artifact，维护者能按来源更新页面内容。
 
-#### Phase 14: 独立 marketing app 骨架与构建隔离
+#### Phase 14: 独立 marketing app 骨架与构建隔离 ✅
 
-**Goal:** 建立仓库内独立静态 marketing app，使宣传页可独立 build / preview / smoke test，且不影响扩展构建输出。
+**Goal:** 建立仓库内独立静态 marketing app，使宣传页可独立 build / preview / smoke test，且不影响扩展构建输出。 *(Completed 2026-06-02)*
 
 **Requirements:** BUILD-01, BUILD-02, BUILD-03
 
 **Plans:** 3 plans
 
 Plans:
-- [ ] 14-01-PLAN.md — 提取共享 design tokens 到 `shared/`，为 extension 与 marketing app 建立仅样式共享边界
-- [ ] 14-02-PLAN.md — 创建 `apps/marketing` workspace app、独立 Vite/TS 配置与根级 `site:*` 代理命令
-- [ ] 14-03-PLAN.md — 增加 marketing build smoke verifier 与 BUILD-03 import 隔离测试
+- [x] 14-01-PLAN.md — 提取共享 design tokens 到 `shared/`，为 extension 与 marketing app 建立仅样式共享边界
+- [x] 14-02-PLAN.md — 创建 `apps/marketing` workspace app、独立 Vite/TS 配置与根级 `site:*` 代理命令
+- [x] 14-03-PLAN.md — 增加 marketing build smoke verifier 与 BUILD-03 import 隔离测试
 
 **Success criteria:**
 1. 新增独立 marketing app 目录与专用 Vite 配置 / scripts，输出目录与 WXT extension build 隔离。
@@ -121,7 +121,7 @@ Plans:
 | 11. Telegram 适配器 | v1.1 | 4/4 | Complete | 2026-05-16 |
 | 12. 飞书/Lark 适配器 | v1.1 | 5/5 | Dropped from shipped scope | 2026-05-17 |
 | 13. 信息架构与文案事实源 | v1.2 | 1/1 | Complete | 2026-06-02 |
-| 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 0/3 | Planned | — |
+| 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 3/3 | Complete | 2026-06-02 |
 | 15. 宣传页内容与视觉实现 | v1.2 | 0/0 | Planned | — |
 | 16. 发布验收与运营基线 | v1.2 | 0/0 | Planned | — |
 
@@ -142,9 +142,9 @@ Plans:
 | CTA-02 | Phase 15 | Planned |
 | OPS-01 | Phase 13, Phase 16 | Planned |
 | OPS-02 | Phase 13, Phase 16 | Planned |
-| BUILD-01 | Phase 14, Phase 16 | Planned |
-| BUILD-02 | Phase 14, Phase 16 | Planned |
-| BUILD-03 | Phase 14, Phase 16 | Planned |
+| BUILD-01 | Phase 14, Phase 16 | Phase 14 Satisfied |
+| BUILD-02 | Phase 14, Phase 16 | Phase 14 Satisfied |
+| BUILD-03 | Phase 14, Phase 16 | Phase 14 Satisfied |
 
 **Coverage:**
 - v1.2 requirements: 16 total
