@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: 添加 web 宣传页面
 status: executing
-stopped_at: completed Phase 14 — marketing app skeleton & build isolation
-last_updated: "2026-06-02T09:40:00.000Z"
-last_activity: 2026-06-02 -- Phase 14 executed and verified
+stopped_at: Phase 15 context gathered
+last_updated: "2026-06-02T10:30:00.000Z"
+last_activity: 2026-06-02 -- Phase 15 discuss/context captured
 progress:
   total_phases: 4
   completed_phases: 2
@@ -22,14 +22,14 @@ progress:
 参见：`.planning/PROJECT.md` (更新于 2026-06-01)
 
 **核心价值：** 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话。
-**当前焦点：** v1.2 添加 web 宣传页面；Phase 14 已完成，准备进入 Phase 15。
+**当前焦点：** v1.2 添加 web 宣传页面；Phase 15 context 已采集，准备 planning。
 
 ## Current Position
 
 Phase: 15 — 宣传页内容与视觉实现
 Plan: —
-Status: Ready for discuss/plan
-Last activity: 2026-06-02 -- Phase 14 complete, verified
+Status: Context gathered, ready for planning
+Last activity: 2026-06-02 -- Phase 15 discuss/context captured
 
 Progress: [████░░░░░░] 50% (2/4 phases)
 
@@ -85,6 +85,6 @@ Items acknowledged and deferred at milestone close on 2026-05-31:
 
 ## Session Continuity
 
-Last session: 2026-06-02T09:40:00+08:00
-Stopped at: completed Phase 14 — marketing app skeleton & build isolation
-Resume file: .planning/phases/14-marketing-app-skeleton-build-isolation/14-VERIFICATION.md
+Last session: 2026-06-02T10:30:00+08:00
+Stopped at: Phase 15 context gathered
+Resume file: .planning/phases/15-promotional-page-content-visual/15-CONTEXT.md
