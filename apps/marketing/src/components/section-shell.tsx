@@ -1,6 +1,6 @@
 import type { ComponentChildren } from 'preact';
 
-interface SectionShellProps {
+export interface SectionShellProps {
   id?: string;
   tone?: 'canvas' | 'surface-subtle';
   width?: 'default' | 'wide';

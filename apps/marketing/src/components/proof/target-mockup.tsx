@@ -1,7 +1,7 @@
 import type { ProofMetadata } from '../../data/site-content';
 import { AssetLabel } from './asset-label';
 
-interface TargetMockupProps {
+export interface TargetMockupProps {
   metadata: ProofMetadata;
   platform: string;
   status: string;

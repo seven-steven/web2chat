@@ -1,6 +1,6 @@
 import type { FlowStep } from '../../data/site-content';
 
-interface StepperProps {
+export interface StepperProps {
   steps: FlowStep[];
 }
 

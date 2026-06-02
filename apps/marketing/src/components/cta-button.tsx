@@ -1,8 +1,12 @@
-interface CTAButtonProps {
+import type { ComponentChildren } from 'preact';
+
+export interface CTAButtonProps {
   href: string;
-  children: string;
+  children: ComponentChildren;
   variant?: 'primary' | 'secondary';
   class?: string;
+  target?: '_blank' | '_self';
+  rel?: string;
 }
 
 const baseClass =
@@ -20,12 +24,16 @@ export function CTAButton({
   children,
   variant = 'primary',
   class: className = '',
+  target,
+  rel,
 }: CTAButtonProps) {
   return (
     <a
       href={href}
       class={`${baseClass} ${variantClass[variant]} ${className}`.trim()}
       data-variant={variant}
+      target={target}
+      rel={rel}
     >
       {children}
     </a>

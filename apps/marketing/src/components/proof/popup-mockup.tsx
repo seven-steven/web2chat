@@ -1,7 +1,7 @@
 import type { PayloadField, ProofMetadata } from '../../data/site-content';
 import { AssetLabel } from './asset-label';
 
-interface PopupMockupProps {
+export interface PopupMockupProps {
   title: string;
   fields: PayloadField[];
   metadata: ProofMetadata;

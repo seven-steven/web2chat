@@ -1,6 +1,6 @@
 import type { ProofMetadata } from '../../data/site-content';
 
-interface AssetLabelProps {
+export interface AssetLabelProps {
   metadata: ProofMetadata;
   sourceLabel: string;
   statusLabel: string;
