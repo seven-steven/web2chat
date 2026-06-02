@@ -28,6 +28,10 @@
     "verify:zip": "wxt build && wxt zip && tsx scripts/verify-zip.ts",
     "verify:readme": "tsx scripts/verify-readme-anchors.ts",
     "assets:screenshot": "node scripts/screenshot-assets.mjs",
+    "site:dev": "pnpm --filter marketing dev",
+    "site:build": "pnpm --filter marketing build",
+    "site:preview": "pnpm --filter marketing preview",
+    "site:verify": "pnpm --filter marketing verify:build",
     "postinstall": "wxt prepare && husky",
     "prepare": "husky"
   },
