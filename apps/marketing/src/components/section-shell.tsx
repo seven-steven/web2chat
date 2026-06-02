@@ -4,8 +4,8 @@ export interface SectionShellProps {
   id?: string;
   tone?: 'canvas' | 'surface-subtle';
   width?: 'default' | 'wide';
-  title?: string;
-  intro?: string;
+  title?: string | undefined;
+  intro?: string | undefined;
   children: ComponentChildren;
 }
 

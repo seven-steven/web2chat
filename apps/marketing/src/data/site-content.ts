@@ -83,6 +83,11 @@ export interface CtaButtonsContent {
   secondary: CtaButton;
 }
 
+export interface SectionHeading {
+  title: string;
+  intro?: string;
+}
+
 export function getHero(): HeroContent {
   return {
     title: t('hero.title'),
@@ -99,6 +104,13 @@ export function getHero(): HeroContent {
     ],
     payloadPreviewLabel: t('hero.payloadPreview.label'),
     payloadPreviewMeta: ['title', 'url', 'description', 'create_at', 'content', 'prompt'],
+  };
+}
+
+export function getUseCasesHeading(): SectionHeading {
+  return {
+    title: t('useCases.section.title'),
+    intro: t('useCases.section.intro'),
   };
 }
 
@@ -148,6 +160,13 @@ export function getPayloadExample(): PayloadExampleContent {
   };
 }
 
+export function getSupportedPlatformsHeading(): SectionHeading {
+  return {
+    title: t('supportedPlatforms.title'),
+    intro: t('supportedPlatforms.intro'),
+  };
+}
+
 export function getSupportedPlatforms(): PlatformEntry[] {
   return [
     {
@@ -174,6 +193,13 @@ export function getSupportedPlatforms(): PlatformEntry[] {
   ];
 }
 
+export function getFlowHeading(): SectionHeading {
+  return {
+    title: t('flow.section.title'),
+    intro: t('flow.section.intro'),
+  };
+}
+
 export function getThreeStepFlow(): FlowStep[] {
   return [
     {
@@ -192,6 +218,13 @@ export function getThreeStepFlow(): FlowStep[] {
       description: t('flow.sendToChat.description'),
     },
   ];
+}
+
+export function getTrustHeading(): SectionHeading {
+  return {
+    title: t('trust.section.title'),
+    intro: t('trust.section.intro'),
+  };
 }
 
 export function getTrustGroups(): TrustGroup[] {
@@ -218,6 +251,13 @@ export function getTrustGroups(): TrustGroup[] {
       ],
     },
   ];
+}
+
+export function getKnownLimitsHeading(): SectionHeading {
+  return {
+    title: t('knownLimits.title'),
+    intro: t('knownLimits.intro'),
+  };
 }
 
 export function getKnownLimits(): KnownLimitEntry[] {
