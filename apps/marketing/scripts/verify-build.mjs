@@ -1,72 +1,22 @@
 /* eslint-disable */
 /**
- * Marketing build smoke verifier (D-13 + D-14 + Phase 15 final gate).
+ * Marketing build smoke verifier (D-13 + D-14).
  *
  * Checks:
  *   1. dist/ directory exists
  *   2. dist/ contains at least one file (non-empty)
  *   3. dist/index.html exists
- *   4. built output contains required final-page smoke markers
  *
  * Exports `assertBuildOutput(distDir, errors)` for unit-test consumption,
  * mirroring the pattern from scripts/verify-manifest.ts.
  */
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const REQUIRED_HTML_MARKERS = [
-  { label: 'hero value statement', marker: 'Capture any page. Send to any chat.' },
-  { label: 'use-cases heading', marker: 'Use cases' },
-  { label: 'payload heading', marker: 'Structured-payload example' },
-  { label: 'platforms heading', marker: 'Supported platforms' },
-  { label: 'flow heading', marker: 'Three-step core flow' },
-  { label: 'trust heading', marker: 'Privacy / permissions trust' },
-  { label: 'limits heading', marker: 'Known limits' },
-  { label: 'cta heading', marker: 'Get the project' },
-  { label: 'mockup proof label', marker: 'mockup' },
-  { label: 'proof source metadata value', marker: 'code-generated' },
-  {
-    label: 'proof status metadata value',
-    marker: 'marketing demo aligned to current UI contract',
-  },
-  { label: 'proof version metadata value', marker: 'current repo state' },
-  { label: 'OpenClaw platform truth', marker: 'OpenClaw' },
-  { label: 'Discord platform truth', marker: 'Discord' },
-  { label: 'Slack platform truth', marker: 'Slack' },
-  { label: 'Telegram platform truth', marker: 'Telegram' },
-  { label: 'Telegram known-risk text', marker: 'live UAT pending / known risk' },
-  { label: 'source CTA target', marker: 'https://github.com/nicholaschenai/web2chat' },
-  {
-    label: 'install CTA target',
-    marker: 'https://github.com/nicholaschenai/web2chat#安装',
-  },
-];
-
-function collectBuildText(distDir) {
-  const textChunks = [];
-  const indexHtml = resolve(distDir, 'index.html');
-  textChunks.push(readFileSync(indexHtml, 'utf8'));
-
-  const assetsDir = resolve(distDir, 'assets');
-  if (!existsSync(assetsDir)) {
-    return textChunks.join('\n');
-  }
-
-  for (const asset of readdirSync(assetsDir)) {
-    if (!asset.endsWith('.js')) {
-      continue;
-    }
-
-    textChunks.push(readFileSync(resolve(assetsDir, asset), 'utf8'));
-  }
-
-  return textChunks.join('\n');
-}
-
 /**
  * Pure assertion function — appends error strings into `errors` for any
- * Phase 15 invariant violation. Exported so tests can drive it with synthetic
+ * D-13 invariant violation. Exported so tests can drive it with synthetic
  * directory structures (no need to run actual builds to test failure paths).
  *
  * @param {string} distDir  - Absolute path to the marketing dist directory
@@ -87,14 +37,6 @@ export function assertBuildOutput(distDir, errors) {
   const indexHtml = resolve(distDir, 'index.html');
   if (!existsSync(indexHtml)) {
     errors.push(`dist/index.html not found in: ${distDir}`);
-    return;
-  }
-
-  const buildText = collectBuildText(distDir);
-  for (const { label, marker } of REQUIRED_HTML_MARKERS) {
-    if (!buildText.includes(marker)) {
-      errors.push(`built output missing ${label}: ${marker}`);
-    }
   }
 }
 

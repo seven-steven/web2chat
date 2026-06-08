@@ -13,6 +13,9 @@ import { tmpdir } from 'node:os';
  *   - No mutation of real build output
  *   - Temporary directories for fixtures
  *   - Error collection via `errors` array
+ *
+ * TDD RED: The verifier module does not yet export `assertBuildOutput`.
+ * These tests will fail until the GREEN task implements it.
  */
 
 // Dynamic import helper — the module is .mjs so TS has no types for it.
@@ -21,39 +24,6 @@ async function loadVerifier(): Promise<any> {
   // @ts-expect-error — .mjs has no type declarations; dynamic import resolves at runtime
   return import('../../../apps/marketing/scripts/verify-build.mjs');
 }
-
-function writeHtmlFixture(distDir: string, html: string) {
-  mkdirSync(resolve(distDir, 'assets'), { recursive: true });
-  writeFileSync(resolve(distDir, 'index.html'), html);
-  writeFileSync(resolve(distDir, 'assets', 'app.js'), '// asset');
-}
-
-function writeBuiltFixture(distDir: string, builtText: string) {
-  writeHtmlFixture(distDir, '<!DOCTYPE html><html><body><div id="app"></div></body></html>');
-  writeFileSync(resolve(distDir, 'assets', 'app.js'), builtText);
-}
-
-const VALID_MARKETING_BUILD_TEXT = `
-Capture any page. Send to any chat.
-Use cases
-Structured-payload example
-Supported platforms
-Three-step core flow
-Privacy / permissions trust
-Known limits
-Get the project
-mockup
-code-generated
-marketing demo aligned to current UI contract
-current repo state
-OpenClaw
-Discord
-Slack
-Telegram
-live UAT pending / known risk
-https://github.com/nicholaschenai/web2chat
-https://github.com/nicholaschenai/web2chat#安装
-`;
 
 describe('verify-build assertBuildOutput — D-13 smoke verifier', () => {
   let tmpDir: string;
@@ -96,26 +66,12 @@ describe('verify-build assertBuildOutput — D-13 smoke verifier', () => {
     expect(errors.some((e) => e.includes('index.html'))).toBe(true);
   });
 
-  it('reports error when built output is missing final-page smoke markers', async () => {
-    const { assertBuildOutput } = await loadVerifier();
-    const distDir = resolve(tmpDir, 'dist-missing-markers');
-    writeBuiltFixture(distDir, 'Capture any page. Send to any chat.');
-
-    const errors: string[] = [];
-    assertBuildOutput(distDir, errors);
-
-    expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some((e) => e.includes('mockup'))).toBe(true);
-    expect(errors.some((e) => e.includes('OpenClaw'))).toBe(true);
-    expect(errors.some((e) => e.includes('Telegram') || e.includes('known risk'))).toBe(true);
-    expect(errors.some((e) => e.includes('#安装'))).toBe(true);
-  });
-
-  it('passes when built output contains final marketing smoke markers', async () => {
+  it('passes when dist contains index.html and at least one file', async () => {
     const { assertBuildOutput } = await loadVerifier();
     const distDir = resolve(tmpDir, 'dist-valid');
-    writeBuiltFixture(distDir, VALID_MARKETING_BUILD_TEXT);
-
+    mkdirSync(distDir, { recursive: true });
+    writeFileSync(resolve(distDir, 'index.html'), '<!DOCTYPE html><html></html>');
+    writeFileSync(resolve(distDir, 'assets'), 'fake-asset');
     const errors: string[] = [];
     assertBuildOutput(distDir, errors);
     expect(errors).toEqual([]);

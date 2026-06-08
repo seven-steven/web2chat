@@ -1,26 +1,30 @@
-import { computed, signal } from '@preact/signals';
 import en from './locales/en.json';
-import zhCn from './locales/zh_CN.json';
 
 type LocaleKey = string;
-type MarketingLocale = 'en' | 'zh_CN';
 
-const fallbackDictionary: Record<string, string> = en;
-const dictionaries: Record<MarketingLocale, Record<string, string>> = {
-  en: fallbackDictionary,
-  zh_CN: zhCn,
-};
-const LOCALE_ALLOWLIST: MarketingLocale[] = ['en', 'zh_CN'];
+const dictionaries = {
+  en,
+  zh_CN: {} as Record<string, string>,
+} as const;
 
-export const localeSig = signal<MarketingLocale>('en');
-export const localeDictSig = computed<Record<string, string>>(() => dictionaries[localeSig.value]);
+// Lazy-load non-default locales
+async function loadLocale(locale: string): Promise<void> {
+  if (locale === 'en' || (dictionaries as Record<string, Record<string, string>>)[locale]) return;
+  if (locale === 'zh_CN') {
+    const mod = await import('./locales/zh_CN.json');
+    (dictionaries as Record<string, Record<string, string>>)[locale] = mod.default;
+  }
+}
+
+let currentLocale = 'en';
 
 export async function setLocale(locale: string): Promise<void> {
-  if (!LOCALE_ALLOWLIST.includes(locale as MarketingLocale)) return;
-  localeSig.value = locale as MarketingLocale;
+  await loadLocale(locale);
+  currentLocale = locale;
 }
 
 export function t(key: LocaleKey): string {
-  const dict = localeDictSig.value;
-  return dict[key] ?? fallbackDictionary[key] ?? key;
+  const dict = (dictionaries as Record<string, Record<string, string>>)[currentLocale];
+  if (dict) return dict[key] ?? key;
+  return (dictionaries.en as Record<string, string>)[key] ?? key;
 }
