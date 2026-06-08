@@ -221,7 +221,7 @@ describe('site-content marketing data layer', () => {
       }
     });
 
-    it('no locale content claims telemetry or remote server', async () => {
+    it('no locale content claims telemetry or remote server usage', async () => {
       for (const locale of ['en', 'zh_CN']) {
         await setLocale(locale);
         const trust = getTrustGroups();
@@ -229,8 +229,12 @@ describe('site-content marketing data layer', () => {
           .flatMap((g) => g.facts)
           .join(' ')
           .toLowerCase();
-        expect(allText).not.toContain('telemetry');
-        expect(allText).not.toContain('remote server');
+        // Must not positively claim telemetry or server usage
+        // ("no telemetry" / "no remote server" denials are allowed)
+        expect(allText).not.toMatch(/uses? telemetry/);
+        expect(allText).not.toMatch(/collect(s|ing)? telemetry/);
+        expect(allText).not.toMatch(/our servers?/);
+        expect(allText).not.toMatch(/server-side processing/);
       }
     });
   });
