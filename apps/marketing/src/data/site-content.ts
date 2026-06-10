@@ -3,10 +3,10 @@ import { t } from '../i18n/index';
 // --- Constants (truth anchors asserted by tests) -----------------------------
 
 /** Canonical GitHub repository root (D-12 primary CTA target). */
-export const REPO_URL = '';
+export const REPO_URL = 'https://github.com/seven-steven/web2chat';
 
 /** README installation section anchor (D-12 secondary CTA target). */
-export const INSTALL_URL = '';
+export const INSTALL_URL = `${REPO_URL}#%E5%AE%89%E8%A3%85`;
 
 /** Canonical structured payload field order per CLM-PAYLOAD-01 / MSG-03. */
 export const PAYLOAD_FIELD_ORDER = [
@@ -18,9 +18,13 @@ export const PAYLOAD_FIELD_ORDER = [
   'prompt',
 ] as const;
 
-/** Deterministic hardcoded payload example values (D-11). */
-export const PAYLOAD_EXAMPLE_URL = '';
-export const PAYLOAD_EXAMPLE_CREATE_AT = '';
+/**
+ * Deterministic hardcoded payload example values (D-11).
+ * Simulates clipping the MDN structuredClone() page — stable, public, neutral.
+ */
+export const PAYLOAD_EXAMPLE_URL =
+  'https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone';
+export const PAYLOAD_EXAMPLE_CREATE_AT = '2026-06-02T10:30:00+08:00';
 
 // --- Types -------------------------------------------------------------------
 
@@ -109,30 +113,64 @@ export interface LocaleToggle {
   label: string;
 }
 
-export interface NextPhaseContent {
-  title: string;
-  description: string;
-}
-
-// --- Getters (RED stubs — implemented in the GREEN step) ----------------------
+// --- Getters -------------------------------------------------------------------
 
 export function getHero(): HeroContent {
   return {
     title: t('hero.title'),
     subtitle: t('hero.subtitle'),
     cta: t('hero.cta'),
-    ctaUrl: '',
-    platformChips: [],
-    payloadPreview: { label: '', fields: [] },
+    ctaUrl: REPO_URL,
+    // Low-weight shipped platform chips (D-03); brand names are not localized.
+    platformChips: ['OpenClaw', 'Discord', 'Slack', 'Telegram'],
+    payloadPreview: {
+      label: t('hero.payloadPreviewLabel'),
+      fields: PAYLOAD_FIELD_ORDER,
+    },
   };
 }
 
 export function getUseCases(): UseCaseEntry[] {
-  return [];
+  return [
+    {
+      key: 'personal',
+      title: t('useCases.personal.title'),
+      description: t('useCases.personal.description'),
+    },
+    {
+      key: 'team',
+      title: t('useCases.team.title'),
+      description: t('useCases.team.description'),
+    },
+    {
+      key: 'agent',
+      title: t('useCases.agent.title'),
+      description: t('useCases.agent.description'),
+    },
+  ];
 }
 
 export function getPayloadExample(): PayloadExample {
-  return { title: '', description: '', fields: [] };
+  return {
+    title: t('payload.title'),
+    description: t('payload.description'),
+    fields: [
+      { key: 'title', label: t('payload.field.title'), value: t('payload.value.title') },
+      { key: 'url', label: t('payload.field.url'), value: PAYLOAD_EXAMPLE_URL },
+      {
+        key: 'description',
+        label: t('payload.field.description'),
+        value: t('payload.value.description'),
+      },
+      {
+        key: 'create_at',
+        label: t('payload.field.createAt'),
+        value: PAYLOAD_EXAMPLE_CREATE_AT,
+      },
+      { key: 'content', label: t('payload.field.content'), value: t('payload.value.content') },
+      { key: 'prompt', label: t('payload.field.prompt'), value: t('payload.value.prompt') },
+    ],
+  };
 }
 
 export function getSupportedPlatforms(): PlatformEntry[] {
@@ -140,45 +178,85 @@ export function getSupportedPlatforms(): PlatformEntry[] {
     { key: 'openclaw', label: t('supportedPlatforms.openclaw') },
     { key: 'discord', label: t('supportedPlatforms.discord') },
     { key: 'slack', label: t('supportedPlatforms.slack') },
-    { key: 'telegram', label: t('supportedPlatforms.telegram') },
+    {
+      key: 'telegram',
+      label: t('supportedPlatforms.telegram'),
+      // CLM-LIMIT-01: Telegram ships with live UAT pending / known risk.
+      riskLabel: t('supportedPlatforms.telegramRisk'),
+    },
   ];
 }
 
 export function getFlowSteps(): FlowStep[] {
-  return [];
+  return [
+    { step: 1, title: t('flow.step1.title'), description: t('flow.step1.description') },
+    { step: 2, title: t('flow.step2.title'), description: t('flow.step2.description') },
+    { step: 3, title: t('flow.step3.title'), description: t('flow.step3.description') },
+  ];
 }
 
 export function getTrust(): TrustContent {
   return {
-    privacy: { title: '', facts: [] },
-    permissions: { title: '', facts: [] },
+    // CLM-PRIVACY-01: facts sourced from PRIVACY.md only.
+    privacy: {
+      title: t('trust.privacy.title'),
+      facts: [
+        t('trust.privacy.fact1'),
+        t('trust.privacy.fact2'),
+        t('trust.privacy.fact3'),
+        t('trust.privacy.fact4'),
+        t('trust.privacy.fact5'),
+        t('trust.privacy.fact6'),
+      ],
+    },
+    // CLM-PERM-01: facts mirror the production wxt.config.ts manifest only —
+    // no `tabs`, no static `<all_urls>` host permission claims.
+    permissions: {
+      title: t('trust.permissions.title'),
+      facts: [
+        t('trust.permissions.fact1'),
+        t('trust.permissions.fact2'),
+        t('trust.permissions.fact3'),
+      ],
+    },
   };
 }
 
 export function getKnownLimits(): KnownLimits {
-  return { title: '', items: [] };
+  return {
+    title: t('limits.title'),
+    items: [
+      { key: 'telegram', text: t('limits.telegram') },
+      { key: 'feishu', text: t('limits.feishu') },
+      { key: 'nyquist', text: t('limits.nyquist') },
+    ],
+  };
 }
 
+/**
+ * Mockup labeling contract (D-05 / 15-UI-SPEC):
+ * - owner/update trigger: maintained alongside site-content.ts; update whenever
+ *   the popup or dispatch UI contract changes (Phase 15 marketing data layer).
+ * - capture/creation date: 2026-06-10 (Phase 15 Plan 01 implementation).
+ */
 export function getProofMeta(): ProofMeta {
-  return { label: '', source: '', status: '', version: '' };
+  return {
+    label: t('proof.label'),
+    source: t('proof.source'),
+    status: t('proof.status'),
+    version: t('proof.version'),
+  };
 }
 
 export function getCta(): CtaContent {
   return {
-    title: '',
-    subtitle: '',
-    primary: { label: '', url: '' },
-    secondary: { label: '', url: '' },
+    title: t('cta.title'),
+    subtitle: t('cta.subtitle'),
+    primary: { label: t('cta.primary'), url: REPO_URL },
+    secondary: { label: t('cta.secondary'), url: INSTALL_URL },
   };
 }
 
 export function getLocaleToggle(): LocaleToggle {
-  return { label: '' };
-}
-
-export function getNextPhase(): NextPhaseContent {
-  return {
-    title: t('nextPhase.title'),
-    description: t('nextPhase.description'),
-  };
+  return { label: t('localeToggle.label') };
 }
