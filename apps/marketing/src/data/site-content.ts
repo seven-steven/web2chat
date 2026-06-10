@@ -76,6 +76,7 @@ export interface TrustGroup {
 }
 
 export interface TrustContent {
+  title: string;
   privacy: TrustGroup;
   permissions: TrustGroup;
 }
@@ -111,6 +112,13 @@ export interface CtaContent {
 
 export interface LocaleToggle {
   label: string;
+}
+
+/** Target-chat mockup copy (D-06 / D-07) — locale-following demo strings. */
+export interface TargetMockupContent {
+  chatLabel: string;
+  messageLines: string[];
+  statusLabel: string;
 }
 
 // --- Getters -------------------------------------------------------------------
@@ -197,6 +205,7 @@ export function getFlowSteps(): FlowStep[] {
 
 export function getTrust(): TrustContent {
   return {
+    title: t('trust.title'),
     // CLM-PRIVACY-01: facts sourced from PRIVACY.md only.
     privacy: {
       title: t('trust.privacy.title'),
@@ -259,4 +268,17 @@ export function getCta(): CtaContent {
 
 export function getLocaleToggle(): LocaleToggle {
   return { label: t('localeToggle.label') };
+}
+
+/**
+ * Target-chat mockup content (D-06 / D-07): message lines reuse the canonical
+ * payload example so the popup mockup and the delivered-message mockup tell
+ * one consistent story. All strings flow through t() and follow the locale.
+ */
+export function getTargetMockup(): TargetMockupContent {
+  return {
+    chatLabel: t('targetMockup.chatLabel'),
+    messageLines: [t('payload.value.title'), PAYLOAD_EXAMPLE_URL, t('payload.value.prompt')],
+    statusLabel: t('targetMockup.statusLabel'),
+  };
 }
