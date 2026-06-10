@@ -4,13 +4,13 @@ milestone: v1.2
 milestone_name: 添加 web 宣传页面
 status: executing
 stopped_at: Phase 15 execution in progress
-last_updated: "2026-06-10T17:00:00.000Z"
-last_activity: 2026-06-10 -- Phase 15 wave 3 complete (15-03 merged)
+last_updated: "2026-06-10T17:30:00.000Z"
+last_activity: 2026-06-10 -- Phase 15 wave 4 complete (15-04 merged), all plans done
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 8
-  completed_plans: 3
+  completed_plans: 4
   percent: 25
 ---
 
@@ -29,7 +29,7 @@ progress:
 Phase: 15 — 宣传页内容与视觉实现
 Plan: 15-01 → 15-04
 Status: Executing (re-execution after revert)
-Last activity: 2026-06-10 -- Phase 15 wave 3/4 complete (15-03)
+Last activity: 2026-06-10 -- Phase 15 all 4 plans complete, verification pending
 
 Progress: [████░░░░░░] 50% (2/4 phases)
 

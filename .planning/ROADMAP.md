@@ -83,7 +83,7 @@ Plans:
 - [x] 15-01-PLAN.md — 扩展 marketing content getter、双语 locale 与 content truth 测试 (2026-06-10)
 - [x] 15-02-PLAN.md — 实现 section/CTA/proof/stepper 共享组件与 mockup 证据模块 (2026-06-11)
 - [x] 15-03-PLAN.md — 重写 `apps/marketing/src/app.tsx` 为最终 8-section 宣传页并补结构回归测试 (2026-06-11)
-- [ ] 15-04-PLAN.md — 强化 marketing smoke verifier、闭合 README 安装入口与 Phase 15 全量验证
+- [x] 15-04-PLAN.md — 强化 marketing smoke verifier、闭合 README 安装入口与 Phase 15 全量验证 (2026-06-11)
 
 **Success criteria:**
 1. 访客在首屏能理解 web2chat 的核心价值、目标用户与主要 CTA。
@@ -130,7 +130,7 @@ Plans:
 | 12. 飞书/Lark 适配器 | v1.1 | 5/5 | Dropped from shipped scope | 2026-05-17 |
 | 13. 信息架构与文案事实源 | v1.2 | 1/1 | Complete | 2026-06-02 |
 | 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 3/3 | Complete | 2026-06-02 |
-| 15. 宣传页内容与视觉实现 | v1.2 | 3/4 | In Progress | — |
+| 15. 宣传页内容与视觉实现 | v1.2 | 4/4 | In Progress | — |
 | 16. 发布验收与运营基线 | v1.2 | 0/0 | Planned | — |
 
 ## Requirement Coverage
