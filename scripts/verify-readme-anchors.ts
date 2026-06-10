@@ -50,6 +50,16 @@ if (existsSync(readmeZhPath) && existsSync(readmeEnPath)) {
       `README heading count mismatch: README.md has ${zhHeadings.length} ## headings, README.en.md has ${enHeadings.length}`,
     );
   }
+
+  // --- Marketing CTA install anchor (CTA-02 / T-15-11) -----------------------
+  // site-content.ts INSTALL_URL targets README.md#%E5%AE%89%E8%A3%85, the
+  // URL-encoded anchor GitHub generates for the `## 安装` heading. If this
+  // heading is renamed or removed, the marketing install CTA dead-links.
+  if (!zhHeadings.includes('安装')) {
+    errors.push(
+      'README.md missing the `## 安装` heading — marketing INSTALL_URL anchor (#%E5%AE%89%E8%A3%85) would dead-link',
+    );
+  }
 }
 
 // --- PRIVACY file existence (DST-02) ----------------------------------------
