@@ -121,7 +121,10 @@ describe('App — semantic outline and locale toggle (T-15-09)', () => {
     const toggle = container.querySelector('[data-testid="locale-toggle"]');
     expect(toggle).toBeTruthy();
     expect(toggle?.tagName).toBe('BUTTON');
-    expect((toggle as HTMLButtonElement).tabIndex).toBe(0);
+    // Native button stays in tab order as long as nothing opts it out
+    // (happy-dom does not compute the spec default tabIndex of 0).
+    expect(toggle?.getAttribute('tabindex')).toBeNull();
+    expect(toggle?.hasAttribute('disabled')).toBe(false);
     expect(toggle?.textContent?.trim()).toBe(en['localeToggle.label']);
   });
 
