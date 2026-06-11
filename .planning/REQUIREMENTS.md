@@ -15,9 +15,9 @@ Requirements for v1.2. Each maps to roadmap phases.
 
 ### Product Proof
 
-- [ ] **PROOF-01**: Visitor can see the currently shipped platform set as OpenClaw, Discord, Slack, and Telegram.
-- [ ] **PROOF-02**: Visitor can follow the core three-step flow: capture page, choose target, send to chat.
-- [ ] **PROOF-03**: Visitor can see credible product evidence through screenshots, diagrams, or UI mockups that are labeled with their source/version status.
+- [x] **PROOF-01**: Visitor can see the currently shipped platform set as OpenClaw, Discord, Slack, and Telegram. *(Phase 15 — final marketing page + platform truth verification)*
+- [x] **PROOF-02**: Visitor can follow the core three-step flow: capture page, choose target, send to chat. *(Phase 15 — final marketing page + stepper verification)*
+- [x] **PROOF-03**: Visitor can see credible product evidence through screenshots, diagrams, or UI mockups that are labeled with their source/version status. *(Phase 15 — labeled mockup proof modules + smoke verification)*
 
 ### Trust & Constraints
 
@@ -27,8 +27,8 @@ Requirements for v1.2. Each maps to roadmap phases.
 
 ### Acquisition CTA
 
-- [ ] **CTA-01**: Visitor can find the primary source repository or project entry point from the page.
-- [ ] **CTA-02**: Visitor can find a clear installation or availability path for Chrome / Chromium users, even if the current state is an install-from-source or release placeholder.
+- [x] **CTA-01**: Visitor can find the primary source repository or project entry point from the page. *(Phase 15 — hero and footer CTA wiring verified)*
+- [x] **CTA-02**: Visitor can find a clear installation or availability path for Chrome / Chromium users, even if the current state is an install-from-source or release placeholder. *(Phase 15 — README 安装锚点 + verify:readme 守卫)*
 
 ### Content Operations
 
@@ -78,17 +78,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MSG-01 | Phase 13, Phase 15 | Phase 13 done |
-| MSG-02 | Phase 13, Phase 15 | Phase 13 done |
-| MSG-03 | Phase 13, Phase 15 | Phase 13 done |
-| PROOF-01 | Phase 15 | Pending |
-| PROOF-02 | Phase 15 | Pending |
-| PROOF-03 | Phase 15, Phase 16 | Pending |
-| TRUST-01 | Phase 13, Phase 15, Phase 16 | Phase 13 done |
-| TRUST-02 | Phase 13, Phase 15, Phase 16 | Phase 13 done |
+| MSG-01 | Phase 13, Phase 15 | Phase 15 satisfied |
+| MSG-02 | Phase 13, Phase 15 | Phase 15 satisfied |
+| MSG-03 | Phase 13, Phase 15 | Phase 15 satisfied |
+| PROOF-01 | Phase 15 | Phase 15 satisfied |
+| PROOF-02 | Phase 15 | Phase 15 satisfied |
+| PROOF-03 | Phase 15, Phase 16 | Phase 15 satisfied |
+| TRUST-01 | Phase 13, Phase 15, Phase 16 | Phase 15 satisfied |
+| TRUST-02 | Phase 13, Phase 15, Phase 16 | Phase 15 satisfied |
 | TRUST-03 | Phase 13, Phase 16 | Phase 13 done |
-| CTA-01 | Phase 15 | Pending |
-| CTA-02 | Phase 15 | Pending |
+| CTA-01 | Phase 15 | Phase 15 satisfied |
+| CTA-02 | Phase 15 | Phase 15 satisfied |
 | OPS-01 | Phase 13, Phase 16 | Phase 13 done |
 | OPS-02 | Phase 13, Phase 16 | Phase 13 done |
 | BUILD-01 | Phase 14, Phase 16 | Pending |
@@ -102,4 +102,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-06-01*
-*Last updated: 2026-06-02 after Phase 13 Plan 1 execution*
+*Last updated: 2026-06-12 after Phase 15 completion*

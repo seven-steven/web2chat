@@ -71,9 +71,9 @@ Plans:
 3. marketing app 不 import service worker、storage repositories、messaging、permissions、IM adapters 等扩展 runtime 模块。
 4. CI / 本地验证命令能分别验证 extension 与 marketing page，失败边界清晰。
 
-#### Phase 15: 宣传页内容与视觉实现
+#### Phase 15: 宣传页内容与视觉实现 ✅
 
-**Goal:** 实现可发布的静态宣传页主体验，向访客展示产品定位、当前平台、核心流程、产品证据与安装入口。
+**Goal:** 实现可发布的静态宣传页主体验，向访客展示产品定位、当前平台、核心流程、产品证据与安装入口。 *(Completed 2026-06-12)*
 
 **Requirements:** MSG-01, MSG-02, MSG-03, PROOF-01, PROOF-02, PROOF-03, CTA-01, CTA-02, TRUST-01, TRUST-02
 
@@ -130,24 +130,24 @@ Plans:
 | 12. 飞书/Lark 适配器 | v1.1 | 5/5 | Dropped from shipped scope | 2026-05-17 |
 | 13. 信息架构与文案事实源 | v1.2 | 1/1 | Complete | 2026-06-02 |
 | 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 3/3 | Complete | 2026-06-02 |
-| 15. 宣传页内容与视觉实现 | v1.2 | 4/4 | In Progress | — |
+| 15. 宣传页内容与视觉实现 | v1.2 | 4/4 | Complete | 2026-06-12 |
 | 16. 发布验收与运营基线 | v1.2 | 0/0 | Planned | — |
 
 ## Requirement Coverage
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MSG-01 | Phase 13, Phase 15 | Planned |
-| MSG-02 | Phase 13, Phase 15 | Planned |
-| MSG-03 | Phase 13, Phase 15 | Planned |
-| PROOF-01 | Phase 15 | Planned |
-| PROOF-02 | Phase 15 | Planned |
-| PROOF-03 | Phase 15, Phase 16 | Planned |
-| TRUST-01 | Phase 13, Phase 15, Phase 16 | Planned |
-| TRUST-02 | Phase 13, Phase 15, Phase 16 | Planned |
+| MSG-01 | Phase 13, Phase 15 | Phase 15 Satisfied |
+| MSG-02 | Phase 13, Phase 15 | Phase 15 Satisfied |
+| MSG-03 | Phase 13, Phase 15 | Phase 15 Satisfied |
+| PROOF-01 | Phase 15 | Phase 15 Satisfied |
+| PROOF-02 | Phase 15 | Phase 15 Satisfied |
+| PROOF-03 | Phase 15, Phase 16 | Phase 15 Satisfied |
+| TRUST-01 | Phase 13, Phase 15, Phase 16 | Phase 15 Satisfied |
+| TRUST-02 | Phase 13, Phase 15, Phase 16 | Phase 15 Satisfied |
 | TRUST-03 | Phase 13, Phase 16 | Planned |
-| CTA-01 | Phase 15 | Planned |
-| CTA-02 | Phase 15 | Planned |
+| CTA-01 | Phase 15 | Phase 15 Satisfied |
+| CTA-02 | Phase 15 | Phase 15 Satisfied |
 | OPS-01 | Phase 13, Phase 16 | Planned |
 | OPS-02 | Phase 13, Phase 16 | Planned |
 | BUILD-01 | Phase 14, Phase 16 | Phase 14 Satisfied |
