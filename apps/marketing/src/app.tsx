@@ -80,7 +80,7 @@ export function App({ locale }: AppProps) {
                   {hero.subtitle}
                 </p>
                 <div class="mt-8">
-                  <CtaButton href={hero.ctaUrl} variant="primary">
+                  <CtaButton href={hero.ctaUrl} variant="primary" testId="hero-primary-cta">
                     {hero.cta}
                   </CtaButton>
                 </div>
@@ -99,7 +99,7 @@ export function App({ locale }: AppProps) {
 
               {/* Compact payload preview — field names only, full demo lives in section 3 */}
               <div class="mt-10 md:mt-0">
-                <div class="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-3 shadow-[0_1px_2px_var(--color-rule)]">
+                <div class="rounded-[calc(var(--radius-card)+8px)] border border-[var(--color-rule)] bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)] px-4 py-3 shadow-[0_12px_36px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] ring-1 ring-white/55">
                   <p class="text-sm leading-snug text-[var(--color-ink-muted)]">
                     {hero.payloadPreview.label}
                   </p>
@@ -125,7 +125,7 @@ export function App({ locale }: AppProps) {
             {useCases.map((useCase) => (
               <div
                 key={useCase.key}
-                class="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-4"
+                class="rounded-[calc(var(--radius-card)+6px)] border border-[var(--color-rule)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-4 py-4 shadow-[0_10px_28px_color-mix(in_srgb,var(--color-ink-strong)_5%,transparent)]"
               >
                 <h3 class="text-base leading-normal font-semibold text-[var(--color-ink-strong)]">
                   {useCase.title}
@@ -149,7 +149,7 @@ export function App({ locale }: AppProps) {
             {platforms.map((platform) => (
               <li
                 key={platform.key}
-                class="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-4 py-3"
+                class="rounded-[calc(var(--radius-card)+6px)] border border-[var(--color-rule)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-4 py-3 shadow-[0_10px_28px_color-mix(in_srgb,var(--color-ink-strong)_5%,transparent)]"
               >
                 <p class="text-base leading-normal text-[var(--color-ink-base)]">
                   {platform.label}
@@ -215,11 +215,11 @@ export function App({ locale }: AppProps) {
 
         {/* 8. CTA — primary + secondary sharing the Hero button contract (D-12/D-13) */}
         <SectionShell tone="subtle" width="3xl" title={cta.title} intro={cta.subtitle}>
-          <div class="mt-2 inline-flex flex-col gap-3 rounded-[var(--radius-card)] bg-[var(--color-accent-soft)] px-5 py-4 sm:flex-row">
-            <CtaButton href={cta.primary.url} variant="primary">
+          <div class="mt-2 inline-flex flex-col gap-3 rounded-[calc(var(--radius-card)+10px)] border border-[var(--color-rule)] bg-[color-mix(in_srgb,var(--color-accent-soft)_62%,transparent)] px-5 py-4 shadow-[0_16px_42px_color-mix(in_srgb,var(--color-accent)_12%,transparent)] sm:flex-row">
+            <CtaButton href={cta.primary.url} variant="primary" testId="footer-primary-cta">
               {cta.primary.label}
             </CtaButton>
-            <CtaButton href={cta.secondary.url} variant="secondary">
+            <CtaButton href={cta.secondary.url} variant="secondary" testId="footer-secondary-cta">
               {cta.secondary.label}
             </CtaButton>
           </div>

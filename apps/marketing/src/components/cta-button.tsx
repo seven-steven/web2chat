@@ -15,6 +15,7 @@ import type { ComponentChildren } from 'preact';
 export interface CtaButtonProps {
   href: string;
   variant: 'primary' | 'secondary';
+  testId?: string;
   children: ComponentChildren;
 }
 
@@ -40,9 +41,15 @@ const variantClass = {
   ].join(' '),
 } as const;
 
-export function CtaButton({ href, variant, children }: CtaButtonProps) {
+export function CtaButton({ href, variant, testId, children }: CtaButtonProps) {
   return (
-    <a href={href} class={`${baseClass} ${variantClass[variant]}`}>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-testid={testId}
+      class={`${baseClass} ${variantClass[variant]}`}
+    >
       {children}
     </a>
   );
