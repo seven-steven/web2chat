@@ -1,6 +1,6 @@
 ---
 phase: 15-promotional-page-content-visual
-reviewed: 2026-06-11T02:25:00Z
+reviewed: 2026-06-12T16:32:53Z
 depth: deep
 files_reviewed: 17
 files_reviewed_list:
@@ -23,17 +23,25 @@ files_reviewed_list:
   - tests/unit/scripts/marketing-verify-build.spec.ts
 findings:
   critical: 0
-  warning: 7
-  info: 7
-  total: 14
+  warning: 9
+  info: 10
+  total: 19
 status: issues_found
+re_review_scope:
+  date: 2026-06-12T16:32:53Z
+  trigger: Phase 15-05 gap-closure (commits 346c07f + 6a969e1, 2026-06-13)
+  files_focused:
+    - apps/marketing/src/app.tsx
+    - apps/marketing/src/components/cta-button.tsx
+    - tests/unit/marketing/app-sections.spec.tsx
+  prior_review_date: 2026-06-11T02:25:00Z
 ---
 
 # Phase 15: Code Review Report
 
-**Reviewed:** 2026-06-11T02:25:00Z
+**Reviewed:** 2026-06-11T02:25:00Z（主审查）；2026-06-12T16:32:53Z（15-05 收尾复审，见文末补充章节）
 **Depth:** deep
-**Files Reviewed:** 17
+**Files Reviewed:** 17（主审查）；3（15-05 复审聚焦）
 **Status:** issues_found
 
 ## Summary
@@ -136,6 +144,32 @@ void setLocale(next)
   .catch((err) => { console.error('[web2chat] locale load failed:', err); });
 ```
 
+### WR-08: 声称的无障碍 `lang` 属性契约完全没有测试覆盖（15-05 复审新增）
+
+**File:** `apps/marketing/src/app.tsx:55,69`（实现）；`tests/unit/marketing/app-sections.spec.tsx:131-144`（缺断言）
+**Issue:** 15-05 复审确认 `langAttr` 已实现并写入根 `<div lang={...}>`（这是屏幕阅读器依赖的无障碍契约）。但 15-05 新增/改动的 toggle 测试只断言了 `h1`/`h2` 文案切换，**从未断言根节点 `lang` 属性被正确更新**。即"切到 zh_CN 后根元素应为 `lang="zh-CN"`"既无正向测试也无回归保护——误删 `langAttr` 或写错映射时测试全绿但无障碍语义已破。这是 15-05 "locale 切换重渲染整页"声称的覆盖盲点，与 IN-01 互补（IN-01 指文档级 `<html lang>` 没同步，WR-08 指组件级 `lang` 也没有测试守护）。
+**Fix:** 在 toggle 测试末尾追加：
+```tsx
+const root = container.firstElementChild as HTMLElement;
+expect(root.getAttribute('lang')).toBe('zh-CN');
+```
+并在初始 en 渲染下补 `expect(root.getAttribute('lang')).toBe('en')`。
+
+### WR-09: CTA 外链 `target="_blank"` 缺乏视觉/语义外链指示（15-05 复审新增）
+
+**File:** `apps/marketing/src/components/cta-button.tsx:46-52`
+**Issue:** 15-05 的 `6a969e1` 给所有 CTA 加了 `target="_blank" rel="noopener noreferrer"`（安全侧正确，防止 reverse tabnabbing）。但链接现在会在新标签页打开，却**没有任何视觉或可访问性指示**告知用户这是外链行为（无外链图标、无 `aria-label`/visually-hidden "opens in new tab" 提示）。WCAG 2.1 SC G201 建议提前告知用户链接会打开新窗口，否则对屏幕阅读器用户是意外上下文切换。当前三个 CTA（hero primary + footer primary/secondary）全部静默新开。
+**Fix:** 二选一：
+- 视觉：在文案后加一个 `aria-hidden` 外链图标 svg。
+- 可访问性最小：加 `aria-label` 或 visually-hidden 提示，例如：
+```tsx
+<a href={href} target="_blank" rel="noopener noreferrer" ...>
+  {children}
+  <span class="sr-only"> (opens in a new tab)</span>
+</a>
+```
+（注：测试在 `app-sections.spec.tsx:190` 断言 `link?.textContent).toBe(label)`，加 sr-only 文案需同步更新断言为 `toContain(label)`，否则 RED。）
+
 ## Info
 
 ### IN-01: 切换 locale 后文档级 `<html lang>` 与 `<title>` 仍是英文
@@ -180,8 +214,55 @@ void setLocale(next)
 **Issue:** `await setLocale('en')` 写在测试体末尾，前面的断言一旦失败就不会执行——模块级 `currentLocale` 残留 zh_CN，可能让同文件后续（或同进程其他文件）测试出现连锁误报，干扰失败诊断。`app-sections.spec.tsx` 用 `afterEach` 处理了同样的问题，本文件没有。
 **Fix:** 改用 `afterEach(async () => { await setLocale('en'); })`。
 
+### IN-08: `flowTuple()` 每次渲染重算且错误信息缺少定位上下文（15-05 复审新增）
+
+**File:** `apps/marketing/src/app.tsx:46-50`
+**Issue:** `flowTuple()` 每次渲染都调用 `getFlowSteps()` 并做 `[s1,s2,s3]` 解构 + 守卫抛错。逻辑正确（PROOF-02 锁定 3 步），但抛出的 `Error('expected exactly 3 flow steps')` 没有附带实际步数，调试定位成本略高；每次 render 重算的性能影响可忽略（v1 范围非缺陷）。
+**Fix:** 可选地把步数写进错误信息：`throw new Error(\`expected exactly 3 flow steps, got ${getFlowSteps().length}\`)`。
+
+### IN-09: `lang="zh-CN"` 使用了 IANA 已弃用的 region 子标签（15-05 复审新增）
+
+**File:** `apps/marketing/src/app.tsx:55`
+**Issue:** `const langAttr = locale.value === 'zh_CN' ? 'zh-CN' : 'en';` 中 `zh-CN` 是合法且常见的 BCP-47 标签，但 IANA 已将其标记为 deprecated，推荐使用 script 子标签 `zh-Hans`（简体中文）。不影响功能，纯规范优化项。
+**Fix:** 若追求规范可改为 `zh-Hans`；保持现状也可接受。
+
+### IN-10: `main.tsx` 与 `app.tsx` toggle 的"先加载字典再翻 signal"顺序相反（15-05 复审新增）
+
+**File:** `apps/marketing/src/main.tsx:9-16` 对照 `apps/marketing/src/app.tsx:234-241`
+**Issue:** `main.tsx` 的 `init()` 先 `locale.value = detected`（同步翻 signal）**再** `await setLocale(detected)`，最后才 `render`；因为 render 在 await 之后，首次渲染读到的是已加载字典，行为正确。而 `app.tsx` 的 toggle 是先 `await setLocale` 再翻 signal（刻意修复 stale-dictionary bug）。两处顺序相反但各自正确（一个是首次同步初始化、一个是运行时切换）。仅作记录，提示后续维护者不要在抽公共函数时搞反顺序。
+**Fix:** 无需改动；如抽取公共 `switchLocale(signal, next)`，须采用 toggle 的"先 setLocale 后翻 signal"顺序。
+
 ---
 
-_Reviewed: 2026-06-11T02:25:00Z_
+## Phase 15-05 Gap-Closure 复审（2026-06-12T16:32:53Z）
+
+> 本节是对 Phase 15-05 收尾改动（commits `346c07f` "test(15-05): add failing CTA external-link regression" + `6a969e1` "fix(15-05): harden marketing CTA links"，均 2026-06-13）的针对性复审，聚焦三件事：CTA 外链语义、可选 `testId` prop、营销视觉柔化、回归测试。主审查（上文）早于这两次提交，故本节为增量。
+
+### 复审范围
+
+聚焦文件（均为本次复审实测）：
+- `apps/marketing/src/app.tsx`（CTA 接入 testId、locale toggle、视觉柔化）
+- `apps/marketing/src/components/cta-button.tsx`（新增 `testId?` prop、`target="_blank"` + `rel="noopener noreferrer"`）
+- `tests/unit/marketing/app-sections.spec.tsx`（新增 CTA 外链语义回归测试）
+
+### 15-05 改动逐项验证结论
+
+1. **CTA 外链语义 — 安全侧正确。** `cta-button.tsx:46-52` 现渲染 `<a target="_blank" rel="noopener noreferrer" data-testid={testId}>`。`rel="noopener noreferrer"` 同时阻断 reverse tabnabbing（`opener`）与 Referer 泄漏（`noreferrer`），对常量 GitHub URL 是恰当且无遗漏的。三个 CTA（hero primary + footer primary/secondary）全部走该组件，无遗漏点（已 `grep <CtaButton` 确认 app.tsx 内仅 3 处使用且全部传 testId）。
+2. **可选 `testId` prop — 实现正确，无 DOM 泄漏。** `testId?: string`，未传时 Preact 实测省略 `data-testid` 属性（happy-dom 内联验证：`render(<a data-testid={undefined}>)` 产物 `<a href="#">`，无空属性）。不会污染 QA 选择器。
+3. **回归测试 — 实测全绿。** `npx vitest run tests/unit/marketing/app-sections.spec.tsx` 13 例全过（402ms），含 15-05 新增的 "hero and bottom CTAs expose explicit external-link semantics and stable hooks"（spec:174-192），逐 CTA 断言 `href`/`target`/`rel`/`label`，契约锁到位。
+4. **INSTALL_URL 锚点编码 — 正确。** `site-content.ts:9` 的 `%E5%AE%89%E8%A3%85` 经 `decodeURIComponent` 解出 "安装"，与 `encodeURIComponent('安装')` 输出一致；锚点在 GitHub README 上有效。
+5. **locale key parity — 仍 100%。** en/zh_CN 各 63 键，双向集合一致（node 脚本比对，缺失列表均为空）。
+
+### 15-05 复审新增发现
+
+经 15-05 复审发现 2 个 WARNING（WR-08 无障碍 `lang` 属性无测试、WR-09 CTA 外链缺视觉/语义指示）与 3 个 INFO（IN-08/IN-09/IN-10，均非缺陷），已分别并入上方 Warnings / Info 段。无新增 Critical。
+
+### 额外观察（非评审文件范围，供 orchestrator 参考）
+
+**CLAUDE.md §约定 与 `wxt.config.ts` production manifest 不一致：** CLAUDE.md 写"只声明 `activeTab` + `scripting` + `storage`"，但 `wxt.config.ts` production 分支实际声明 `['activeTab', 'alarms', 'scripting', 'storage', 'webNavigation']`（多了 `alarms`、`webNavigation`，与 CLAUDE.md 架构章节用 `chrome.alarms`/`webNavigation` 的描述一致）。营销页 trust 文案 `trust.permissions.fact1`（`en.json:47`）"Production permissions: activeTab, alarms, scripting, storage, webNavigation" 与**实际 manifest 一致**，因此营销文案诚实——是 CLAUDE.md 规范落后于实现。此项**不计入营销代码缺陷**，建议 orchestrator 同步更新 CLAUDE.md §约定的权限清单。
+
+---
+
+_Reviewed: 2026-06-11T02:25:00Z（主审查）+ 2026-06-12T16:32:53Z（15-05 复审）_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: deep_
