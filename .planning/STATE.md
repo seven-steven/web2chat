@@ -4,14 +4,14 @@ milestone: v1.2
 milestone_name: 添加 web 宣传页面
 status: executing
 stopped_at: Phase 15 context gathered
-last_updated: "2026-06-12T16:20:39.686Z"
-last_activity: 2026-06-12 -- Phase 15 planning complete
+last_updated: "2026-06-12T16:29:56.144Z"
+last_activity: 2026-06-12
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
-  percent: 50
+  completed_plans: 9
+  percent: 75
 ---
 
 # 项目状态
@@ -25,10 +25,10 @@ progress:
 
 ## Current Position
 
-Phase: 16 — 发布验收与运营基线
-Plan: pending
+Phase: 15 (promotional-page-content-visual) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-06-12 -- Phase 15 planning complete
+Last activity: 2026-06-12
 
 Progress: [██████░░░░] 75% (3/4 phases)
 
