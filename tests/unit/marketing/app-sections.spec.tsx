@@ -171,6 +171,26 @@ describe('App — CTA placement and shared button contract (CTA-01/CTA-02, D-12/
     expect(heroText).toContain('create_at');
   });
 
+  it('hero and bottom CTAs expose explicit external-link semantics and stable hooks', async () => {
+    await renderApp();
+
+    const ctas = [
+      { testId: 'hero-primary-cta', href: REPO_URL, label: en['hero.cta'] },
+      { testId: 'footer-primary-cta', href: REPO_URL, label: en['cta.primary'] },
+      { testId: 'footer-secondary-cta', href: INSTALL_URL, label: en['cta.secondary'] },
+    ] as const;
+
+    for (const { testId, href, label } of ctas) {
+      const link = container.querySelector(`[data-testid="${testId}"]`);
+      expect(link).toBeTruthy();
+      expect(link?.tagName).toBe('A');
+      expect(link?.getAttribute('href')).toBe(href);
+      expect(link?.getAttribute('target')).toBe('_blank');
+      expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
+      expect(link?.textContent).toBe(label);
+    }
+  });
+
   it('bottom CTA section has primary + secondary buttons sharing the CtaButton contract', async () => {
     await renderApp();
     const blocks = pageBlocks();
