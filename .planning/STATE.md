@@ -2,18 +2,17 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: 添加 web 宣传页面
-status: planned
-stopped_at: Phase 15 complete; ready for Phase 16
-last_updated: "2026-06-12T00:10:00.000Z"
-last_activity: 2026-06-12 -- Phase 15 approved and marked complete
+status: executing
+stopped_at: Phase 15 context gathered
+last_updated: "2026-06-12T16:20:39.686Z"
+last_activity: 2026-06-12 -- Phase 15 planning complete
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 8
-  completed_plans: 4
-  percent: 75
+  completed_phases: 2
+  total_plans: 9
+  completed_plans: 8
+  percent: 50
 ---
-
 
 # 项目状态
 
@@ -28,8 +27,8 @@ progress:
 
 Phase: 16 — 发布验收与运营基线
 Plan: pending
-Status: Planned
-Last activity: 2026-06-12 -- Phase 15 complete; awaiting Phase 16 discuss/plan
+Status: Ready to execute
+Last activity: 2026-06-12 -- Phase 15 planning complete
 
 Progress: [██████░░░░] 75% (3/4 phases)
 

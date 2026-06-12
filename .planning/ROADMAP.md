@@ -47,6 +47,7 @@ Archive: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 **Requirements:** MSG-01, MSG-02, MSG-03, TRUST-01, TRUST-02, TRUST-03, OPS-01, OPS-02
 
 **Success criteria:**
+
 1. 页面 section 列表覆盖 Hero、use cases、structured-payload 示例、支持平台、核心流程、隐私 / 权限、已知限制、CTA。
 2. 所有对外 claims 都能追溯到 `PROJECT.md`、`PRIVACY.md`、`STORE-LISTING.md` 或生产 `wxt.config.ts`。
 3. 明确区分 shipped 平台、deferred 平台、known risk，并把 Telegram live UAT / Nyquist partial 留在风险说明而非主卖点。
@@ -61,11 +62,13 @@ Archive: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 **Plans:** 3 plans
 
 Plans:
+
 - [x] 14-01-PLAN.md — 提取共享 design tokens 到 `shared/`，为 extension 与 marketing app 建立仅样式共享边界
 - [x] 14-02-PLAN.md — 创建 `apps/marketing` workspace app、独立 Vite/TS 配置与根级 `site:*` 代理命令
 - [x] 14-03-PLAN.md — 增加 marketing build smoke verifier 与 BUILD-03 import 隔离测试
 
 **Success criteria:**
+
 1. 新增独立 marketing app 目录与专用 Vite 配置 / scripts，输出目录与 WXT extension build 隔离。
 2. `build` / 扩展现有测试命令保持不变；新增 marketing build / preview / smoke test 命令可单独运行。
 3. marketing app 不 import service worker、storage repositories、messaging、permissions、IM adapters 等扩展 runtime 模块。
@@ -80,12 +83,24 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
+**Wave 1**
+
 - [x] 15-01-PLAN.md — 扩展 marketing content getter、双语 locale 与 content truth 测试 (2026-06-10)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [x] 15-02-PLAN.md — 实现 section/CTA/proof/stepper 共享组件与 mockup 证据模块 (2026-06-11)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [x] 15-03-PLAN.md — 重写 `apps/marketing/src/app.tsx` 为最终 8-section 宣传页并补结构回归测试 (2026-06-11)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [x] 15-04-PLAN.md — 强化 marketing smoke verifier、闭合 README 安装入口与 Phase 15 全量验证 (2026-06-11)
 
 **Success criteria:**
+
 1. 访客在首屏能理解 web2chat 的核心价值、目标用户与主要 CTA。
 2. 页面展示 OpenClaw / Discord / Slack / Telegram 当前 shipped 平台，并避免暗示 Feishu/Lark 或其他 deferred 平台已支持。
 3. 页面包含 3-step flow 与 structured-payload 示例，说明它相对手动复制粘贴的差异。
@@ -99,6 +114,7 @@ Plans:
 **Requirements:** PROOF-03, TRUST-01, TRUST-02, TRUST-03, OPS-01, OPS-02, BUILD-01, BUILD-02, BUILD-03
 
 **Success criteria:**
+
 1. marketing build / preview / smoke test 通过，且 extension build / typecheck / relevant tests 仍通过。
 2. claims / privacy / permissions checklist 通过，页面内容与 `PROJECT.md`、`PRIVACY.md`、`STORE-LISTING.md`、生产 `wxt.config.ts` 一致。
 3. a11y / responsive / link / CTA smoke checks 通过，所有关键链接可访问或有明确占位状态。
@@ -155,6 +171,7 @@ Plans:
 | BUILD-03 | Phase 14, Phase 16 | Phase 14 Satisfied |
 
 **Coverage:**
+
 - v1.2 requirements: 16 total
 - Mapped to phases: 16
 - Unmapped: 0 ✓
