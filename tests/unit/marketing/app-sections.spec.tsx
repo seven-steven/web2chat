@@ -215,6 +215,58 @@ describe('App — CTA placement and shared button contract (CTA-01/CTA-02, D-12/
   });
 });
 
+describe('App — hero locale-toggle discoverability and unified width rhythm (15-06)', () => {
+  it('places the locale toggle inside the hero so it is visible above the fold, not only in the footer', async () => {
+    await renderApp();
+    const blocks = pageBlocks();
+    const hero = blocks[0];
+    expect(hero).toBeTruthy();
+
+    // The toggle must live inside the hero block so visitors discover locale
+    // switching without scrolling to the page bottom.
+    const heroToggle = hero?.querySelector('[data-testid="locale-toggle"]');
+    expect(heroToggle).toBeTruthy();
+    expect(heroToggle?.tagName).toBe('BUTTON');
+
+    // The footer must no longer be the sole discovery point for locale
+    // switching — i.e. the toggle must NOT also live in a footer-only spot.
+    const footer = container.querySelector('footer');
+    const footerToggle = footer?.querySelector('[data-testid="locale-toggle"]') ?? null;
+    expect(footerToggle).toBeNull();
+  });
+
+  it('hero content shares the same readable width rhythm as the main sections (no wider max-w-4xl)', async () => {
+    await renderApp();
+    const hero = pageBlocks()[0];
+
+    // Hero inner container must collapse to the same readable width used by
+    // every other section (max-w-3xl), unifying the page's width rhythm.
+    const heroInner = hero?.querySelector('.max-w-3xl');
+    expect(heroInner).toBeTruthy();
+    // The wider 4xl contract is intentionally retired for this gap closure.
+    const wideInner = hero?.querySelector('.max-w-4xl');
+    expect(wideInner).toBeNull();
+  });
+
+  it('keeps the hero payload preview, primary CTA, and MSG-01/MSG-03 narrative after the layout shift', async () => {
+    await renderApp();
+    const hero = pageBlocks()[0];
+    const heroText = hero?.textContent ?? '';
+
+    // Structured-payload field names still communicate the MSG-03 capture
+    // contract inside the initial viewport.
+    expect(heroText).toContain(en['hero.payloadPreviewLabel']);
+    expect(heroText).toContain('create_at');
+
+    // Single primary CTA still carries the MSG-01 "view source" destination.
+    const accentLinks = Array.from(hero?.querySelectorAll('a') ?? []).filter((a) =>
+      a.className.includes('bg-[var(--color-accent)]'),
+    );
+    expect(accentLinks).toHaveLength(1);
+    expect(accentLinks[0]?.getAttribute('href')).toBe(REPO_URL);
+  });
+});
+
 describe('App — platform truth and risk-copy placement (T-15-07, CLM-LIMIT-01/02)', () => {
   it('platforms section lists exactly OpenClaw, Discord, Slack, Telegram and excludes Feishu/Lark', async () => {
     await renderApp();
