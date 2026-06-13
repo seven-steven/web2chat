@@ -3,47 +3,39 @@ status: partial
 phase: 15-promotional-page-content-visual
 source: [15-VERIFICATION.md]
 started: 2026-06-11T02:55:00Z
-updated: 2026-06-11T02:55:00Z
+updated: 2026-06-13T01:45:00Z
 ---
 
 ## Current Test
 
-[awaiting human testing]
+[awaiting human visual approval after 15-05 gap closure]
 
 ## Tests
 
-### 1. 首屏可理解性
+### 1. marketing 页面局部视觉收敛
 
-expected: 打开宣传页（`pnpm site:preview`）后 5 秒内能理解 web2chat 核心价值（一键把网页结构化信息 + prompt 投递到 IM/AI 会话）与主 CTA（GitHub 仓库入口）。
-result: [pending]
-
-### 2. 响应式 + dark mode
-
-expected: 320px / 768px / 桌面宽度下布局不破版；系统暗色模式下页面配色正常、文字可读。
-result: [pending]
-
-### 3. 键盘 tab 流 + locale 切换
-
-expected: Tab 键依次聚焦 locale toggle、CTA、各交互元素且焦点环可见；点击 locale toggle 整页中英文切换可逆，无残留另一语言文案。
-result: [pending]
-
-### 4. 视觉风格一致性
-
-expected: 页面视觉（accent 色、radius、间距）与现有扩展 popup/options UI 的 design tokens 观感一致。
-result: [pending]
-
-### 5. CTA 外链落点
-
-expected: Hero 主 CTA 跳 GitHub 仓库根；底部安装 CTA 跳 README `## 安装` 锚点并正确定位。
+expected: 在 `pnpm site:preview` 的真实页面中，Hero preview、use case / platform cards、底部 CTA inset panel 相较 gap-closure 前观感更柔和、更适合 web 呈现；如果仍不满意，反馈必须具体到组件/区域，而不是要求整套 shared token 重做。
 result: [pending]
 
 ## Summary
 
-total: 5
+total: 1
 passed: 0
 issues: 0
-pending: 5
+pending: 1
 skipped: 0
 blocked: 0
 
 ## Gaps
+
+- truth: "marketing 页面在不改 shared design tokens 的前提下，局部收敛 Hero、卡片与 CTA band 的视觉层级，观感不再显得生硬。"
+  status: pending-human-review
+  severity: cosmetic
+  source_gap: "15-HUMAN-UAT.md test 4 + 15-VERIFICATION.md re_verification.gaps_remaining[0]"
+  evidence:
+    - "apps/marketing/src/app.tsx 在 Hero preview、section cards、CTA inset panel 使用 local color-mix / border / shadow 柔化"
+    - "shared/styles/design-tokens.css 未改动"
+    - "phase15-05-marketing-page.png 为本次 preview 截图"
+  acceptance_for_close:
+    - "用户确认当前视觉观感可接受"
+    - "若不接受，指出具体区域（Hero preview / use case cards / platform cards / CTA inset panel）"
