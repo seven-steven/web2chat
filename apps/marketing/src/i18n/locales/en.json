@@ -61,5 +61,6 @@
   "cta.subtitle": "web2chat is open source. Read the code, load it unpacked, or grab a release build.",
   "cta.primary": "View project source",
   "cta.secondary": "Installation guide",
+  "footer.tagline": "web2chat — one click from any page to your chat session.",
   "localeToggle.label": "中文 / English"
 }

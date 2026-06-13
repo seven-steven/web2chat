@@ -2,7 +2,7 @@
  * App — final Phase 15 marketing page: 8 sections in locked order (D-01/D-02).
  *
  * Section order + band alternation (15-UI-SPEC / D-04):
- *   1. Hero (canvas, max-w-4xl) — single h1, primary CTA, payload preview
+ *   1. Hero (canvas, max-w-3xl) — locale toggle (above the fold), single h1, primary CTA, payload preview
  *   2. Use cases (subtle)      — 3 compact cards
  *   3. Payload example (canvas) — PopupMockup proof module
  *   4. Supported platforms (subtle) — shipped list only, Telegram warn label
@@ -29,6 +29,7 @@ import {
   getProofMeta,
   getCta,
   getLocaleToggle,
+  getFooterTagline,
 } from './data/site-content';
 import type { FlowStep } from './data/site-content';
 import { t, setLocale } from './i18n/index';
@@ -64,14 +65,36 @@ export function App({ locale }: AppProps) {
   const cta = getCta();
   const targetMockup = getTargetMockup();
   const toggle = getLocaleToggle();
+  const footer = getFooterTagline();
 
   return (
     <div lang={langAttr} class="min-h-screen bg-[var(--color-canvas)] text-[var(--color-ink-base)]">
       <main>
-        {/* 1. Hero — canvas band, the only max-w-4xl section (D-03) */}
+        {/* 1. Hero — canvas band, unified max-w-3xl width rhythm (15-06, D-03) */}
         <section class="bg-[var(--color-canvas)] py-16">
-          <div class="mx-auto max-w-4xl px-6 sm:px-8">
-            <div class="md:grid md:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] md:items-center md:gap-8">
+          <div class="mx-auto max-w-3xl px-6 sm:px-8">
+            {/* Utility row: locale toggle is discoverable above the fold.
+                Restrained text-link affordance only — no navbar, no anchor
+                menu, no sticky chrome (D-02). */}
+            <div class="flex justify-end">
+              <button
+                type="button"
+                data-testid="locale-toggle"
+                class="min-h-[44px] rounded-[var(--radius-soft)] px-3 text-sm text-[var(--color-ink-muted)] underline underline-offset-4 hover:text-[var(--color-ink-strong)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent-ring)] focus-visible:outline-none"
+                onClick={() => {
+                  const next = locale.value === 'en' ? 'zh_CN' : 'en';
+                  // Load the dictionary first, then flip the signal so the
+                  // re-render reads the fully loaded locale (no stale copy).
+                  void setLocale(next).then(() => {
+                    locale.value = next;
+                  });
+                }}
+              >
+                {toggle.label}
+              </button>
+            </div>
+
+            <div class="mt-2 md:grid md:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] md:items-center md:gap-8">
               <div>
                 <h1 class="text-[28px] leading-[1.15] font-semibold text-[var(--color-ink-strong)]">
                   {hero.title}
@@ -227,21 +250,7 @@ export function App({ locale }: AppProps) {
       </main>
 
       <footer class="border-t border-[var(--color-rule)] py-4 text-center">
-        <button
-          type="button"
-          data-testid="locale-toggle"
-          class="min-h-[44px] rounded-[var(--radius-soft)] px-4 text-sm text-[var(--color-ink-muted)] underline underline-offset-4 hover:text-[var(--color-ink-strong)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent-ring)] focus-visible:outline-none"
-          onClick={() => {
-            const next = locale.value === 'en' ? 'zh_CN' : 'en';
-            // Load the dictionary first, then flip the signal so the
-            // re-render reads the fully loaded locale (no stale copy).
-            void setLocale(next).then(() => {
-              locale.value = next;
-            });
-          }}
-        >
-          {toggle.label}
-        </button>
+        <p class="text-sm text-[var(--color-ink-muted)]">{footer.tagline}</p>
       </footer>
     </div>
   );

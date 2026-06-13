@@ -114,6 +114,16 @@ export interface LocaleToggle {
   label: string;
 }
 
+/**
+ * Footer content — a single restrained tagline line that closes the page.
+ * Replaces the former footer-only locale toggle (15-06): locale switching
+ * now lives above the fold in the hero utility row, so the footer carries
+ * only a calm project tagline.
+ */
+export interface FooterContent {
+  tagline: string;
+}
+
 /** Target-chat mockup copy (D-06 / D-07) — locale-following demo strings. */
 export interface TargetMockupContent {
   chatLabel: string;
@@ -268,6 +278,11 @@ export function getCta(): CtaContent {
 
 export function getLocaleToggle(): LocaleToggle {
   return { label: t('localeToggle.label') };
+}
+
+/** Footer tagline (15-06) — calm project close line, locale-following. */
+export function getFooterTagline(): FooterContent {
+  return { tagline: t('footer.tagline') };
 }
 
 /**

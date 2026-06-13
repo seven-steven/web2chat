@@ -61,5 +61,6 @@
   "cta.subtitle": "web2chat 是开源项目。阅读代码、本地加载，或下载 Release 构建。",
   "cta.primary": "查看项目源码",
   "cta.secondary": "安装指引",
+  "footer.tagline": "web2chat —— 从任意网页一次点击投递到你的聊天会话。",
   "localeToggle.label": "中文 / English"
 }
