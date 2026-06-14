@@ -43,7 +43,7 @@ requirements-completed:
   - MSG-03
   - PROOF-03
 duration: ~10 min
-completed: 2026-06-13
+completed: 2026-06-14
 ---
 
 # Phase 15 Plan 06: Gap Closure — Above-the-fold Locale Toggle & Unified Width Summary
@@ -54,7 +54,7 @@ Closed the remaining Phase 15 subjective layout gap by relocating the locale tog
 
 - **Start:** 2026-06-13T03:00:00Z
 - **End:** 2026-06-13T03:07:27Z
-- **Tasks:** 1/2 complete (Task 2 is a blocking human-verify checkpoint, pending)
+- **Tasks:** 2/2 complete (Task 2 human-verify checkpoint approved 2026-06-14)
 - **Files modified:** 4 source/i18n files + 1 test file
 
 ## Commits
@@ -122,7 +122,7 @@ Closed the remaining Phase 15 subjective layout gap by relocating the locale tog
 
 ## Human Verification
 
-Task 2 (`checkpoint:human-verify`, gate=blocking) is the closing step of this plan and remains **pending**. All automatable checks above pass; the final subjective taste approval of (1) above-the-fold locale discoverability and (2) unified width rhythm must be performed by a human in `pnpm site:preview`. This plan is not closed until that checkpoint is approved.
+Task 2 (`checkpoint:human-verify`, gate=blocking) — **APPROVED 2026-06-14**. The user performed the final taste verification in `pnpm site:preview` and approved both gap objectives: (1) the locale toggle is discoverable above the fold in the hero utility row, and (2) the page now reads with a unified readable width rhythm from the hero through the closing CTA. Both gap-closure targets for Phase 15's second subjective-layout pass are closed.
 
 ## Known Stubs
 
