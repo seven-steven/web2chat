@@ -272,7 +272,7 @@ export function CtaButton({ href, variant, testId, children }: CtaButtonProps) {
 
 **NOTE on aria-label:** Use `aria-label` ONLY when `children` is a plain string. Since `children: ComponentChildren` may contain JSX, prefer the **sr-only span** approach as the primary AT warning (works regardless of children type) and the visible `↗` glyph as the visual warning. The `aria-label` variant is brittle when `children` is JSX. **Recommendation: sr-only span + visible glyph only; skip aria-label** unless all three CTAs pass plain-string children (which they do today — `hero.cta`, `cta.primary`, `cta.secondary` are all locale strings). Verify by inspecting `app.tsx:106-107, 242-247`.
 
-`[CITED: w3.org/WAI/WCAG21/Techniques/general/G201]` — official technique description and examples (visual icon + `aria-describedby` or visible text).
+`[CITED: w3.org/WAI/WAI/WCAG21/Techniques/general/G201]` — official technique description and examples (visual icon + `aria-describedby` or visible text).
 
 ### Pattern 4: lang attribute contract test
 
@@ -480,21 +480,21 @@ it('each CTA exposes a visible external-link glyph and an sr-only new-tab warnin
 
 **A3 and A5 are the only items that genuinely warrant planner/user confirmation.** The rest are LOW risk.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Where should `.sr-only` live?**
    - What we know: WCAG G201 needs visually-hidden text. Tailwind v4 may or may not ship `.sr-only` by default.
    - What's unclear: Whether `apps/marketing/src/styles/index.css` or `shared/styles/design-tokens.css` already defines it.
-   - Recommendation: Planner Wave 0 task: `grep -r "sr-only" apps/marketing/src/ shared/styles/`. If absent, add to `apps/marketing/src/styles/index.css` (marketing-local — keep out of shared tokens per Phase 15's "shared tokens untouched" guardrail).
+   - **RESOLVED:** Add the `.sr-only` utility class to `apps/marketing/src/styles/index.css` (marketing-local — NOT shared design tokens, per Phase 15's "shared tokens untouched" guardrail). 16-03 Task 0 is a Wave 0 precondition that performs the grep (`grep -rn "sr-only" apps/marketing/src/ shared/styles/`), confirms zero existing matches, then appends the canonical WCAG boilerplate after the existing `@import` lines. Pattern mapping during planning confirmed the class is absent from both `apps/marketing/src/` and `shared/styles/`.
 
 2. **Should verify:claims also assert PROJECT.md platform set textually?**
    - What we know: PROJECT.md says "Current shipped platform set: OpenClaw / Discord / Slack / Telegram". 13-CONTENT-SOURCES CLM-PLATFORM-01 lists the same set.
    - What's unclear: Whether to grep PROJECT.md at verify-time (cross-source check from a third doc) or treat the locale-key presence check as sufficient (since site-content already sources from PROJECT.md-via-13-CONTENT-SOURCES).
-   - Recommendation: Keep verify:claims to TWO sources per claim (locale JSON + manifest OR locale JSON + forbidden-wording list). Three-source checks create tri-directional drift. The platform set is already locked by `verify-build.mjs:50-53` REQUIRED_PAGE_MARKERS `[CITED: apps/marketing/scripts/verify-build.mjs:36-59]`. Phase 16 should add a `verify:claims` assertion that the 4 platform names appear in `supportedPlatforms.*` locale keys, but NOT scan PROJECT.md.
+   - **RESOLVED:** verify:claims uses LOCALE KEYS ONLY (no third-source PROJECT.md grep). 16-01 rule (d) hardcodes the platform whitelist `['OpenClaw', 'Discord', 'Slack', 'Telegram']` (matching `verify-build.mjs:50-53` REQUIRED_PAGE_MARKERS) and asserts each name appears in some `supportedPlatforms.*` locale key, plus a Feishu/Lark leak scan. The platform set itself is already locked by `verify-build.mjs:50-53` REQUIRED_PAGE_MARKERS `[CITED: apps/marketing/scripts/verify-build.mjs:36-59]` — adding a PROJECT.md grep would create tri-directional drift with no added safety.
 
 3. **Should maintenance doc reference each Phase 15 screenshot command or just `pnpm assets:screenshot`?**
    - What we know: `scripts/screenshot-assets.mjs` exists (1935 bytes). 13-CONTENT-SOURCES §Maintenance Rules already names it `[CITED: 13-CONTENT-SOURCES.md:195]`.
-   - Recommendation: Reference only `pnpm assets:screenshot` (the script's npm entry) — keep doc stable if internal script path changes.
+   - **RESOLVED:** Reference ONLY the stable npm entry `pnpm assets:screenshot` (NOT the internal script path `scripts/screenshot-assets.mjs`). 16-04's MAINTENANCE.md entry points at the npm script so the doc stays stable if the internal path is later renamed. The npm entry is the documented interface.
 
 ## Environment Availability
 
