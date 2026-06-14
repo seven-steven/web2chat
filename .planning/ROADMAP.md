@@ -113,6 +113,19 @@ Plans:
 
 **Requirements:** PROOF-03, TRUST-01, TRUST-02, TRUST-03, OPS-01, OPS-02, BUILD-01, BUILD-02, BUILD-03
 
+**Plans:** 4 plans
+
+Plans:
+**Wave 1**
+
+- [ ] 16-01-PLAN.md — 构建 `verify:claims` 跨源一致性校验脚本（TDD：RED 测试先行 → GREEN 实现 → 导出 `assertClaims` + `ClaimsInputs` + `isDirectInvocation` 守卫 + `package.json` 脚本）
+- [ ] 16-03-PLAN.md — 收口可访问性 WR-08/WR-09/WR-02：`.sr-only` 工具类 + CtaButton WCAG G201 外链指示 + `document.documentElement.lang` 契约（init + toggle）+ 4 个新单测 + zh_CN smoke markers
+- [ ] 16-04-PLAN.md — 新增根级 `MAINTENANCE.md`（OPS-01 source-first → artifact-second → page-last 更新路径）+ `CHANGELOG.md ## [v1.2]` 含真实 Known Issues（TRUST-03：Telegram UAT / Nyquist partial / Feishu-Lark dropped）
+
+**Wave 2** *(blocked on Wave 1 / 16-01 completion — CI 需 `verify:claims` 脚本已存在)*
+
+- [ ] 16-02-PLAN.md — 扩展 `.github/workflows/ci.yml` 单 `verify` job：追加 `site:build` → `site:verify` → `verify:readme` → `verify:claims` 四步（按序在 `verify:manifest` 之后，关闭 WR-03）
+
 **Success criteria:**
 
 1. marketing build / preview / smoke test 通过，且 extension build / typecheck / relevant tests 仍通过。
@@ -147,7 +160,7 @@ Plans:
 | 13. 信息架构与文案事实源 | v1.2 | 1/1 | Complete | 2026-06-02 |
 | 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 3/3 | Complete | 2026-06-02 |
 | 15. 宣传页内容与视觉实现 | v1.2 | 5/5 | Complete   | 2026-06-12 |
-| 16. 发布验收与运营基线 | v1.2 | 0/0 | Planned | — |
+| 16. 发布验收与运营基线 | v1.2 | 0/4 | Planned | — |
 
 ## Requirement Coverage
 
