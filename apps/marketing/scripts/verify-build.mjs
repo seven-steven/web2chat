@@ -137,6 +137,12 @@ export function assertBuildOutput(distDir, errors) {
   if (!/<script[^>]*type="module"[^>]*>/.test(html)) {
     errors.push('dist/index.html missing a module script tag (no JS entry wired)');
   }
+  if (!/<link[^>]*rel="icon"[^>]*href="\/favicon\.svg"[^>]*>/.test(html)) {
+    errors.push('dist/index.html missing favicon link (/favicon.svg)');
+  }
+  if (!existsSync(resolve(distDir, 'favicon.svg'))) {
+    errors.push('dist/favicon.svg not found');
+  }
 
   // Final-page content markers — scanned across index.html + asset chunks.
   const distText = readDistText(distDir);
