@@ -87,6 +87,9 @@ export function App({ locale }: AppProps) {
                   // re-render reads the fully loaded locale (no stale copy).
                   void setLocale(next).then(() => {
                     locale.value = next;
+                    // Keep the <html> lang in lockstep with the app-root lang
+                    // (WR-08). Same expression as main.tsx init.
+                    document.documentElement.lang = next === 'zh_CN' ? 'zh-CN' : 'en';
                   });
                 }}
               >

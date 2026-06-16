@@ -11,6 +11,7 @@
  * Rendered as a link (`<a>`) — both CTA targets are external GitHub URLs.
  */
 import type { ComponentChildren } from 'preact';
+import { t } from '../i18n/index';
 
 export interface CtaButtonProps {
   href: string;
@@ -51,6 +52,14 @@ export function CtaButton({ href, variant, testId, children }: CtaButtonProps) {
       class={`${baseClass} ${variantClass[variant]}`}
     >
       {children}
+      {/* WCAG G201 / WR-09 — visible external-link glyph (hidden from AT) +
+          sr-only new-tab warning (i18n-routed, CLAUDE.md §i18n). Deliberately
+          omits an accessible-name override so the name keeps the plain-string
+          children (D2). */}
+      <span aria-hidden="true" class="ml-1.5 inline-block translate-y-[1px]">
+        ↗
+      </span>
+      <span class="sr-only">{t('cta.externalLink')}</span>
     </a>
   );
 }
