@@ -96,6 +96,8 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - Telegram 缺真实登录会话 headed UAT 证据
 - Feishu/Lark 已正式 dropped，不属于当前 shipped scope
 
+**Phase 16 complete (2026-06-16):** 发布验收与运营基线交付——`verify:claims` 跨源一致性校验器（self-enforcing CI gate）、marketing + claims CI wiring、a11y 收口（WR-08/09/02）、`MAINTENANCE.md` 维护路径 + `CHANGELOG [v1.2]` 诚实 Known Issues。2 项视觉 UAT（G201 glyph 渲染、responsive）待人工确认，已记入 `16-HUMAN-UAT.md`。
+
 ## Next Milestone Goals
 
 - v1.2 聚焦“仓库内静态 web 宣传页”，交付可发布的产品介绍入口
@@ -123,4 +125,4 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 本文档在 phase 切换与 milestone 边界处更新。
 
 ---
-*Last updated: 2026-06-01 after starting v1.2 milestone*
+*Last updated: 2026-06-16 after completing Phase 16 (release-acceptance-ops-baseline)*
