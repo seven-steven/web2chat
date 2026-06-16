@@ -12,16 +12,15 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话——其余功能可以让步，这条主链路必须稳定可用。
 
-## Current Milestone: v1.2 添加 web 宣传页面
+## Current Milestone: v2.0 待规划
 
-**Goal:** 在当前仓库内交付一个可发布的静态 web 宣传页，让首次访问者快速理解 web2chat 的用途、支持平台、核心流程、隐私承诺与安装入口。
+**状态:** v1.2 已于 2026-06-17 交付。下一 milestone 尚未定义 requirements，通过 `/gsd:new-milestone` 进入新一轮 questioning → research → requirements → roadmap。
 
-**Target features:**
-- 静态产品宣传页，清晰说明 web2chat 的核心价值与使用场景
-- 支持平台与工作流展示：OpenClaw / Discord / Slack / Telegram，以及“网页 → prompt → 聊天会话”的主链路
-- 隐私与本地优先说明：数据本地处理、用户主动发送、无第三方上报
-- 安装 / 获取入口：面向 Chrome/Chromium 用户的下载或安装指引
-- 仓库内维护，随扩展版本一起演进
+**v2.0 候选方向（尚未立项）:**
+- 重新评估 Feishu/Lark 是否存在可稳定定位会话的新技术路径（平台 API / 稳定 chat identity / 新定位模型）
+- 为 Telegram 补 live session headed-browser UAT，或作为 v1.1.x closeout 补证据
+- 扩展宣传页为 docs portal / changelog page / localized site / hosted interactive demo
+- 历史记录搜索 / 收藏管理界面、配置导入导出、自定义模板编辑器
 
 ## 需求 (Requirements)
 
@@ -40,11 +39,12 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - [x] Slack 适配器（URL 匹配 + 登录检测 + 富文本注入 + 发送确认）— Validated in Phase 10 / 10.1（SLK-01..05）
 - [x] Telegram 适配器（Web K URL 匹配 + contenteditable 注入 + 4096-char 截断）— Validated in Phase 11（TG-01..05，live UAT 待补）
 - [x] 低置信度确认流收尾修复：`needs_confirmation` 时 popup 保持打开并复用原始 snapshot — Quick task 260517-aa3（da18746）
+- [x] v1.2 静态 web 宣传页：仓库内交付可发布 `apps/marketing` 页面，展示产品定位、支持平台、核心流程、隐私承诺与安装入口 — Validated in Phase 13–16（MSG-01..03、PROOF-01..03、CTA-01/02、TRUST-01/02、BUILD-01..03、OPS-01/02；16/16 requirements satisfied）
+- [x] 宣传页防过宣传机制：`verify:claims` 跨源一致性校验器 + CI gate + `MAINTENANCE.md` source-first 维护链 + `CHANGELOG [v1.2]` 诚实 Known Issues — Validated in Phase 16（TRUST-03、OPS-01/02）
 
 ### 进行中 (Active)
 
-- [ ] v1.2 静态 web 宣传页：仓库内交付可发布页面，展示产品定位、支持平台、核心流程、隐私承诺与安装入口
-- [ ] 将 Telegram live UAT / Phase 11-12 Nyquist partial 仅记录为已知风险，不纳入 v1.2 宣传页交付范围
+(None — v1.2 已交付，下一 milestone v2.0 待规划。候选方向见下方 Deferred。)
 
 ### 不在范围 (Out of Scope)
 
@@ -72,8 +72,8 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - **存储**：所有持久化配置仅写入 `chrome.storage.local`（无云端、无后端）
 - **已交付 v1.0**：313 commits, 11,399 LOC TypeScript/TSX, 225 单元测试, 7 phases / 41 plans
 - **已交付 v1.1**：支持平台扩展到 OpenClaw / Discord / Slack / Telegram；27 plans 收尾，Feishu/Lark 经 UAT 证伪后不进入 shipped scope
-- **v1.2 方向**：新增仓库内静态 web 宣传页，用于对外介绍产品、展示支持平台、说明隐私边界并承接安装入口；不改变扩展主链路
-- **技术栈**：WXT 0.20.x + Preact 10.29 + @preact/signals + Tailwind v4 + Vitest 3 + Playwright 1.58
+- **已交付 v1.2**：仓库内 `apps/marketing` 静态宣传页（en/zh_CN 双语 8-section）+ `verify:claims` 跨源校验 CI gate + 发布验收运营基线；14 plans / 4 phases，16/16 requirements 满足，不改扩展主链路
+- **技术栈**：WXT 0.20.x + Preact 10.29 + @preact/signals + Tailwind v4 + Vitest 3 + Playwright 1.58（marketing app 复用 Preact + Tailwind v4 + 独立 Vite build）
 
 ## 约束 (Constraints)
 
@@ -89,20 +89,24 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 **Shipped versions:**
 - v1.0 — OpenClaw + Discord MVP
 - v1.1 — 多渠道适配：Slack / Telegram + dispatch robustness hardening
+- v1.2 — 添加 web 宣传页面：仓库内 `apps/marketing` 静态宣传页 + `verify:claims` 跨源校验 CI gate + 发布验收运营基线
 
 **Current shipped platform set:** OpenClaw / Discord / Slack / Telegram
+
+**Marketing site:** `apps/marketing`（仓库内 Preact + Tailwind v4 静态页，en / zh_CN 双语，独立 build / preview / smoke test，与扩展 runtime 完全隔离）。所有对外 claim 由 `verify:claims` 在 CI 自动校验，与 `PROJECT.md` / `PRIVACY.md` / `STORE-LISTING.md` / 生产 `wxt.config.ts` 一致。
 
 **Known closeout gaps:**
 - Telegram 缺真实登录会话 headed UAT 证据
 - Feishu/Lark 已正式 dropped，不属于当前 shipped scope
+- Phase 11/12 Nyquist closeout 仍 partial
 
-**Phase 16 complete (2026-06-16):** 发布验收与运营基线交付——`verify:claims` 跨源一致性校验器（self-enforcing CI gate）、marketing + claims CI wiring、a11y 收口（WR-08/09/02）、`MAINTENANCE.md` 维护路径 + `CHANGELOG [v1.2]` 诚实 Known Issues。2 项视觉 UAT（G201 glyph 渲染、responsive）待人工确认，已记入 `16-HUMAN-UAT.md`。
+**Phase 16 complete (2026-06-16):** 发布验收与运营基线交付——`verify:claims` 跨源一致性校验器（self-enforcing CI gate）、marketing + claims CI wiring、a11y 收口（WR-08/09/02）、`MAINTENANCE.md` 维护路径 + `CHANGELOG [v1.2]` 诚实 Known Issues。WCAG G201 可见字形 + responsive 经 Playwright `launchPersistentContext` 实测确认（375px/1280px 双断点，zh_CN/en 双 locale），Phase 15/16 verification 从 `human_needed` 推到 `passed`。
 
 ## Next Milestone Goals
 
-- v1.2 聚焦“仓库内静态 web 宣传页”，交付可发布的产品介绍入口
-- 页面必须覆盖：产品定位、核心流程、支持平台、隐私承诺、安装 / 获取入口
-- Telegram live UAT 与 Phase 11-12 Nyquist partial 仅作为已知风险记录，不纳入 v1.2 交付范围
+- v2.0 尚未立项。通过 `/gsd:new-milestone` 进入新一轮 requirements 定义。
+- 候选方向（非承诺）：Feishu/Lark 新技术路径重评、Telegram live UAT 补证据、宣传页扩展为 docs portal / changelog / localized site、扩展侧历史记录 / 配置导入导出 / 模板编辑器。
+- Telegram live UAT 与 Phase 11-12 Nyquist partial 继续作为已知风险记录，除非被显式立项为某 milestone 的交付范围。
 
 ## 关键决策 (Key Decisions)
 
@@ -118,11 +122,14 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 | Registry-driven adapter architecture | 新平台只改适配器层，避免 pipeline / SW 扩散 | ✓ 验证：Slack / Telegram / Feishu 试验都未要求改 SW 主干 |
 | Slack redirect host 单独声明可观测权限 | 最小权限面下修复 app.slack.com → slack.com 登录跳转检测 | ✓ 验证：Phase 10.1 regression 关闭 |
 | Feishu/Lark 从 shipped scope 移除 | 共享 URL blocker 让 URL-based targeting 不可靠 | ✓ 验证：避免不稳定能力进入 v1.1 |
-| v1.2 聚焦仓库内静态宣传页 | 当前 shipped platform set 已具备对外说明价值；宣传页应随扩展代码同仓维护，避免引入独立站点运维 | — Pending |
+| v1.2 聚焦仓库内静态宣传页 | 当前 shipped platform set 已具备对外说明价值；宣传页应随扩展代码同仓维护，避免引入独立站点运维 | ✓ 验证：`apps/marketing` 交付，独立 build / 隔离 runtime，0 额外部署 |
+| 宣传页走共享 design tokens 而非共享组件 | extension popup 与 marketing 需视觉一致但运行时隔离；仅共享 CSS，禁止 import 扩展 runtime | ✓ 验证：BUILD-03 隔离测试持续通过 |
+| `verify:claims` 作为 self-enforcing CI gate | 人工 claim checklist 易腐化；把一致性变成编译期拦截 | ✓ 验证：5 条规则在 CI 每个 PR 自动跑，Phase 16 TRUST-03 / OPS-02 闭合 |
+| WCAG G201（visible glyph + sr-only）而非 aria-label | 保留可访问名来自字符串子节点，sr-only 走 i18n 路由 | ✓ 验证：Playwright 实测双 locale glyph 可见 + sr-only 视觉隐藏 |
 
 ## 演进 (Evolution)
 
 本文档在 phase 切换与 milestone 边界处更新。
 
 ---
-*Last updated: 2026-06-16 after completing Phase 16 (release-acceptance-ops-baseline)*
+*Last updated: 2026-06-17 after v1.2 milestone (添加 web 宣传页面 shipped)*

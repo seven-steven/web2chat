@@ -11,6 +11,10 @@ dist/
 coverage/
 playwright-report/
 test-results/
+.playwright-mcp/
+
+# Local verification screenshots (binary assets, never archived)
+/*.png
 
 # Logs
 *.log

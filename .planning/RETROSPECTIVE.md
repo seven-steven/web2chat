@@ -98,16 +98,58 @@
 
 ---
 
+## Milestone: v1.2 — 添加 web 宣传页面
+
+**Shipped:** 2026-06-17
+**Phases:** 4 | **Plans:** 14
+
+### What Was Built
+
+仓库内独立静态 marketing app（`apps/marketing`，Preact + Tailwind v4 + 独立 Vite build），en/zh_CN 双语 8-section 宣传页。配套 `verify:claims` 跨源一致性校验器（CI self-enforcing gate）、`MAINTENANCE.md` source-first 维护链、`CHANGELOG [v1.2]` 诚实 Known Issues、WCAG G201 外链可访问性。整个 milestone 不改扩展运行时主链路。
+
+### What Worked
+
+- **独立 workspace app 从第一天就隔离**：Phase 14 先建骨架 + BUILD-03 import 隔离测试，后续 Phase 15 写页面内容时 runtime 边界已被测试锁定，没有出现 marketing 误引扩展模块。
+- **TDD 的 verify:claims 闭环**：16-01 用 RED→GREEN 先写校验器测试再实现，最终脚本 5 条规则覆盖了 CLAIMS Matrix 的所有 CLM-* 项，TRUST-03 / OPS-02 一次闭合。
+- **Playwright 实测关闭人工 UAT**：G201 可见字形 + responsive 两个维度用 `launchPersistentContext` + computed-style/bounding-rect 断言实测（非裸 DOM 存在性检查），把 human_needed 推到 passed，证据可复核而非口头确认。
+- **诚实边界写入 release notes**：TRUST-03 故意把 Telegram UAT / Nyquist partial / Feishu-Lark dropped 留在风险说明而非卖点，`verify:claims` 还禁止 cloud sync / 用户行为分析等过宣传词。
+
+### What Was Inefficient
+
+- **Phase 15 出现 2 个 gap-closure plan（15-05/15-06）**：初版页面 CTA 缺 `target="_blank" rel="noopener noreferrer"`（UAT issue 5「点击没跳转」）+ locale toggle 藏在 footer 不易发现，本应在 15-02/15-03 初次实现时就纳入外链语义与首屏可见性。
+- **cosmetic 维度拖到 milestone 尾部**：design tokens「有点丑」(UAT issue 4) 一直作为唯一保留的 human_needed 项，期间反复主观评估；这类纯审美项应更早由维护者拍板，避免反复返工。
+
+### Patterns Established
+
+- **marketing build verification 模式**：`assertBuildOutput(distDir, errors)` 纯函数 + CLI guard + `REQUIRED_PAGE_MARKERS` 在 dist 全文本资产逐一断言，可直接被单测覆盖。
+- **跨源 claim 校验模式**：`verify:claims` 把 PROJECT/PRIVACY/STORE-LISTING/生产 manifest 作为单一事实源，宣传页 claim 与之逐项比对，人工 checklist 自动化。
+- **source-first → artifact-second → page-last 维护链**：`MAINTENANCE.md` 为每类 claim（平台/隐私/权限/截图/CTA）给出固定更新顺序，避免维护者反向从页面抠内容。
+- **CI 单 job 扩展模式**：4 个 marketing/claims gate 并入现有 verify job（8→12 run steps，+10-15s），比并行 jobs 省 checkout+install。
+
+### Key Lessons
+
+- **人工 UAT 维度能用机器实测就别留目视**：G201/responsive 经 Playwright computed-style 断言后可复核，比「我看了没问题」可追溯得多。
+- **外链语义与首屏可见性是首版就该定的**：CTA target/rel、locale toggle 位置这类「发布门槛」属性，应在组件初次实现时纳入，而不是等 UAT 报问题再 gap-closure。
+- **self-enforcing gate 优于 checklist**：把 claim 一致性、README 锚点、manifest 权限都变成 CI 编译期拦截，人工维护成本显著下降。
+
+### Cost Observations
+
+- Model mix: quality profile 全程；gap-closure（15-05/15-06）与发布验收（Phase 16）占比高
+- Sessions: 含 favicon quick task 收尾 + Playwright UAT 实测
+- Notable: 宣传页 milestone 成本远低于扩展运行时 milestone（14 plans / 16 days vs v1.1 的 27 plans / 19 days），因为不触碰主链路、无平台 DOM 适配不确定性
+
+---
+
 ## Cross-Milestone Trends
 
-| Metric | v1.0 | v1.1 |
-|--------|------|------|
-| Phases | 7 | 6 |
-| Plans | 41 | 27 |
-| Plans/Phase | 5.9 avg | 4.5 avg |
-| Timeline (days) | 11 | 19 |
-| Commits | 313 | 534 total repo commits at close |
-| LOC | 11,399 | 18,837 |
-| Unit tests | 225 | extensive adapter + regression coverage |
-| Gap closure plans | 4 (10%) | 3 explicit gap closures + 1 inserted phase |
-| Avg plan duration | ~6 min | mixed; platform work + audit tail longer |
+| Metric | v1.0 | v1.1 | v1.2 |
+|--------|------|------|------|
+| Phases | 7 | 6 | 4 |
+| Plans | 41 | 27 | 14 |
+| Plans/Phase | 5.9 avg | 4.5 avg | 3.5 avg |
+| Timeline (days) | 11 | 19 | 16 |
+| Commits | 313 | 534 total repo commits at close | 665 total / 125 in v1.2 range |
+| LOC | 11,399 | 18,837 | 19,287 (repo-wide, +marketing app) |
+| Unit tests | 225 | extensive adapter + regression coverage | 518 passed (59 files) at v1.2 close |
+| Gap closure plans | 4 (10%) | 3 explicit gap closures + 1 inserted phase | 2 gap-closure plans (15-05/15-06) |
+| Avg plan duration | ~6 min | mixed; platform work + audit tail longer | shorter; static-page + CI work |
