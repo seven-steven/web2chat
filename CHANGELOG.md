@@ -2,6 +2,25 @@
 
 All notable changes to this project are documented in this file.
 
+## [v1.2] - 2026-06-14
+
+
+### Features
+
+- Ship the bilingual (zh-CN primary + en) marketing page covering OpenClaw / Discord / Slack / Telegram, the structured-payload preview, a privacy + permission trust section, and a Known limits section (Phase 13–15).
+- Add the `verify:claims` cross-source consistency verifier and wire the marketing/claims gates into CI (`site:build` / `site:verify` / `verify:readme` / `verify:claims`) so the Phase 13 Claims Matrix is self-enforcing (Phase 16).
+- Close WCAG G201 external-link indication on `CtaButton` (SR-only "opens in new tab" text + visible `↗` glyph) and add a `lang` attribute contract test.
+
+### Documentation
+
+- Add a root-level `MAINTENANCE.md` formalizing the source-first → artifact-second → page-last update paths for marketing claims (platform list, privacy, permissions, screenshots/mockups, CTA text).
+
+### Known Issues
+
+- Telegram automation coverage passes, but a real logged-in headed-browser UAT artifact has not yet been recorded (carried forward from v1.1).
+- Phase 11/12 Nyquist closeout is recorded as a known risk only — not a marketing claim and not a v1.2 deliverable.
+- Feishu/Lark remains out of shipped scope (evaluated and dropped after UAT confirmed shared-URL targeting breaks dispatch).
+
 ## [v1.1] - 2026-05-31
 
 
