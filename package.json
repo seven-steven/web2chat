@@ -25,6 +25,7 @@
     "test:e2e": "wxt build --mode development && playwright test",
     "test:i18n-coverage": "tsx scripts/i18n-coverage.ts",
     "verify:manifest": "wxt build && tsx scripts/verify-manifest.ts",
+    "verify:claims": "wxt build && tsx scripts/verify-claims.ts",
     "verify:zip": "wxt build && wxt zip && tsx scripts/verify-zip.ts",
     "verify:readme": "tsx scripts/verify-readme-anchors.ts",
     "assets:screenshot": "node scripts/screenshot-assets.mjs",
