@@ -151,6 +151,33 @@ describe('App — semantic outline and locale toggle (T-15-09)', () => {
   });
 });
 
+describe('App — document lang attribute contract (WR-08)', () => {
+  it('renders an app-root lang attribute matching the active locale signal', async () => {
+    await renderApp();
+    expect(container.firstElementChild?.getAttribute('lang')).toBe('en');
+  });
+
+  it('flips the app-root lang to zh-CN when the locale signal toggles', async () => {
+    await renderApp();
+    const toggle = container.querySelector('[data-testid="locale-toggle"]') as HTMLButtonElement;
+    await act(async () => {
+      toggle.click();
+    });
+    await flush();
+    expect(container.firstElementChild?.getAttribute('lang')).toBe('zh-CN');
+  });
+
+  it('keeps document.documentElement.lang in lockstep with the app-root lang after toggle', async () => {
+    await renderApp();
+    const toggle = container.querySelector('[data-testid="locale-toggle"]') as HTMLButtonElement;
+    await act(async () => {
+      toggle.click();
+    });
+    await flush();
+    expect(document.documentElement.getAttribute('lang')).toBe('zh-CN');
+  });
+});
+
 describe('App — CTA placement and shared button contract (CTA-01/CTA-02, D-12/D-13)', () => {
   it('hero contains exactly one primary CTA plus an inline payload preview', async () => {
     await renderApp();
