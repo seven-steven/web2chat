@@ -225,6 +225,16 @@ export function assertClaims(input: ClaimsInputs, errors: string[]): void {
   // ─── (e) Proof metadata presence (PROOF-03) ─────────────────────────────
   // All four ACTUAL proof.* keys MUST exist in both locales; proof.label MUST
   // equal 'mockup' (locks the mockup-vs-screenshot status).
+  //
+  // CR-02: the value-equality check uses strict `!== 'mockup'` so the same
+  // operator-greppable error fires whether `proof.label` is MISSING entirely
+  // (deleted from one or both locales) OR has a wrong value. The old guard
+  // `label !== undefined && label !== 'mockup'` silently skipped the value
+  // check when the key was absent — combined with the parity rule (c) only
+  // comparing key SETS across locales, a simultaneous delete of `proof.label`
+  // from BOTH locales would have surfaced only the generic "missing key" line,
+  // losing the explicit "must be 'mockup'" diagnostic operators are trained to
+  // grep for.
   for (const localeKey of LOCALE_KEYS) {
     const locale = input.locales[localeKey];
     for (const requiredKey of PROOF_REQUIRED_KEYS) {
@@ -232,11 +242,10 @@ export function assertClaims(input: ClaimsInputs, errors: string[]): void {
         errors.push(`[proof] ${localeKey} missing proof metadata key: ${requiredKey}`);
       }
     }
-    const label = locale['proof.label'];
-    if (label !== undefined && label !== 'mockup') {
+    if (locale['proof.label'] !== 'mockup') {
       errors.push(
-        `[proof] ${localeKey} proof.label must be 'mockup' (got ${JSON.stringify(
-          label,
+        `[proof] ${localeKey} proof.label must equal 'mockup' (got ${JSON.stringify(
+          locale['proof.label'],
         )}) — locks the mockup-vs-screenshot status per 13-CONTENT-SOURCES PROOF-03`,
       );
     }

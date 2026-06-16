@@ -252,4 +252,26 @@ describe('verify-claims assertClaims — Phase 16 (TRUST-01/02/03, OPS-02, PROOF
     );
     expect(errors.some((e) => /proof|missing/i.test(e))).toBe(true);
   });
+
+  it('proof.label deleted from BOTH locales emits the explicit mockup diagnostic (CR-02)', () => {
+    const baseline = validInputs();
+    // Delete `proof.label` from both en and zh_CN simultaneously. A naive
+    // implementation that only checks value-equality when the key is present
+    // would skip the proof.label assertion silently here and emit only a
+    // generic "missing key" line — easy to miss in a noisy CI log. CR-02
+    // requires the explicit "proof.label must equal 'mockup'" diagnostic.
+    const en = { ...baseline.locales.en };
+    const zhCN = { ...baseline.locales.zh_CN };
+    delete en['proof.label'];
+    delete zhCN['proof.label'];
+    const errors: string[] = [];
+    assertClaims(
+      validInputs({
+        locales: { en, zh_CN: zhCN },
+      }),
+      errors,
+    );
+    // Operator-greppable explicit wording — NOT only the generic missing-key line.
+    expect(errors.some((e) => /proof\.label must equal 'mockup'/i.test(e))).toBe(true);
+  });
 });
