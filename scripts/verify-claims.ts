@@ -267,18 +267,40 @@ if (isDirectInvocation) {
     process.exit(1);
   }
 
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as {
+  // WR-01: malformed JSON in any of the three inputs must surface as a
+  // structured `[verify-claims] FAIL:` line, NOT an uncaught-exception stack
+  // trace. The locales are hand-edited by humans; the manifest is a build
+  // artifact but can also be corrupt if a partial build left a truncated file.
+  const readJson = <T>(path: string): T => {
+    try {
+      return JSON.parse(readFileSync(path, 'utf-8')) as T;
+    } catch (e) {
+      console.error(`[verify-claims] FAIL: cannot parse ${path}: ${(e as Error).message}`);
+      process.exit(1);
+    }
+  };
+
+  const manifest = readJson<{
     permissions?: string[];
     host_permissions?: string[];
-  };
-  const en = JSON.parse(
-    readFileSync(resolve(process.cwd(), 'apps/marketing/src/i18n/locales/en.json'), 'utf-8'),
-  ) as Record<string, string>;
-  const zh_CN = JSON.parse(
-    readFileSync(resolve(process.cwd(), 'apps/marketing/src/i18n/locales/zh_CN.json'), 'utf-8'),
-  ) as Record<string, string>;
+  }>(manifestPath);
+  const en = readJson<Record<string, string>>(
+    resolve(process.cwd(), 'apps/marketing/src/i18n/locales/en.json'),
+  );
+  const zh_CN = readJson<Record<string, string>>(
+    resolve(process.cwd(), 'apps/marketing/src/i18n/locales/zh_CN.json'),
+  );
 
+  // WR-03: direct manifest gate — production permissions must NEVER include
+  // `tabs` (dev-only widening in wxt.config.ts never ships; a future accidental
+  // widening of the prod branch must fail loudly here, independent of locale
+  // copy). This is the PRIMARY manifest-driven gate; rule (a)'s locale-text
+  // check is a SECONDARY fidelity check.
   const errors: string[] = [];
+  if ((manifest.permissions ?? []).includes('tabs')) {
+    errors.push("[manifest] production permissions must not include 'tabs'");
+  }
+
   assertClaims({ manifest, locales: { en, zh_CN } }, errors);
 
   if (errors.length) {
