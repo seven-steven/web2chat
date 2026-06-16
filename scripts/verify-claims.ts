@@ -53,10 +53,13 @@ const PRIVACY_FORBIDDEN = [
 ] as const;
 
 /**
- * Shipped platform whitelist (hardcoded — matches
- * `apps/marketing/scripts/verify-build.mjs:50-53` REQUIRED_PAGE_MARKERS).
+ * Shipped platform whitelist (WR-04: single source of truth in
+ * `scripts/shipped-platforms.json`, shared with
+ * `apps/marketing/scripts/verify-build.mjs` to prevent the two gates from
+ * drifting silently when a platform is added/removed).
  */
-const SHIPPED_PLATFORMS = ['OpenClaw', 'Discord', 'Slack', 'Telegram'] as const;
+import SHIPPED_PLATFORMS_JSON from './shipped-platforms.json';
+const SHIPPED_PLATFORMS = SHIPPED_PLATFORMS_JSON as readonly string[];
 
 /**
  * Known permission vocabulary. CR-01: used by the reverse-direction check to

@@ -22,6 +22,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { resolve, dirname, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// WR-04: shared platform whitelist with scripts/verify-claims.ts — single
+// source of truth in scripts/shipped-platforms.json prevents the two gates
+// from drifting when a platform is added/removed.
+import SHIPPED_PLATFORMS from '../../../scripts/shipped-platforms.json' with { type: 'json' };
 
 /**
  * Final-page content invariants tied to Phase 15 requirements. Each marker
@@ -60,6 +64,19 @@ export const REQUIRED_PAGE_MARKERS = [
   '抓取任意网页，一键投递到聊天。',
   '隐私与权限',
 ];
+
+// WR-04: cross-verify against the shared platform whitelist so the two gates
+// (scripts/verify-claims.ts + this file) cannot drift. REQUIRED_PAGE_MARKERS
+// MUST cover every shipped platform name (it is a superset). A platform added
+// to scripts/shipped-platforms.json but missing from REQUIRED_PAGE_MARKERS
+// would otherwise fail silently here. Checked at module load (cheap, constant).
+for (const platform of SHIPPED_PLATFORMS) {
+  if (!REQUIRED_PAGE_MARKERS.includes(platform)) {
+    throw new Error(
+      `[verify-build] WR-04 drift: shipped platform "${platform}" is not in REQUIRED_PAGE_MARKERS`,
+    );
+  }
+}
 
 /** File extensions considered text output worth scanning for markers. */
 const TEXT_EXTENSIONS = new Set(['.html', '.js', '.mjs', '.css', '.json', '.txt']);
