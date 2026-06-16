@@ -37,9 +37,9 @@ Requirements for v1.2. Each maps to roadmap phases.
 
 ### Build & Deploy Isolation
 
-- [ ] **BUILD-01**: Developer can build the promotional page through a dedicated static-site command without changing the extension build output.
-- [ ] **BUILD-02**: Developer can preview or smoke-test the promotional page independently from extension E2E tests.
-- [ ] **BUILD-03**: Promotional page code does not import extension runtime modules such as service worker logic, storage repositories, messaging, permissions, or IM adapters.
+- [x] **BUILD-01**: Developer can build the promotional page through a dedicated static-site command without changing the extension build output.
+- [x] **BUILD-02**: Developer can preview or smoke-test the promotional page independently from extension E2E tests.
+- [x] **BUILD-03**: Promotional page code does not import extension runtime modules such as service worker logic, storage repositories, messaging, permissions, or IM adapters.
 
 ## v2 Requirements
 
@@ -91,11 +91,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CTA-02 | Phase 15 | Phase 15 satisfied |
 | OPS-01 | Phase 13, Phase 16 | Phase 13 done |
 | OPS-02 | Phase 13, Phase 16 | Phase 13 done |
-| BUILD-01 | Phase 14, Phase 16 | Pending |
-| BUILD-02 | Phase 14, Phase 16 | Pending |
-| BUILD-03 | Phase 14, Phase 16 | Pending |
+| BUILD-01 | Phase 14, Phase 16 | Complete |
+| BUILD-02 | Phase 14, Phase 16 | Complete |
+| BUILD-03 | Phase 14, Phase 16 | Complete |
 
 **Coverage:**
+
 - v1 requirements: 16 total
 - Mapped to phases: 16
 - Unmapped: 0 ✓
