@@ -148,3 +148,9 @@ None - no external service configuration required.
 ---
 *Phase: 16-release-acceptance-ops-baseline*
 *Completed: 2026-06-16*
+
+## Self-Check: PASSED
+
+- All 9 modified/created source files present on disk (apps/marketing/src/{styles/index.css, components/cta-button.tsx, main.tsx, app.tsx, i18n/locales/{en,zh_CN}.json}, tests/unit/marketing/{app-sections,proof-labels}.spec.tsx, apps/marketing/scripts/verify-build.mjs).
+- SUMMARY.md present at `.planning/phases/16-release-acceptance-ops-baseline/16-03-SUMMARY.md`.
+- All 5 commits present in git log: 2259eb9 (Task 0), 13c5a77 (Task 1), 102f227 (Task 2), e9ae799 (Task 3), 6efe6e7 (SUMMARY).
