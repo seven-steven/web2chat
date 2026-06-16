@@ -128,6 +128,57 @@ describe('verify-claims assertClaims — Phase 16 (TRUST-01/02/03, OPS-02, PROOF
     expect(errors.some((e) => e.includes('tabs'))).toBe(true);
   });
 
+  it('locale text mentioning a permission substring does NOT satisfy rule (CR-01 false-positive)', () => {
+    const errors: string[] = [];
+    // The text "mentions" `storage` only as part of `localStorage` — the bare
+    // `storage` token never appears. A naive substring match would pass this
+    // silently; the tokenized check MUST flag `storage` as missing.
+    assertClaims(
+      validInputs({
+        locales: {
+          en: {
+            ...validInputs().locales.en,
+            'trust.permissions.fact1':
+              'Production permissions: activeTab, alarms, scripting, uses localStorage, webNavigation.',
+          },
+          zh_CN: {
+            ...validInputs().locales.zh_CN,
+            'trust.permissions.fact1':
+              '生产权限：activeTab、alarms、scripting、uses localStorage、webNavigation。',
+          },
+        },
+      }),
+      errors,
+    );
+    expect(errors.some((e) => /storage.*missing|missing token: storage/i.test(e))).toBe(true);
+  });
+
+  it('locale claiming an unshipped permission (not in manifest) produces error (CR-01 reverse direction)', () => {
+    const errors: string[] = [];
+    // Locale claims `bookmarks` which is NOT in the production manifest permission
+    // set — must be flagged even though every shipped permission is present.
+    assertClaims(
+      validInputs({
+        locales: {
+          en: {
+            ...validInputs().locales.en,
+            'trust.permissions.fact1':
+              'Production permissions: activeTab, alarms, scripting, storage, webNavigation, bookmarks.',
+          },
+          zh_CN: {
+            ...validInputs().locales.zh_CN,
+            'trust.permissions.fact1':
+              '生产权限：activeTab、alarms、scripting、storage、webNavigation、bookmarks。',
+          },
+        },
+      }),
+      errors,
+    );
+    expect(errors.some((e) => /unshipped permission: bookmarks|claims unshipped/i.test(e))).toBe(
+      true,
+    );
+  });
+
   it('locale key parity violation produces error', () => {
     const baseline = validInputs();
     // zh_CN missing the 'limits.feishu' key that en has → parity error.

@@ -59,6 +59,34 @@ const PRIVACY_FORBIDDEN = [
 const SHIPPED_PLATFORMS = ['OpenClaw', 'Discord', 'Slack', 'Telegram'] as const;
 
 /**
+ * Known permission vocabulary. CR-01: used by the reverse-direction check to
+ * flag locale claims of permission names that the production manifest does NOT
+ * ship. Restricting the reverse scan to this vocabulary (rather than every
+ * whitespace token) avoids false-positives on ordinary words like "the" or
+ * "permission" that happen to be absent from the manifest. Updated when the
+ * manifest permission set widens (permissive — only needs to list names that
+ * might ever plausibly be claimed, not every valid MV3 permission).
+ */
+const KNOWN_PERMISSION_VOCAB = new Set([
+  'activeTab',
+  'alarms',
+  'bookmarks',
+  'browsingData',
+  'clipboardWrite',
+  'contextMenus',
+  'cookies',
+  'downloads',
+  'history',
+  'identity',
+  'notifications',
+  'scripting',
+  'storage',
+  'tabs',
+  'unlimitedStorage',
+  'webNavigation',
+]);
+
+/**
  * Feishu/Lark leakage tokens — these MAY appear only in `limits.*` copy.
  * Source: 13-CONTENT-SOURCES CLM-LIMIT-02 + CLM-PLATFORM-01.
  */
@@ -92,18 +120,48 @@ export function assertClaims(input: ClaimsInputs, errors: string[]): void {
   // Locale `trust.permissions.fact1` MUST contain every production permission
   // token from the BUILT manifest (single source of truth). MUST NOT claim
   // production `tabs` (Pitfall 2 — dev-only permission that never ships).
+  //
+  // CR-01: the comparison is TOKENIZED on word boundaries (comma / ideographic
+  // comma / whitespace) and compared as a SET — a naive `String.includes()`
+  // substring match yields both false-positives (a locale string that merely
+  // *mentions* `storage` inside `localStorage` would pass) and false-negatives
+  // (the reverse direction — locale claims of permissions absent from the
+  // manifest — was never verified). The reverse scan is restricted to
+  // KNOWN_PERMISSION_VOCAB so ordinary English/Chinese copy tokens never trip
+  // a false-positive.
   const expectedPerms = (input.manifest.permissions ?? []).slice().sort();
+  const manifestPermSet = new Set(input.manifest.permissions ?? []);
   for (const localeKey of LOCALE_KEYS) {
     const text = input.locales[localeKey]['trust.permissions.fact1'] ?? '';
+    // Tokenize on comma / ideographic comma / colon (ASCII `:` and CJK `：`,
+    // so the leading "Production permissions:" / "生产权限：" lead-in does not
+    // get glued onto the first permission token) / whitespace. Strip trailing
+    // period punctuation (ASCII `.` and CJK `。`).
+    const localePermTokens = new Set(
+      text
+        .split(/[,\s:：、，]+/)
+        .map((s) => s.replace(/[.。]+$/g, '').trim())
+        .filter(Boolean),
+    );
+    // Forward direction: every shipped permission must appear as a token.
     for (const perm of expectedPerms) {
-      if (!text.includes(perm)) {
+      if (!localePermTokens.has(perm)) {
         errors.push(`[${localeKey}] trust.permissions.fact1 missing token: ${perm}`);
       }
     }
-    // Strip the legitimate `webNavigation` token (contains no 'tabs' substring,
-    // but the strip is belt-and-braces per the plan spec) then reject bare 'tabs'.
-    const stripped = text.replace(/\bwebNavigation\b/g, '');
-    if (/\btabs\b/i.test(stripped)) {
+    // Reverse direction: reject locale claims of permission names that the
+    // manifest does NOT ship. Restricted to KNOWN_PERMISSION_VOCAB so ordinary
+    // copy tokens ("the", "permission", etc.) never trigger a false-positive.
+    for (const tok of localePermTokens) {
+      if (KNOWN_PERMISSION_VOCAB.has(tok) && !manifestPermSet.has(tok)) {
+        errors.push(`[${localeKey}] trust.permissions.fact1 claims unshipped permission: ${tok}`);
+      }
+    }
+    // Sanity: also explicitly flag `tabs` with the historical operator-facing
+    // wording (the reverse-direction check above already catches it, but this
+    // distinct message makes "claims production tabs" trivially greppable in
+    // CI logs — see Pitfall 2 wording in the header).
+    if (localePermTokens.has('tabs') && !manifestPermSet.has('tabs')) {
       errors.push(`[${localeKey}] trust.permissions.fact1 must not claim 'tabs' as production`);
     }
   }
