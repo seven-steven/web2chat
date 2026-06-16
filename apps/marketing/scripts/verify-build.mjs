@@ -56,6 +56,9 @@ export const REQUIRED_PAGE_MARKERS = [
   // CTA destinations: source repo (CTA-01) + README install anchor (CTA-02)
   'https://github.com/seven-steven/web2chat',
   '#%E5%AE%89%E8%A3%85',
+  // Phase 16 / WR-02: zh_CN markers — close smoke-gate blind spot for Chinese-locale chunk regression.
+  '抓取任意网页，一键投递到聊天。',
+  '隐私与权限',
 ];
 
 /** File extensions considered text output worth scanning for markers. */
