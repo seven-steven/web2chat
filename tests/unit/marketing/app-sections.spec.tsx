@@ -162,7 +162,8 @@ describe('App — CTA placement and shared button contract (CTA-01/CTA-02, D-12/
     );
     expect(accentLinks).toHaveLength(1);
     expect(accentLinks[0]?.getAttribute('href')).toBe(REPO_URL);
-    expect(accentLinks[0]?.textContent).toBe(en['hero.cta']);
+    // G201 appends a visible ↗ glyph + sr-only new-tab warning after the label.
+    expect(accentLinks[0]?.textContent).toContain(en['hero.cta']);
     expect(accentLinks[0]?.className).toContain('min-h-[44px]');
 
     // Inline payload/proof preview: label + canonical field names visible.
@@ -187,7 +188,28 @@ describe('App — CTA placement and shared button contract (CTA-01/CTA-02, D-12/
       expect(link?.getAttribute('href')).toBe(href);
       expect(link?.getAttribute('target')).toBe('_blank');
       expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
-      expect(link?.textContent).toBe(label);
+      // G201 adds a visible ↗ glyph + sr-only new-tab warning after the label,
+      // so the label is a substring of the link text (not the whole text).
+      expect(link?.textContent).toContain(label);
+    }
+  });
+
+  it('each CTA exposes a visible external-link glyph and an sr-only new-tab warning (WCAG G201, WR-09)', async () => {
+    await renderApp();
+
+    for (const testId of ['hero-primary-cta', 'footer-primary-cta', 'footer-secondary-cta']) {
+      const link = container.querySelector(`[data-testid="${testId}"]`);
+      expect(link).toBeTruthy();
+      // AT warning: sr-only span whose text resolves via t('cta.externalLink')
+      // to the English locale value (confirms the key resolved, not the raw
+      // key fallback 'cta.externalLink').
+      const srOnly = link?.querySelector('.sr-only');
+      expect(srOnly).toBeTruthy();
+      expect(srOnly?.textContent ?? '').toMatch(/opens? in new tab/i);
+      // Visible glyph: aria-hidden so AT skips it, content is the ↗ arrow.
+      const glyph = link?.querySelector('[aria-hidden="true"]');
+      expect(glyph).toBeTruthy();
+      expect(glyph?.textContent?.trim()).toBe('↗');
     }
   });
 
@@ -202,13 +224,13 @@ describe('App — CTA placement and shared button contract (CTA-01/CTA-02, D-12/
 
     const [primary, secondary] = ctaLinks;
     expect(primary?.getAttribute('href')).toBe(REPO_URL);
-    expect(primary?.textContent).toBe(en['cta.primary']);
+    expect(primary?.textContent).toContain(en['cta.primary']);
     expect(primary?.className).toContain('bg-[var(--color-accent)]');
     // Hero primary and bottom primary must share identical visual styling.
     expect(primary?.className).toBe(heroPrimary?.className);
 
     expect(secondary?.getAttribute('href')).toBe(INSTALL_URL);
-    expect(secondary?.textContent).toBe(en['cta.secondary']);
+    expect(secondary?.textContent).toContain(en['cta.secondary']);
     expect(secondary?.className).toContain('bg-[var(--color-surface)]');
     expect(secondary?.className).toContain('border');
     expect(secondary?.className).toContain('min-h-[44px]');

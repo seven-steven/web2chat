@@ -72,7 +72,8 @@ describe('CtaButton — D-12/D-13 shared CTA visual contract', () => {
     expect(link?.className).toContain('min-h-[44px]');
     expect(link?.className).toContain('focus-visible:ring');
     expect(link?.className).toContain('bg-[var(--color-accent)]');
-    expect(link?.textContent).toBe(ctaLabel);
+    // G201 appends a visible ↗ glyph + sr-only new-tab warning after the label.
+    expect(link?.textContent).toContain(ctaLabel);
   });
 
   it('secondary variant keeps the same 44px height and focus ring but uses bordered surface styling', () => {
