@@ -113,7 +113,7 @@ Plans:
 
 **Requirements:** PROOF-03, TRUST-01, TRUST-02, TRUST-03, OPS-01, OPS-02, BUILD-01, BUILD-02, BUILD-03
 
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 **Wave 1**
@@ -124,7 +124,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 / 16-01 completion — CI 需 `verify:claims` 脚本已存在)*
 
-- [ ] 16-02-PLAN.md — 扩展 `.github/workflows/ci.yml` 单 `verify` job：追加 `site:build` → `site:verify` → `verify:readme` → `verify:claims` 四步（按序在 `verify:manifest` 之后，关闭 WR-03）
+- [x] 16-02-PLAN.md — 扩展 `.github/workflows/ci.yml` 单 `verify` job：追加 `site:build` → `site:verify` → `verify:readme` → `verify:claims` 四步（按序在 `verify:manifest` 之后，关闭 WR-03）
 
 **Success criteria:**
 
@@ -160,7 +160,7 @@ Plans:
 | 13. 信息架构与文案事实源 | v1.2 | 1/1 | Complete | 2026-06-02 |
 | 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 3/3 | Complete | 2026-06-02 |
 | 15. 宣传页内容与视觉实现 | v1.2 | 5/5 | Complete   | 2026-06-12 |
-| 16. 发布验收与运营基线 | v1.2 | 3/4 | In Progress|  |
+| 16. 发布验收与运营基线 | v1.2 | 4/4 | Complete   | 2026-06-16 |
 
 ## Requirement Coverage
 
