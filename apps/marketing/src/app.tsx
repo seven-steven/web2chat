@@ -44,9 +44,20 @@ interface AppProps {
 }
 
 /** getFlowSteps returns exactly 3 steps (PROOF-02); narrow to the Stepper tuple. */
-function flowTuple(): readonly [FlowStep, FlowStep, FlowStep] {
+function flowTuple(): readonly [FlowStep, FlowStep, FlowStep] | null {
   const [s1, s2, s3] = getFlowSteps();
-  if (!s1 || !s2 || !s3) throw new Error('expected exactly 3 flow steps');
+  // WR-07: do NOT throw inside the render path. App is the root component and
+  // Preact has no error boundary here, so an uncaught throw blanks the entire
+  // marketing site. A regression that drops a flow step becomes a visible
+  // fallback message in the flow section instead of taking the whole page down.
+  // Returns null so the caller can render a fallback; a future build-time
+  // audit (or the dev console.error below) still surfaces the contract break.
+  if (!s1 || !s2 || !s3) {
+    if (import.meta.env?.DEV) {
+      console.error('[flow] expected exactly 3 flow steps — rendering fallback');
+    }
+    return null;
+  }
   return [s1, s2, s3] as const;
 }
 
@@ -66,6 +77,7 @@ export function App({ locale }: AppProps) {
   const targetMockup = getTargetMockup();
   const toggle = getLocaleToggle();
   const footer = getFooterTagline();
+  const flowSteps = flowTuple();
 
   return (
     <div lang={langAttr} class="min-h-screen bg-[var(--color-canvas)] text-[var(--color-ink-base)]">
@@ -85,12 +97,20 @@ export function App({ locale }: AppProps) {
                   const next = locale.value === 'en' ? 'zh_CN' : 'en';
                   // Load the dictionary first, then flip the signal so the
                   // re-render reads the fully loaded locale (no stale copy).
-                  void setLocale(next).then(() => {
-                    locale.value = next;
-                    // Keep the <html> lang in lockstep with the app-root lang
-                    // (WR-08). Same expression as main.tsx init.
-                    document.documentElement.lang = next === 'zh_CN' ? 'zh-CN' : 'en';
-                  });
+                  // WR-05: surface a swallowed setLocale rejection (network
+                  // error, missing zh_CN chunk on a CDN deploy, etc.) so the
+                  // toggle is never silently a no-op. `void` discards the
+                  // promise value but `.catch` keeps the rejection observable.
+                  void setLocale(next)
+                    .then(() => {
+                      locale.value = next;
+                      // Keep the <html> lang in lockstep with the app-root lang
+                      // (WR-08). Same expression as main.tsx init.
+                      document.documentElement.lang = next === 'zh_CN' ? 'zh-CN' : 'en';
+                    })
+                    .catch((err) => {
+                      console.error('[locale-toggle] failed to load locale', next, err);
+                    });
                 }}
               >
                 {toggle.label}
@@ -195,7 +215,16 @@ export function App({ locale }: AppProps) {
         {/* 5. Three-step core flow + delivered-state proof (D-08/D-09, PROOF-02/03) */}
         <SectionShell tone="canvas" width="3xl" title={t('flow.title')}>
           <div class="flex flex-col gap-10">
-            <Stepper steps={flowTuple()} />
+            {flowSteps ? (
+              <Stepper steps={flowSteps} />
+            ) : (
+              // WR-07: graceful fallback when the 3-step contract regresses —
+              // keeps the section visible (TargetMockup + title) instead of
+              // blanking the whole page via an uncaught throw from flowTuple.
+              <p class="text-base leading-normal text-[var(--color-ink-muted)]">
+                {t('flow.title')}
+              </p>
+            )}
             <TargetMockup
               meta={proofMeta}
               chatLabel={targetMockup.chatLabel}
