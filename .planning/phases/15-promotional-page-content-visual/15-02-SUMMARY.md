@@ -1,19 +1,26 @@
 ---
 phase: 15-promotional-page-content-visual
-plan: 2
-subsystem: ui
-tags: [marketing, preact, tailwind, vitest, accessibility]
+plan: 02
+subsystem: marketing
+tags: [marketing, components, proof-mockup, tdd]
 requires:
-  - phase: 15-01
-    provides: marketing site-content data layer and locale copy contract
+  - 15-01（site-content getter API + ProofMeta / PayloadExample / FlowStep 类型）
 provides:
-  - reusable marketing section shell and CTA button primitives
-  - proof mockup components with explicit mockup metadata labels
-  - fixed-order three-step flow component and regression coverage
-affects: [15-03, marketing-page-assembly, proof-modules]
+  - SectionShell（band tone + width 显式 props 的单栏 section 容器）
+  - CtaButton（primary/secondary 共享 CTA 视觉契约，44px + focus ring）
+  - AssetLabel（mockup 徽标 + source/status/version 元数据行）
+  - PopupMockup（popup 风格 payload 字段证据模块，字段顺序锁定）
+  - TargetMockup（chat surface 投递结果证据模块）
+  - Stepper（固定三步 ol stepper，横/纵/响应式布局）
+  - proof metadata 回归测试（11 个）
+affects:
+  - 15-03+（app.tsx 页面组装直接消费这些组件接口）
 tech-stack:
   added: []
-  patterns: [typed marketing component props, explicit proof metadata labels, fixed-order stepper]
+  patterns:
+    - "presentation-only 组件 + 内容经 props 注入（不在组件内调 getter，TargetMockup/AssetLabel 例外为类型导入）"
+    - "design token CSS 变量 + Tailwind arbitrary value（延续 popup token 体系）"
+    - "figure/figcaption + dl/dt/dd 语义化 proof 结构"
 key-files:
   created:
     - apps/marketing/src/components/section-shell.tsx
@@ -24,106 +31,80 @@ key-files:
     - apps/marketing/src/components/flow/stepper.tsx
     - tests/unit/marketing/proof-labels.spec.tsx
   modified: []
-key-decisions:
-  - "Proof metadata labels stay explicit props so mockup/source/status/version wording can remain source-backed and app-level i18n controlled."
-  - "Stepper semantics are fixed to capture → choose target → send to chat, with layout changing only through utility classes."
-  - "CTAButton exposes one shared visual contract for hero and footer CTAs while keeping link semantics."
-patterns-established:
-  - "Marketing proof components accept structured data props from site-content instead of fetching content themselves."
-  - "Proof surfaces must render a visible mockup badge plus source/status/version metadata row."
-requirements-completed: [PROOF-02, PROOF-03, CTA-01, CTA-02]
-duration: 128 min
-completed: 2026-06-02
+decisions:
+  - "CtaButton 渲染为 <a>（两个 CTA 目标都是外部 GitHub URL），不做 button/link 双形态 API"
+  - "Stepper orientation 增加 'responsive' 默认值（mobile 纵向 / md+ 横向），horizontal/vertical 保留为测试与显式布局用；连接线拆成两个独立 aria-hidden span 而不是单个三态 class"
+  - "PopupMockup 字段分两组渲染：title/url/description/create_at 为紧凑 dl 行，content/prompt 为块级行（content 限高 max-h-28 截断），匹配真实 popup 的 Properties + Content 分区"
+  - "TargetMockup 文案全部经 props 注入（chatLabel/messageLines/statusLabel），组件本身零硬编码文案，i18n 责任留给 15-03 组装层（D-07）"
+  - "mockup chrome 内品牌字 'Web2Chat' 作为常量 BRAND_WORDMARK 不本地化（延续 15-01 品牌名不本地化决策）"
+metrics:
+  duration: ~12 min
+  tasks: 2/2
+  completed: 2026-06-11
 ---
 
-# Phase 15 Plan 2: 宣传页共享展示组件 Summary
+# Phase 15 Plan 02: Shared Marketing Display + Proof Components Summary
 
-**Reusable marketing proof primitives with explicit mockup metadata, fixed-order flow stepper, and shared CTA styling for hero/footer assembly**
+宣传页共享展示组件族（section shell / CTA / asset label / popup mockup / target mockup / stepper）以 TDD RED→GREEN 完成，每个 proof 模块强制渲染可见 `mockup` 标签与 source/status/version 元数据行，后续页面组装只需按 section contract 排列。
 
-## Performance
+## Tasks Completed
 
-- **Duration:** 128 min
-- **Started:** 2026-06-02T10:49:00Z
-- **Completed:** 2026-06-02T12:57:37Z
-- **Tasks:** 2
-- **Files modified:** 7
+| Task | Name | Commits | Files |
+|------|------|---------|-------|
+| 1 | proof-labels RED 测试 + 共享组件与 proof mockup 实现 | a32e8bb (RED), f9163c2 (GREEN) | section-shell.tsx, cta-button.tsx, asset-label.tsx, popup-mockup.tsx, target-mockup.tsx, stepper.tsx, proof-labels.spec.tsx |
+| 2 | typecheck 锁住新组件接口 | （无变更——typecheck 直接通过） | — |
 
-## Accomplishments
-- Added reusable `SectionShell` and `CTAButton` primitives for the promotional page section and CTA contract.
-- Built popup/target proof mockups plus `AssetLabel` so every proof surface visibly declares `mockup` and `source/status/version` metadata.
-- Added a fixed-order `Stepper` and regression tests covering CTA variants, proof labels, and payload field ordering.
+## What Was Built
 
-## Task Commits
+- **SectionShell：** D-01/D-04 单栏 banded 布局容器。`tone`（canvas/subtle）与 `width`（3xl/4xl）为显式 props 而非位置推导；`py-12 md:py-16` 外边距、`px-6 sm:px-8` 页面 shell、h2 标题 20px/600，零内容状态。
+- **CtaButton：** Hero 与底部 CTA 共用的链接按钮。primary 用 accent 填充 + hover/active token，secondary 用 surface + 强边框；两者共享 `min-h-[44px]`、`px-6`、2px accent focus ring、active 按压位移。
+- **AssetLabel：** 可见 `mockup` 徽标（mono 小徽章）+ `source: code-generated` / `status:` / `version:` 元数据行，消费 15-01 的 `getProofMeta()`。
+- **PopupMockup：** figure + dl 结构，紧凑字段行（14px label + mono value）+ hairline 分隔 + content/prompt 块级行（content 限高截断），不用 raw `<pre>`；字段顺序由 `data-field-key` 锁定为 title/url/description/create_at/content/prompt；附带 AssetLabel figcaption。
+- **TargetMockup：** 低对比 chat chrome（频道名 + 装饰消息图标）、accent-soft 投递消息气泡、显式文字投递状态行（勾选图标 + statusLabel，非纯颜色语义）；附带 AssetLabel figcaption。
+- **Stepper：** `<ol>` 语义，固定接收恰好 3 步的 tuple 类型（编译期阻止任意步骤数组）；CSS 圆形数字徽章，最终 send 步 accent 填充；horizontal/vertical/responsive 三种布局只切 utility class 不变 DOM 顺序；连接线全部 `aria-hidden`。
+- **回归测试（11 个）：** CTA 双 variant 44px/focus ring/accent 断言、stepper 3 步顺序 + 布局切换不变序、asset label 元数据、popup 字段顺序 + mono 无 pre、双 mockup 的 mockup 标签 + 元数据行、装饰 SVG aria-hidden、section shell tone/width/h2。
 
-Each task was committed atomically:
+## Design Notes (design-taste-frontend)
 
-1. **Task 1: 先写 proof-labels RED 测试再实现共享组件与 proof mockup** - `4bb87ee` (test)
-2. **Task 1: 先写 proof-labels RED 测试再实现共享组件与 proof mockup** - `b509725` (feat)
-3. **Task 2: 补跑 typecheck 锁住新组件接口** - `4656129` (refactor)
-
-## Files Created/Modified
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a19465b23463f1211/apps/marketing/src/components/section-shell.tsx` - lightweight section band wrapper with width/tone/title props
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a19465b23463f1211/apps/marketing/src/components/cta-button.tsx` - shared primary/secondary CTA link styling contract
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a19465b23463f1211/apps/marketing/src/components/proof/asset-label.tsx` - visible mockup badge plus source/status/version metadata row
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a19465b23463f1211/apps/marketing/src/components/proof/popup-mockup.tsx` - structured payload proof mockup with fixed field ordering hooks
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a19465b23463f1211/apps/marketing/src/components/proof/target-mockup.tsx` - target chat proof surface with delivery-state framing
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a19465b23463f1211/apps/marketing/src/components/flow/stepper.tsx` - fixed three-step flow component with responsive layout classes
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a19465b23463f1211/tests/unit/marketing/proof-labels.spec.tsx` - regression coverage for proof primitives and CTA contract
-
-## Decisions Made
-- Proof metadata labels were pushed into props rather than hardcoded into components so later app assembly can keep wording i18n-safe and source-backed.
-- `CTAButton` was kept as an anchor-based primitive with shared focus ring and minimum height, matching the plan’s hero/footer reuse goal without introducing runtime state.
-- The stepper sorts by the approved key order instead of trusting caller order, satisfying the threat-model mitigation for step tampering.
+Design read：B2B/OSS 开发者工具 landing page 组件层，Linear-style 克制语言，复用仓库既有 charcoal + emerald token 体系。Dials：VARIANCE 5 / MOTION 2 / DENSITY 4（15-UI-SPEC 锁定单栏叙事与既有 token，组件层无新增动效）。应用的 anti-slop 纪律：单 accent（emerald）锁定全组件、无渐变/无 AI-purple、无 generic 三等卡、阴影低对比且贴近背景色（`shadow-[0_1px_2px_var(--color-rule)]`）、圆角统一走 radius token、装饰元素全部 `aria-hidden`、proof 模块用语义化 dl/figure 而非 div 假截图堆砌（mockup 在本项目是 PLAN 锁定的 truth-safe 证据形式，且强制可见 mockup 标签自我声明）。
 
 ## Deviations from Plan
 
-### Auto-fixed Issues
+None - plan executed exactly as written.
 
-**1. [Rule 3 - Blocking] Installed workspace dependencies inside the worktree**
-- **Found during:** Task 1 (RED verification)
-- **Issue:** `pnpm test -- tests/unit/marketing/proof-labels.spec.tsx` failed because `vitest` was unavailable and the worktree had no `node_modules`.
-- **Fix:** Ran `pnpm install --frozen-lockfile` in the worktree, then resumed the TDD cycle.
-- **Files modified:** none tracked
-- **Verification:** `pnpm test -- tests/unit/marketing/proof-labels.spec.tsx`, `pnpm typecheck`
-- **Committed in:** none (environment-only fix)
+（Stepper 的 `orientation` 在 plan 要求的 horizontal/vertical 之外补充了 `responsive` 默认值，属于 acceptance criteria 中 "vertical-mobile connectors" 的直接实现手段，组件 API 仍满足测试锁定的 horizontal/vertical 契约。）
 
-**2. [Rule 1 - Bug] Fixed stepper key typing before the RED commit hook**
-- **Found during:** Task 1 (RED commit attempt)
-- **Issue:** pre-commit `pnpm typecheck` failed because `Map.get` inferred overly narrow key types for `FlowStep.key`.
-- **Fix:** Added an explicit `StepKey` union and fallback ordering for unknown keys.
-- **Files modified:** `apps/marketing/src/components/flow/stepper.tsx`
-- **Verification:** `pnpm test -- tests/unit/marketing/proof-labels.spec.tsx`, `pnpm typecheck`
-- **Committed in:** `b509725`
+## TDD Gate Compliance
 
-**3. [Rule 2 - Missing Critical] Removed hardcoded user-facing strings from shared proof components**
-- **Found during:** Task 1 / Task 2 commit hooks
-- **Issue:** hardcoded labels in tests/components violated the project i18n enforcement and would have leaked non-localized copy into reusable UI primitives.
-- **Fix:** Moved source/status/version/helper labels into component props and updated tests to pass them explicitly.
-- **Files modified:** `apps/marketing/src/components/proof/asset-label.tsx`, `apps/marketing/src/components/proof/popup-mockup.tsx`, `apps/marketing/src/components/proof/target-mockup.tsx`, `tests/unit/marketing/proof-labels.spec.tsx`
-- **Verification:** `pnpm test -- tests/unit/marketing/proof-labels.spec.tsx`, `pnpm typecheck`
-- **Committed in:** `b509725`, `4656129`
+- RED gate: `test(15-02)` commit a32e8bb — 11 个测试中 10 个以 null-render stub 失败。
+- GREEN gate: `feat(15-02)` commit f9163c2 — 480/480 全量测试通过。
+- REFACTOR: 无需独立 refactor commit（GREEN 即最简形态；pre-commit prettier 已规范格式）。
 
----
+## Verification
 
-**Total deviations:** 3 auto-fixed (1 blocking, 1 bug, 1 missing critical)
-**Impact on plan:** All fixes were required to satisfy repo-wide test/type/i18n gates. No scope creep beyond the planned component layer.
+- `pnpm test -- tests/unit/marketing/proof-labels.spec.tsx` — 57 files / 480 tests passed
+- `pnpm typecheck` — clean
+- `pnpm lint` — clean（含 no-hardcoded-strings JSX 规则）
 
-## Issues Encountered
-- Pre-commit hooks surfaced type and i18n enforcement issues earlier than manual review; both were resolved within the planned component/test files.
+## Known Stubs
 
-## User Setup Required
-None - no external service configuration required.
+None — 所有组件渲染真实结构；内容经 props 从 15-01 getter 注入，无 placeholder 流向 UI。
 
-## Next Phase Readiness
-- `app.tsx` can now assemble the eight required marketing sections from stable section/CTA/proof/flow primitives.
-- The next plan should wire locale-backed labels into these components and replace the current app skeleton.
+## Threat Flags
+
+无新增安全面。T-15-04/05/06 mitigations 全部落入测试断言（每个 proof 模块的可见 mockup 标签 + 元数据行、stepper 固定三步 tuple 类型、装饰 SVG aria-hidden + CTA focus ring）。本计划零新增依赖（T-15-SC accept 维持）。
+
+## Next Steps
+
+15-03（页面组装）用 SectionShell 排列 8 个 section，Hero/底部 CTA 复用 CtaButton，proof section 注入 PopupMockup/TargetMockup，flow section 注入 Stepper；TargetMockup 的 chatLabel/messageLines/statusLabel 需在组装层接 i18n keys（D-07）。
 
 ## Self-Check: PASSED
-- Summary file exists.
-- Commits `4bb87ee`, `b509725`, and `4656129` exist in git history.
-- No known stubs were found in the created marketing component files.
-- No new threat flags beyond the planned proof/CTA/stepper surface were introduced.
 
----
-*Phase: 15-promotional-page-content-visual*
-*Completed: 2026-06-02*
+- apps/marketing/src/components/section-shell.tsx — FOUND
+- apps/marketing/src/components/cta-button.tsx — FOUND
+- apps/marketing/src/components/proof/asset-label.tsx — FOUND
+- apps/marketing/src/components/proof/popup-mockup.tsx — FOUND（contains "mockup"）
+- apps/marketing/src/components/proof/target-mockup.tsx — FOUND（contains "status"）
+- apps/marketing/src/components/flow/stepper.tsx — FOUND（contains "step"）
+- tests/unit/marketing/proof-labels.spec.tsx — FOUND（contains "mockup"）
+- Commits a32e8bb, f9163c2 — FOUND

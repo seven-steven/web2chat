@@ -1,41 +1,65 @@
+/**
+ * CtaButton — shared primary/secondary CTA visual contract (D-12 / D-13).
+ *
+ * Hero CTA and bottom CTA must reuse this exact component so their primary
+ * styling stays identical (15-UI-SPEC CTA visual contract):
+ *   - primary: accent fill, white text, hover/active accent tokens;
+ *   - secondary: surface background, strong border, ink-strong text;
+ *   - both: 44px minimum touch height, 24px horizontal padding, visible
+ *     2px focus ring on the accent ring token (not color-only).
+ *
+ * Rendered as a link (`<a>`) — both CTA targets are external GitHub URLs.
+ */
 import type { ComponentChildren } from 'preact';
+import { t } from '../i18n/index';
 
-export interface CTAButtonProps {
+export interface CtaButtonProps {
   href: string;
+  variant: 'primary' | 'secondary';
+  testId?: string;
   children: ComponentChildren;
-  variant?: 'primary' | 'secondary';
-  class?: string;
-  target?: '_blank' | '_self';
-  rel?: string;
 }
 
-const baseClass =
-  'inline-flex min-h-11 items-center justify-center rounded-[var(--radius-soft)] px-6 py-2 text-[16px] leading-[1.5] transition-[background-color,border-color,color,box-shadow,transform,filter] duration-[var(--duration-snap)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-canvas)]';
+const baseClass = [
+  'inline-flex items-center justify-center',
+  'min-h-[44px] px-6',
+  'rounded-[var(--radius-soft)]',
+  'text-base font-semibold tracking-[0.01em] whitespace-nowrap',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-ring)] focus-visible:ring-offset-1',
+  'active:translate-y-[0.5px]',
+  'transition-[background-color,transform] duration-[var(--duration-snap)]',
+].join(' ');
 
 const variantClass = {
-  primary:
-    'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)] active:translate-y-[0.5px] active:brightness-95',
-  secondary:
-    'border border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-ink-strong)] hover:bg-[var(--color-surface-subtle)]',
+  primary: [
+    'bg-[var(--color-accent)] text-white',
+    'hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)]',
+  ].join(' '),
+  secondary: [
+    'bg-[var(--color-surface)] text-[var(--color-ink-strong)]',
+    'border border-[var(--color-border-strong)]',
+    'hover:bg-[var(--color-surface-subtle)]',
+  ].join(' '),
 } as const;
 
-export function CTAButton({
-  href,
-  children,
-  variant = 'primary',
-  class: className = '',
-  target,
-  rel,
-}: CTAButtonProps) {
+export function CtaButton({ href, variant, testId, children }: CtaButtonProps) {
   return (
     <a
       href={href}
-      class={`${baseClass} ${variantClass[variant]} ${className}`.trim()}
-      data-variant={variant}
-      target={target}
-      rel={rel}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-testid={testId}
+      class={`${baseClass} ${variantClass[variant]}`}
     >
       {children}
+      {/* WCAG G201 / WR-09 — visible external-link glyph (hidden from AT) +
+          sr-only new-tab warning (i18n-routed, CLAUDE.md §i18n). Deliberately
+          omits an accessible-name override so the name keeps the plain-string
+          children (D2). */}
+      <span aria-hidden="true" class="ml-1.5 inline-block translate-y-[1px]">
+        ↗
+      </span>
+      <span class="sr-only">{t('cta.externalLink')}</span>
     </a>
   );
 }

@@ -1,32 +1,30 @@
-import type { ProofMetadata } from '../../data/site-content';
+/**
+ * AssetLabel — visible `mockup` badge + source/status/version metadata row
+ * (D-05 / 15-UI-SPEC mockup labeling contract, T-15-04 mitigation).
+ *
+ * Every proof module must render this so code-generated demos can never be
+ * mistaken for real screenshots. Presentation-only; all strings arrive via
+ * the ProofMeta getter (site-content.ts), which also records the hidden
+ * owner/update-trigger and creation-date provenance in code comments.
+ */
+import type { ProofMeta } from '../../data/site-content';
 
 export interface AssetLabelProps {
-  metadata: ProofMetadata;
-  sourceLabel: string;
-  statusLabel: string;
-  versionLabel: string;
+  meta: ProofMeta;
 }
 
-export function AssetLabel({ metadata, sourceLabel, statusLabel, versionLabel }: AssetLabelProps) {
+export function AssetLabel({ meta }: AssetLabelProps) {
   return (
-    <div class="flex flex-col gap-3">
-      <span class="inline-flex w-fit items-center rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-3 py-1 text-[14px] leading-[1.4] text-[var(--color-ink-strong)]">
-        {metadata.label}
+    <div
+      data-testid="asset-label"
+      class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm leading-snug text-[var(--color-ink-muted)]"
+    >
+      <span class="inline-flex items-center rounded-[var(--radius-sharp)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-1.5 py-0.5 font-mono text-[var(--color-ink-base)]">
+        {meta.label}
       </span>
-      <dl class="flex flex-wrap gap-x-4 gap-y-2 text-[14px] leading-[1.4] text-[var(--color-ink-muted)]">
-        <div class="flex items-center gap-1">
-          <dt>{sourceLabel}</dt>
-          <dd class="text-[var(--color-ink-strong)]">{metadata.source}</dd>
-        </div>
-        <div class="flex items-center gap-1">
-          <dt>{statusLabel}</dt>
-          <dd class="text-[var(--color-ink-strong)]">{metadata.status}</dd>
-        </div>
-        <div class="flex items-center gap-1">
-          <dt>{versionLabel}</dt>
-          <dd class="text-[var(--color-ink-strong)]">{metadata.version}</dd>
-        </div>
-      </dl>
+      <span class="font-mono">{`source: ${meta.source}`}</span>
+      <span class="font-mono">{`status: ${meta.status}`}</span>
+      <span class="font-mono">{`version: ${meta.version}`}</span>
     </div>
   );
 }

@@ -4,7 +4,7 @@
 
 - ✅ **v1.0 MVP** — Phases 1-7 (shipped 2026-05-09)
 - ✅ **v1.1 多渠道适配** — Phases 8-12 + inserted Phase 10.1 (shipped 2026-05-31)
-- 📋 **v1.2 添加 web 宣传页面** — Phases 13-16 (planned 2026-06-01)
+- ✅ **v1.2 添加 web 宣传页面** — Phases 13-16 (shipped 2026-06-17)
 - 📋 **v2.0 待规划** — 从后续 REQUIREMENTS / ROADMAP 周期定义
 
 ## Phases
@@ -38,72 +38,17 @@ Archive: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 
 </details>
 
-### 📋 v1.2 添加 web 宣传页面
+<details>
+<summary>✅ v1.2 添加 web 宣传页面 (Phases 13-16) — SHIPPED 2026-06-17</summary>
 
-#### Phase 13: 信息架构与文案事实源 ✅
+- [x] Phase 13: 信息架构与文案事实源 (1/1 plan) — completed 2026-06-02
+- [x] Phase 14: 独立 marketing app 骨架与构建隔离 (3/3 plans) — completed 2026-06-02
+- [x] Phase 15: 宣传页内容与视觉实现 (6/6 plans, 含 2 gap-closure) — completed 2026-06-12
+- [x] Phase 16: 发布验收与运营基线 (4/4 plans) — completed 2026-06-16
 
-**Goal:** 锁定宣传页的信息架构、文案事实源、claims / privacy / permission 边界，确保后续实现不夸大 shipped scope。 *(Completed 2026-06-02)*
+Archive: [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md)
 
-**Requirements:** MSG-01, MSG-02, MSG-03, TRUST-01, TRUST-02, TRUST-03, OPS-01, OPS-02
-
-**Success criteria:**
-1. 页面 section 列表覆盖 Hero、use cases、structured-payload 示例、支持平台、核心流程、隐私 / 权限、已知限制、CTA。
-2. 所有对外 claims 都能追溯到 `PROJECT.md`、`PRIVACY.md`、`STORE-LISTING.md` 或生产 `wxt.config.ts`。
-3. 明确区分 shipped 平台、deferred 平台、known risk，并把 Telegram live UAT / Nyquist partial 留在风险说明而非主卖点。
-4. 截图 / 文案 / 平台列表更新规则写入 planning artifact，维护者能按来源更新页面内容。
-
-#### Phase 14: 独立 marketing app 骨架与构建隔离 ✅
-
-**Goal:** 建立仓库内独立静态 marketing app，使宣传页可独立 build / preview / smoke test，且不影响扩展构建输出。 *(Completed 2026-06-02)*
-
-**Requirements:** BUILD-01, BUILD-02, BUILD-03
-
-**Plans:** 3 plans
-
-Plans:
-- [x] 14-01-PLAN.md — 提取共享 design tokens 到 `shared/`，为 extension 与 marketing app 建立仅样式共享边界
-- [x] 14-02-PLAN.md — 创建 `apps/marketing` workspace app、独立 Vite/TS 配置与根级 `site:*` 代理命令
-- [x] 14-03-PLAN.md — 增加 marketing build smoke verifier 与 BUILD-03 import 隔离测试
-
-**Success criteria:**
-1. 新增独立 marketing app 目录与专用 Vite 配置 / scripts，输出目录与 WXT extension build 隔离。
-2. `build` / 扩展现有测试命令保持不变；新增 marketing build / preview / smoke test 命令可单独运行。
-3. marketing app 不 import service worker、storage repositories、messaging、permissions、IM adapters 等扩展 runtime 模块。
-4. CI / 本地验证命令能分别验证 extension 与 marketing page，失败边界清晰。
-
-#### Phase 15: 宣传页内容与视觉实现
-
-**Goal:** 实现可发布的静态宣传页主体验，向访客展示产品定位、当前平台、核心流程、产品证据与安装入口。
-
-**Requirements:** MSG-01, MSG-02, MSG-03, PROOF-01, PROOF-02, PROOF-03, CTA-01, CTA-02, TRUST-01, TRUST-02
-
-**Plans:** 4 plans
-
-Plans:
-- [ ] 15-01-PLAN.md — 扩展 marketing content getter、双语 locale 与 content truth 测试
-- [ ] 15-02-PLAN.md — 实现 section/CTA/proof/stepper 共享组件与 mockup 证据模块
-- [ ] 15-03-PLAN.md — 重写 `apps/marketing/src/app.tsx` 为最终 8-section 宣传页并补结构回归测试
-- [ ] 15-04-PLAN.md — 强化 marketing smoke verifier、闭合 README 安装入口与 Phase 15 全量验证
-
-**Success criteria:**
-1. 访客在首屏能理解 web2chat 的核心价值、目标用户与主要 CTA。
-2. 页面展示 OpenClaw / Discord / Slack / Telegram 当前 shipped 平台，并避免暗示 Feishu/Lark 或其他 deferred 平台已支持。
-3. 页面包含 3-step flow 与 structured-payload 示例，说明它相对手动复制粘贴的差异。
-4. 页面包含隐私 / 权限说明、安装 / 获取路径、产品证据模块，且视觉与现有项目风格一致。
-5. 页面满足基础响应式布局、键盘可访问、图片 alt text、无明显首屏性能问题。
-
-#### Phase 16: 发布验收与运营基线
-
-**Goal:** 完成宣传页发布前验收，确保 claims、隐私、权限、可访问性、构建隔离和维护流程都有可重复检查方式。
-
-**Requirements:** PROOF-03, TRUST-01, TRUST-02, TRUST-03, OPS-01, OPS-02, BUILD-01, BUILD-02, BUILD-03
-
-**Success criteria:**
-1. marketing build / preview / smoke test 通过，且 extension build / typecheck / relevant tests 仍通过。
-2. claims / privacy / permissions checklist 通过，页面内容与 `PROJECT.md`、`PRIVACY.md`、`STORE-LISTING.md`、生产 `wxt.config.ts` 一致。
-3. a11y / responsive / link / CTA smoke checks 通过，所有关键链接可访问或有明确占位状态。
-4. 截图 / 素材 / 平台列表维护规则已记录，后续平台变化时有明确更新路径。
-5. 已知风险（Telegram live UAT、Nyquist partial、Feishu/Lark dropped）在发布说明中保持真实边界。
+</details>
 
 ### 📋 v2.0 待规划
 
@@ -130,38 +75,12 @@ Plans:
 | 12. 飞书/Lark 适配器 | v1.1 | 5/5 | Dropped from shipped scope | 2026-05-17 |
 | 13. 信息架构与文案事实源 | v1.2 | 1/1 | Complete | 2026-06-02 |
 | 14. 独立 marketing app 骨架与构建隔离 | v1.2 | 3/3 | Complete | 2026-06-02 |
-| 15. 宣传页内容与视觉实现 | v1.2 | 0/4 | Planned | — |
-| 16. 发布验收与运营基线 | v1.2 | 0/0 | Planned | — |
-
-## Requirement Coverage
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| MSG-01 | Phase 13, Phase 15 | Planned |
-| MSG-02 | Phase 13, Phase 15 | Planned |
-| MSG-03 | Phase 13, Phase 15 | Planned |
-| PROOF-01 | Phase 15 | Planned |
-| PROOF-02 | Phase 15 | Planned |
-| PROOF-03 | Phase 15, Phase 16 | Planned |
-| TRUST-01 | Phase 13, Phase 15, Phase 16 | Planned |
-| TRUST-02 | Phase 13, Phase 15, Phase 16 | Planned |
-| TRUST-03 | Phase 13, Phase 16 | Planned |
-| CTA-01 | Phase 15 | Planned |
-| CTA-02 | Phase 15 | Planned |
-| OPS-01 | Phase 13, Phase 16 | Planned |
-| OPS-02 | Phase 13, Phase 16 | Planned |
-| BUILD-01 | Phase 14, Phase 16 | Phase 14 Satisfied |
-| BUILD-02 | Phase 14, Phase 16 | Phase 14 Satisfied |
-| BUILD-03 | Phase 14, Phase 16 | Phase 14 Satisfied |
-
-**Coverage:**
-- v1.2 requirements: 16 total
-- Mapped to phases: 16
-- Unmapped: 0 ✓
+| 15. 宣传页内容与视觉实现 | v1.2 | 6/6 | Complete | 2026-06-12 |
+| 16. 发布验收与运营基线 | v1.2 | 4/4 | Complete | 2026-06-16 |
 
 ---
 
 _Roadmap created: 2026-04-28_
 _v1.0 archived: 2026-05-09_
 _v1.1 archived: 2026-05-31_
-_v1.2 planned: 2026-06-01_
+_v1.2 archived: 2026-06-17_

@@ -1,279 +1,288 @@
-import { useState } from 'preact/hooks';
+/**
+ * App — final Phase 15 marketing page: 8 sections in locked order (D-01/D-02).
+ *
+ * Section order + band alternation (15-UI-SPEC / D-04):
+ *   1. Hero (canvas, max-w-3xl) — locale toggle (above the fold), single h1, primary CTA, payload preview
+ *   2. Use cases (subtle)      — 3 compact cards
+ *   3. Payload example (canvas) — PopupMockup proof module
+ *   4. Supported platforms (subtle) — shipped list only, Telegram warn label
+ *   5. Three-step flow (canvas) — Stepper + TargetMockup delivered state
+ *   6. Trust (subtle)           — privacy facts / permission facts groups
+ *   7. Known limits (canvas)    — subdued factual list
+ *   8. CTA (subtle)             — primary + secondary CtaButton group
+ *
+ * All public copy flows through site-content.ts getters (no freeform JSX
+ * strings); the locale signal is read during render so toggling locale
+ * re-renders the whole page after the dictionary loads (T-15-09 + the
+ * stale-dictionary regression fixed in 15-01).
+ */
 import type { Signal } from '@preact/signals';
 import {
-  getCtaButtons,
-  getFlowHeading,
   getHero,
-  getKnownLimits,
-  getKnownLimitsHeading,
-  getLocaleToggle,
-  getPayloadExample,
-  getProofLabels,
-  getProofMetadata,
-  getSupportedPlatforms,
-  getSupportedPlatformsHeading,
-  getThreeStepFlow,
-  getTrustGroups,
-  getTrustHeading,
   getUseCases,
-  getUseCasesHeading,
+  getPayloadExample,
+  getSupportedPlatforms,
+  getFlowSteps,
+  getTargetMockup,
+  getTrust,
+  getKnownLimits,
+  getProofMeta,
+  getCta,
+  getLocaleToggle,
+  getFooterTagline,
 } from './data/site-content';
-import { setLocale } from './i18n/index';
-import { CTAButton } from './components/cta-button';
-import { Stepper } from './components/flow/stepper';
+import type { FlowStep } from './data/site-content';
+import { t, setLocale } from './i18n/index';
+import { SectionShell } from './components/section-shell';
+import { CtaButton } from './components/cta-button';
 import { PopupMockup } from './components/proof/popup-mockup';
 import { TargetMockup } from './components/proof/target-mockup';
-import { SectionShell } from './components/section-shell';
+import { Stepper } from './components/flow/stepper';
 
 interface AppProps {
   locale: Signal<string>;
 }
 
+/** getFlowSteps returns exactly 3 steps (PROOF-02); narrow to the Stepper tuple. */
+function flowTuple(): readonly [FlowStep, FlowStep, FlowStep] | null {
+  const [s1, s2, s3] = getFlowSteps();
+  // WR-07: do NOT throw inside the render path. App is the root component and
+  // Preact has no error boundary here, so an uncaught throw blanks the entire
+  // marketing site. A regression that drops a flow step becomes a visible
+  // fallback message in the flow section instead of taking the whole page down.
+  // Returns null so the caller can render a fallback; a future build-time
+  // audit (or the dev console.error below) still surfaces the contract break.
+  if (!s1 || !s2 || !s3) {
+    if (import.meta.env?.DEV) {
+      console.error('[flow] expected exactly 3 flow steps — rendering fallback');
+    }
+    return null;
+  }
+  return [s1, s2, s3] as const;
+}
+
 export function App({ locale }: AppProps) {
-  const [, setLocaleVersion] = useState(0);
+  // Reading locale.value subscribes this component to the signal, so the
+  // toggle below re-renders every getter-driven section after setLocale.
+  const langAttr = locale.value === 'zh_CN' ? 'zh-CN' : 'en';
+
   const hero = getHero();
-  const useCasesHeading = getUseCasesHeading();
   const useCases = getUseCases();
   const payload = getPayloadExample();
-  const platformsHeading = getSupportedPlatformsHeading();
   const platforms = getSupportedPlatforms();
-  const flowHeading = getFlowHeading();
-  const steps = getThreeStepFlow();
-  const trustHeading = getTrustHeading();
-  const trustGroups = getTrustGroups();
-  const limitsHeading = getKnownLimitsHeading();
+  const trust = getTrust();
   const limits = getKnownLimits();
-  const proofMetadata = getProofMetadata();
-  const proofLabels = getProofLabels();
-  const localeToggle = getLocaleToggle();
-  const ctas = getCtaButtons();
-
-  const toggleLocale = async () => {
-    const next = locale.value === 'en' ? 'zh_CN' : 'en';
-    await setLocale(next);
-    locale.value = next;
-    setLocaleVersion((value) => value + 1);
-  };
+  const proofMeta = getProofMeta();
+  const cta = getCta();
+  const targetMockup = getTargetMockup();
+  const toggle = getLocaleToggle();
+  const footer = getFooterTagline();
+  const flowSteps = flowTuple();
 
   return (
-    <div class="min-h-screen bg-[var(--color-canvas)] text-[var(--color-ink-base)]">
-      <SectionShell tone="canvas" width="wide">
-        <div class="flex flex-col gap-8" data-section="hero">
-          <div class="flex flex-col gap-5">
-            <span class="w-fit rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-3 py-1 text-[14px] leading-[1.4] text-[var(--color-ink-muted)]">
-              {hero.payloadPreviewLabel}
-            </span>
-            <div class="flex flex-col gap-4">
-              <h1 class="text-[28px] leading-[1.15] font-semibold text-[var(--color-ink-strong)]">
-                {hero.title}
-              </h1>
-              <p class="max-w-3xl text-[16px] leading-[1.5] text-[var(--color-ink-muted)]">
-                {hero.subtitle}
-              </p>
+    <div lang={langAttr} class="min-h-screen bg-[var(--color-canvas)] text-[var(--color-ink-base)]">
+      <main>
+        {/* 1. Hero — canvas band, unified max-w-3xl width rhythm (15-06, D-03) */}
+        <section class="bg-[var(--color-canvas)] py-16">
+          <div class="mx-auto max-w-3xl px-6 sm:px-8">
+            {/* Utility row: locale toggle is discoverable above the fold.
+                Restrained text-link affordance only — no navbar, no anchor
+                menu, no sticky chrome (D-02). */}
+            <div class="flex justify-end">
+              <button
+                type="button"
+                data-testid="locale-toggle"
+                class="min-h-[44px] rounded-[var(--radius-soft)] px-3 text-sm text-[var(--color-ink-muted)] underline underline-offset-4 hover:text-[var(--color-ink-strong)] focus-visible:ring-2 focus-visible:ring-[var(--color-accent-ring)] focus-visible:outline-none"
+                onClick={() => {
+                  const next = locale.value === 'en' ? 'zh_CN' : 'en';
+                  // Load the dictionary first, then flip the signal so the
+                  // re-render reads the fully loaded locale (no stale copy).
+                  // WR-05: surface a swallowed setLocale rejection (network
+                  // error, missing zh_CN chunk on a CDN deploy, etc.) so the
+                  // toggle is never silently a no-op. `void` discards the
+                  // promise value but `.catch` keeps the rejection observable.
+                  void setLocale(next)
+                    .then(() => {
+                      locale.value = next;
+                      // Keep the <html> lang in lockstep with the app-root lang
+                      // (WR-08). Same expression as main.tsx init.
+                      document.documentElement.lang = next === 'zh_CN' ? 'zh-CN' : 'en';
+                    })
+                    .catch((err) => {
+                      console.error('[locale-toggle] failed to load locale', next, err);
+                    });
+                }}
+              >
+                {toggle.label}
+              </button>
             </div>
-            <div class="flex flex-wrap gap-3">
-              <CTAButton href={hero.primaryCta.href} target="_blank" rel="noreferrer">
-                {hero.primaryCta.label}
-              </CTAButton>
-            </div>
-            <ul class="flex flex-wrap gap-2" aria-label={hero.platformAriaLabel}>
-              {hero.platformChips.map((chip) => (
-                <li
-                  key={chip}
-                  class="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-3 py-1 text-[14px] leading-[1.4] text-[var(--color-ink-muted)]"
-                >
-                  {chip}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div class="grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
-            <div
-              class="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] p-5"
-              data-testid="hero-payload-preview"
-            >
-              <div class="flex items-center justify-between gap-3">
-                <p class="text-[20px] leading-[1.2] font-semibold text-[var(--color-ink-strong)]">
-                  {payload.title}
+
+            <div class="mt-2 md:grid md:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)] md:items-center md:gap-8">
+              <div>
+                <h1 class="text-[28px] leading-[1.15] font-semibold text-[var(--color-ink-strong)]">
+                  {hero.title}
+                </h1>
+                <p class="mt-4 max-w-[40ch] text-base leading-normal text-[var(--color-ink-muted)]">
+                  {hero.subtitle}
                 </p>
-                <span class="rounded-full border border-[var(--color-border-strong)] px-3 py-1 text-[14px] leading-[1.4] text-[var(--color-ink-muted)]">
-                  {proofMetadata.label}
-                </span>
+                <div class="mt-8">
+                  <CtaButton href={hero.ctaUrl} variant="primary" testId="hero-primary-cta">
+                    {hero.cta}
+                  </CtaButton>
+                </div>
+                {/* Low-weight shipped-platform chips — names only, no logo wall */}
+                <ul class="mt-6 flex flex-wrap gap-2">
+                  {hero.platformChips.map((chip) => (
+                    <li
+                      key={chip}
+                      class="rounded-[var(--radius-pill)] border border-[var(--color-border-strong)] px-2.5 py-0.5 text-sm text-[var(--color-ink-muted)]"
+                    >
+                      {chip}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p class="mt-3 text-[16px] leading-[1.5] text-[var(--color-ink-muted)]">
-                {payload.description}
-              </p>
-              <ul class="mt-6 flex flex-col gap-3">
-                {payload.fields.map((field) => (
-                  <li
-                    key={field.key}
-                    data-payload-key={field.key}
-                    class="rounded-[var(--radius-sharp)] border border-[var(--color-border-strong)] bg-[var(--color-canvas)] px-3 py-3"
-                  >
-                    <p class="text-[14px] leading-[1.4] text-[var(--color-ink-muted)]">
-                      {field.label}
-                    </p>
-                    <p class="mt-1 line-clamp-2 whitespace-pre-wrap break-words font-mono text-[14px] leading-[1.5] text-[var(--color-ink-strong)]">
-                      {field.value}
-                    </p>
-                  </li>
-                ))}
-              </ul>
+
+              {/* Compact payload preview — field names only, full demo lives in section 3 */}
+              <div class="mt-10 md:mt-0">
+                <div class="rounded-[calc(var(--radius-card)+8px)] border border-[var(--color-rule)] bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)] px-4 py-3 shadow-[0_12px_36px_color-mix(in_srgb,var(--color-accent)_10%,transparent)] ring-1 ring-white/55">
+                  <p class="text-sm leading-snug text-[var(--color-ink-muted)]">
+                    {hero.payloadPreview.label}
+                  </p>
+                  <ul class="mt-2 flex flex-col">
+                    {hero.payloadPreview.fields.map((field) => (
+                      <li
+                        key={field}
+                        class="border-t border-[var(--color-rule)] py-1.5 font-mono text-sm leading-snug text-[var(--color-ink-base)] first:border-t-0"
+                      >
+                        {field}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
+          </div>
+        </section>
+
+        {/* 2. Use cases — exactly 3 (CLM-USE-01) */}
+        <SectionShell tone="subtle" width="3xl" title={t('useCases.title')}>
+          <div class="grid gap-4 md:grid-cols-3">
+            {useCases.map((useCase) => (
+              <div
+                key={useCase.key}
+                class="rounded-[calc(var(--radius-card)+6px)] border border-[var(--color-rule)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-4 py-4 shadow-[0_10px_28px_color-mix(in_srgb,var(--color-ink-strong)_5%,transparent)]"
+              >
+                <h3 class="text-base leading-normal font-semibold text-[var(--color-ink-strong)]">
+                  {useCase.title}
+                </h3>
+                <p class="mt-1.5 text-sm leading-normal text-[var(--color-ink-muted)]">
+                  {useCase.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </SectionShell>
+
+        {/* 3. Structured-payload example — popup-style proof module (D-10/D-11) */}
+        <SectionShell tone="canvas" width="3xl" title={payload.title} intro={payload.description}>
+          <PopupMockup payload={payload} meta={proofMeta} />
+        </SectionShell>
+
+        {/* 4. Supported platforms — shipped truth only (T-15-07, CLM-PLATFORM-01) */}
+        <SectionShell tone="subtle" width="3xl" title={t('supportedPlatforms.title')}>
+          <ul class="grid gap-4 md:grid-cols-2">
+            {platforms.map((platform) => (
+              <li
+                key={platform.key}
+                class="rounded-[calc(var(--radius-card)+6px)] border border-[var(--color-rule)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] px-4 py-3 shadow-[0_10px_28px_color-mix(in_srgb,var(--color-ink-strong)_5%,transparent)]"
+              >
+                <p class="text-base leading-normal text-[var(--color-ink-base)]">
+                  {platform.label}
+                </p>
+                {platform.riskLabel && (
+                  <p class="mt-1.5">
+                    <span class="inline-flex items-center rounded-[var(--radius-sharp)] bg-[var(--color-warn-soft)] px-1.5 py-0.5 font-mono text-sm leading-snug text-[var(--color-warn)]">
+                      {platform.riskLabel}
+                    </span>
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </SectionShell>
+
+        {/* 5. Three-step core flow + delivered-state proof (D-08/D-09, PROOF-02/03) */}
+        <SectionShell tone="canvas" width="3xl" title={t('flow.title')}>
+          <div class="flex flex-col gap-10">
+            {flowSteps ? (
+              <Stepper steps={flowSteps} />
+            ) : (
+              // WR-07: graceful fallback when the 3-step contract regresses —
+              // keeps the section visible (TargetMockup + title) instead of
+              // blanking the whole page via an uncaught throw from flowTuple.
+              <p class="text-base leading-normal text-[var(--color-ink-muted)]">
+                {t('flow.title')}
+              </p>
+            )}
             <TargetMockup
-              metadata={proofMetadata}
-              platform={platforms[0]?.label ?? ''}
-              status={proofMetadata.status}
-              message={payload.fields.map((field) => `${field.label}: ${field.value}`).join('\n\n')}
-              sourceLabel={proofLabels.source}
-              statusLabel={proofLabels.status}
-              versionLabel={proofLabels.version}
-              helperText={hero.subtitle}
-              resultLabel={hero.platformChips[0] ?? ''}
+              meta={proofMeta}
+              chatLabel={targetMockup.chatLabel}
+              messageLines={targetMockup.messageLines}
+              statusLabel={targetMockup.statusLabel}
             />
           </div>
-        </div>
-      </SectionShell>
+        </SectionShell>
 
-      <SectionShell
-        tone="surface-subtle"
-        title={useCasesHeading.title}
-        intro={useCasesHeading.intro}
-      >
-        <div class="grid gap-4 md:grid-cols-3" data-section="use-cases">
-          {useCases.map((useCase) => (
-            <article
-              key={useCase.key}
-              class="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-5"
-            >
-              <h3 class="text-[20px] leading-[1.2] font-semibold text-[var(--color-ink-strong)]">
-                {useCase.title}
-              </h3>
-              <p class="mt-3 text-[16px] leading-[1.5] text-[var(--color-ink-muted)]">
-                {useCase.description}
-              </p>
-              <p class="mt-4 text-[14px] leading-[1.4] text-[var(--color-ink-faint)]">
-                {useCase.evidence}
-              </p>
-            </article>
-          ))}
-        </div>
-      </SectionShell>
-
-      <SectionShell tone="canvas" title={payload.title} intro={payload.description}>
-        <div data-section="payload">
-          <PopupMockup
-            title={payload.title}
-            fields={payload.fields}
-            metadata={proofMetadata}
-            sourceLabel={proofLabels.source}
-            statusLabel={proofLabels.status}
-            versionLabel={proofLabels.version}
-          />
-        </div>
-      </SectionShell>
-
-      <SectionShell
-        tone="surface-subtle"
-        title={platformsHeading.title}
-        intro={platformsHeading.intro}
-      >
-        <div class="grid gap-4 md:grid-cols-2" data-section="platforms">
-          {platforms.map((platform) => (
-            <article
-              key={platform.key}
-              data-platform-key={platform.key}
-              class="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-5"
-            >
-              <div class="flex items-start justify-between gap-3">
-                <h3 class="text-[20px] leading-[1.2] font-semibold text-[var(--color-ink-strong)]">
-                  {platform.label}
+        {/* 6. Privacy / permissions trust — two distinct fact groups (TRUST-01/02) */}
+        <SectionShell tone="subtle" width="3xl" title={trust.title}>
+          <div class="grid gap-4 md:grid-cols-2">
+            {[trust.privacy, trust.permissions].map((group) => (
+              <div
+                key={group.title}
+                class="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-4"
+              >
+                <h3 class="text-base leading-normal font-semibold text-[var(--color-ink-strong)]">
+                  {group.title}
                 </h3>
-                {platform.riskLabel ? (
-                  <span class="rounded-full border border-[var(--color-warn)] bg-[var(--color-warn-soft)] px-3 py-1 text-[14px] leading-[1.4] text-[var(--color-warn)]">
-                    {platform.riskLabel}
-                  </span>
-                ) : null}
+                <ul class="mt-3 flex flex-col gap-2">
+                  {group.facts.map((fact) => (
+                    <li key={fact} class="text-sm leading-normal text-[var(--color-ink-base)]">
+                      {fact}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p class="mt-3 text-[16px] leading-[1.5] text-[var(--color-ink-muted)]">
-                {platform.detail}
-              </p>
-            </article>
-          ))}
-        </div>
-      </SectionShell>
-
-      <SectionShell tone="canvas" title={flowHeading.title} intro={flowHeading.intro}>
-        <div data-section="flow">
-          <Stepper steps={steps} />
-        </div>
-      </SectionShell>
-
-      <SectionShell tone="surface-subtle" title={trustHeading.title} intro={trustHeading.intro}>
-        <div class="grid gap-4 md:grid-cols-2" data-section="trust">
-          {trustGroups.map((group) => (
-            <article
-              key={group.key}
-              class="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-5"
-            >
-              <h3 class="text-[20px] leading-[1.2] font-semibold text-[var(--color-ink-strong)]">
-                {group.title}
-              </h3>
-              <ul class="mt-4 flex flex-col gap-3">
-                {group.facts.map((fact) => (
-                  <li key={fact} class="text-[16px] leading-[1.5] text-[var(--color-ink-muted)]">
-                    {fact}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </SectionShell>
-
-      <SectionShell tone="canvas" title={limitsHeading.title} intro={limitsHeading.intro}>
-        <div class="flex flex-col gap-3" data-section="limits">
-          {limits.map((limit) => (
-            <article
-              key={limit.key}
-              class="rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-5 py-4"
-            >
-              <p class="text-[16px] leading-[1.5] text-[var(--color-ink-muted)]">{limit.label}</p>
-            </article>
-          ))}
-        </div>
-      </SectionShell>
-
-      <SectionShell tone="surface-subtle" title={ctas.title} intro={ctas.description}>
-        <div class="flex flex-col gap-4" data-section="cta">
-          <div class="flex flex-col gap-3 sm:flex-row">
-            <CTAButton href={ctas.primary.href} target="_blank" rel="noreferrer">
-              {ctas.primary.label}
-            </CTAButton>
-            <CTAButton
-              href={ctas.secondary.href}
-              variant="secondary"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {ctas.secondary.label}
-            </CTAButton>
+            ))}
           </div>
-        </div>
-      </SectionShell>
+        </SectionShell>
 
-      <footer class="border-t border-[var(--color-rule)] py-6">
-        <div class="mx-auto flex max-w-3xl justify-end px-6 sm:px-8">
-          <button
-            type="button"
-            data-testid="locale-toggle"
-            class="min-h-11 rounded-[var(--radius-soft)] px-3 text-[16px] leading-[1.5] text-[var(--color-ink-muted)] underline transition-colors hover:text-[var(--color-ink-strong)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-canvas)]"
-            aria-label={localeToggle.label}
-            onClick={toggleLocale}
-          >
-            {locale.value === 'en' ? '中文' : 'English'}
-          </button>
-        </div>
+        {/* 7. Known limits — factual, lower visual weight than trust (CLM-LIMIT-01/02) */}
+        <SectionShell tone="canvas" width="3xl" title={limits.title}>
+          <ul class="flex flex-col gap-3">
+            {limits.items.map((item) => (
+              <li key={item.key} class="text-base leading-normal text-[var(--color-ink-muted)]">
+                {item.text}
+              </li>
+            ))}
+          </ul>
+        </SectionShell>
+
+        {/* 8. CTA — primary + secondary sharing the Hero button contract (D-12/D-13) */}
+        <SectionShell tone="subtle" width="3xl" title={cta.title} intro={cta.subtitle}>
+          <div class="mt-2 inline-flex flex-col gap-3 rounded-[calc(var(--radius-card)+10px)] border border-[var(--color-rule)] bg-[color-mix(in_srgb,var(--color-accent-soft)_62%,transparent)] px-5 py-4 shadow-[0_16px_42px_color-mix(in_srgb,var(--color-accent)_12%,transparent)] sm:flex-row">
+            <CtaButton href={cta.primary.url} variant="primary" testId="footer-primary-cta">
+              {cta.primary.label}
+            </CtaButton>
+            <CtaButton href={cta.secondary.url} variant="secondary" testId="footer-secondary-cta">
+              {cta.secondary.label}
+            </CtaButton>
+          </div>
+        </SectionShell>
+      </main>
+
+      <footer class="border-t border-[var(--color-rule)] py-4 text-center">
+        <p class="text-sm text-[var(--color-ink-muted)]">{footer.tagline}</p>
       </footer>
     </div>
   );

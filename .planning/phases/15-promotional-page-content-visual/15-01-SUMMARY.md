@@ -1,120 +1,104 @@
 ---
 phase: 15-promotional-page-content-visual
 plan: 01
-subsystem: ui
-tags: [marketing, i18n, content, preact, vitest]
-requires:
-  - phase: 13-information-architecture-copy-sources
-    provides: claims matrix, copy guardrails, and supported-platform truth
-  - phase: 14-marketing-app-skeleton-build-isolation
-    provides: marketing app scaffold and isolated build pipeline
+subsystem: marketing
+tags: [marketing, i18n, content-layer, tdd]
+requires: []
 provides:
-  - typed marketing content getters for hero, payload, trust, limits, proof metadata, locale toggle, and CTA sections
-  - bilingual locale data for the Phase 15 marketing narrative
-  - regression coverage for content truth, locale parity, and placeholder removal
-affects: [15-02, marketing app rendering, phase-16 verification]
+  - marketing content getter API（8 个 section 的 typed getter）
+  - REPO_URL / INSTALL_URL CTA truth anchors
+  - en/zh_CN marketing locale keys（100% parity）
+  - site-content truth regression tests
+affects:
+  - 15-02（页面组件组装将消费这些 getter）
 tech-stack:
   added: []
-  patterns: [interface-plus-getter marketing data layer, locale parity assertions, source-backed CTA and trust copy]
+  patterns:
+    - "interface + getter + t() 纯数据层模式（延续 Phase 14 骨架）"
+    - "扁平 section.field locale key 命名"
 key-files:
-  created: [tests/unit/marketing/site-content.spec.ts]
+  created:
+    - tests/unit/marketing/site-content.spec.ts
   modified:
-    [
-      apps/marketing/src/data/site-content.ts,
-      apps/marketing/src/i18n/locales/en.json,
-      apps/marketing/src/i18n/locales/zh_CN.json,
-      apps/marketing/src/app.tsx,
-    ]
-key-decisions:
-  - "Kept Phase 15 public copy in site-content getters instead of JSX literals so later sections consume one audited source."
-  - "Used the repository root and README installation anchor as explicit CTA targets in the data layer for deterministic testing."
-  - "Adapted app.tsx to the new HeroContent shape and removed the obsolete nextPhase dependency to keep typecheck green during the intermediate plan stage."
-patterns-established:
-  - "Marketing content truth lives in typed getters backed by flat locale keys."
-  - "Locale parity and placeholder removal are enforced in unit tests before visual assembly work."
-requirements-completed: [MSG-01, MSG-02, MSG-03, PROOF-01, CTA-01, CTA-02, TRUST-01, TRUST-02]
-duration: 10 min
-completed: 2026-06-02
+    - apps/marketing/src/data/site-content.ts
+    - apps/marketing/src/i18n/locales/en.json
+    - apps/marketing/src/i18n/locales/zh_CN.json
+    - apps/marketing/src/i18n/index.ts
+    - apps/marketing/src/app.tsx
+decisions:
+  - "INSTALL_URL 使用 README 中文「安装」标题的 URL-encoded anchor（#%E5%AE%89%E8%A3%85），且测试断言其以 REPO_URL 为前缀"
+  - "payload 示例硬编码 MDN structuredClone() 页面数据（D-11），URL 与 create_at 作为导出常量供测试断言"
+  - "平台 chip 品牌名（OpenClaw/Discord/Slack/Telegram）不本地化，直接写在 getter 中"
+  - "Telegram 风险标签 'live UAT pending / known risk' 在两个 locale 中保持英文原文（行业标准术语）"
+metrics:
+  duration: ~35 min
+  tasks: 2/2
+  completed: 2026-06-10
 ---
 
-# Phase 15 Plan 01: Promotional page content data layer summary
+# Phase 15 Plan 01: Marketing Content Data Layer Summary
 
-**Typed bilingual marketing content getters for hero, payload proof, trust facts, risk labels, and CTA targets backed by unit and i18n coverage tests**
+宣传页 8 个 section 的 typed content getter + 双语 locale keys + 数据层 truth 回归测试，以 TDD RED→GREEN 完成；CTA / 平台 / 隐私 / 权限 claims 全部锚定到 13-CONTENT-SOURCES claims matrix。
 
-## Performance
+## Tasks Completed
 
-- **Duration:** 10 min
-- **Started:** 2026-06-02T12:29:00Z
-- **Completed:** 2026-06-02T12:39:10Z
-- **Tasks:** 2
-- **Files modified:** 5
+| Task | Name | Commits | Files |
+|------|------|---------|-------|
+| 1 | site-content RED 测试 + marketing content getter 与双语数据 | 38213d2 (RED), b1e160c (GREEN) | site-content.ts, en.json, zh_CN.json, site-content.spec.ts, i18n/index.ts, app.tsx |
+| 2 | i18n coverage 锁住 locale parity | （无变更——coverage 直接通过） | — |
 
-## Accomplishments
-- Replaced the skeleton-only marketing data model with typed getters covering all planned public content sections.
-- Added complete `en` / `zh_CN` marketing locale keys for hero, use cases, payload, platforms, flow, trust, limits, proof metadata, locale toggle, and CTA copy.
-- Added regression tests that lock payload field order, shipped platform truth, trust wording boundaries, CTA URLs, locale parity, and removal of `nextPhase.*` placeholders.
+## What Was Built
 
-## Task Commits
-
-Each task was committed atomically:
-
-1. **Task 1: 先写 site-content RED 测试再实现 marketing content getter 与双语数据** - `e46b014` (test), `c0851d9` (feat)
-2. **Task 2: 补跑 i18n coverage 锁住 locale parity** - `4dbf44b` (test)
-
-## Files Created/Modified
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a9553626ff40a7f86/tests/unit/marketing/site-content.spec.ts` - Locks marketing content truth, locale parity, and placeholder removal.
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a9553626ff40a7f86/apps/marketing/src/data/site-content.ts` - Exposes typed getters for all Phase 15 public marketing data.
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a9553626ff40a7f86/apps/marketing/src/i18n/locales/en.json` - Adds complete English marketing copy for the data layer.
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a9553626ff40a7f86/apps/marketing/src/i18n/locales/zh_CN.json` - Adds complete Simplified Chinese marketing copy with key parity.
-- `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a9553626ff40a7f86/apps/marketing/src/app.tsx` - Adjusts the temporary marketing shell to the new getter shapes and removes `getNextPhase()` usage.
-
-## Decisions Made
-- Keep `site-content.ts` on the existing `interface + getter + t()` pattern and expand it instead of introducing nested config objects or JSX literals.
-- Treat Telegram risk wording, production permission wording, and CTA destinations as testable data-layer truths rather than visual-only copy.
-- Remove the obsolete placeholder locale surface from the contract now so later UI plans cannot accidentally render `nextPhase.*` fallback keys.
+- **`site-content.ts` 完整内容 API：** `getHero` / `getUseCases` / `getPayloadExample` / `getSupportedPlatforms` / `getFlowSteps` / `getTrust` / `getKnownLimits` / `getProofMeta` / `getCta` / `getLocaleToggle`，加上 `REPO_URL`、`INSTALL_URL`、`PAYLOAD_FIELD_ORDER`、`PAYLOAD_EXAMPLE_URL`、`PAYLOAD_EXAMPLE_CREATE_AT` truth 常量。`getNextPhase` 与 `nextPhase.*` keys 已彻底移除。
+- **双语 locale：** en/zh_CN 各 65 个 marketing keys，key set 完全一致（由 spec 测试断言），无 placeholder。
+- **回归测试（15 个）：** hero 契约（D-01/D-03/D-12/D-13）、payload 字段顺序（MSG-03）、平台 truth + Telegram 风险标签（CLM-PLATFORM-01/CLM-LIMIT-01）、trust 分组与禁止词（TRUST-01/02）、known limits 三项、proof metadata（D-05）、CTA 目标（CTA-01/02）、locale parity 与禁止 claims。
 
 ## Deviations from Plan
 
 ### Auto-fixed Issues
 
-**1. [Rule 3 - Blocking] Linked worktree test dependencies and generated WXT metadata access**
-- **Found during:** Task 1 (RED/GREEN verification)
-- **Issue:** The isolated worktree lacked accessible `node_modules`, `apps/marketing/node_modules`, and `.wxt` paths, so `pnpm test` could not start and Vitest could not resolve the generated TypeScript base config.
-- **Fix:** Temporarily linked the worktree to the main checkout's dependency and `.wxt` directories, ran verification, then removed the temporary links before completion.
-- **Files modified:** None tracked
-- **Verification:** `pnpm test -- tests/unit/marketing/site-content.spec.ts`, `pnpm typecheck`
-- **Committed in:** not committed (environment-only unblock)
+**1. [Rule 1 - Bug] 修复 marketing i18n 字典遮蔽 bug**
+- **Found during:** Task 1 GREEN（zh_CN locale 测试失败）
+- **Issue:** `dictionaries` 中预置的 `zh_CN: {}` 空对象使 `loadLocale` 的 `dictionaries[locale]` 检查恒为 truthy，提前 return，zh_CN locale 永远不会真正加载；`t()` 在 zh_CN 下回退为 key 字符串。
+- **Fix:** 移除空 stub，字典类型改为 `Record<string, Record<string, string> | undefined>`，懒加载逻辑保持不变。
+- **Files modified:** apps/marketing/src/i18n/index.ts
+- **Commit:** b1e160c
 
-**2. [Rule 3 - Blocking] Updated the temporary marketing app shell to match the new content API**
-- **Found during:** Task 1 pre-commit typecheck
-- **Issue:** `apps/marketing/src/app.tsx` still imported `getNextPhase()` and expected `hero.cta`, which broke typecheck after the data layer was expanded.
-- **Fix:** Switched the shell to `getLocaleToggle()`, used `hero.primaryCta`, and removed the obsolete `getNextPhase()` dependency so the codebase remained type-safe.
-- **Files modified:** `apps/marketing/src/app.tsx`
-- **Verification:** `pnpm typecheck`
-- **Committed in:** `c0851d9`
+**2. [Rule 3 - Blocking] app.tsx 同步更新（计划外文件）**
+- **Found during:** Task 1 GREEN（移除 `nextPhase.*` keys 会使 app.tsx 编译失败 / 产生孤儿 key）
+- **Issue:** app.tsx 仍引用 `getNextPhase()` 并渲染 nextPhase section；同时 Hero CTA 硬编码了错误的仓库 URL（`github.com/nichochar/web2chat`，正确 origin 是 `seven-steven`）。
+- **Fix:** 移除 nextPhase section 与 import，CTA href 改为消费 `REPO_URL` 常量。
+- **Files modified:** apps/marketing/src/app.tsx
+- **Commit:** b1e160c
 
----
+## TDD Gate Compliance
 
-**Total deviations:** 2 auto-fixed (2 blocking)
-**Impact on plan:** Both fixes were required to complete the planned task safely in the worktree and keep the repository type-safe. No scope creep.
+- RED gate: `test(15-01)` commit 38213d2 — 15 个测试以 stub 实现失败。
+- GREEN gate: `feat(15-01)` commit b1e160c — 469/469 全量测试通过。
+- REFACTOR: 无需独立 refactor commit（GREEN 实现即最简形态）。
 
-## Issues Encountered
-- Pre-commit hooks surfaced a type mismatch from the old marketing placeholder shell after the data API changed; fixing the shell immediately resolved the blocker.
-- Worktree-local dependency resolution required temporary symlinks because the isolated checkout did not initially expose generated WXT metadata or package binaries.
+## Verification
 
-## User Setup Required
+- `pnpm test -- tests/unit/marketing/site-content.spec.ts` — 56 files / 469 tests passed
+- `pnpm test:i18n-coverage` — 100%（107 keys，extension locale 维度；marketing locale parity 由 spec 测试锁定）
+- `pnpm typecheck` — clean
+- `pnpm lint` — clean
 
-None - no external service configuration required.
+## Known Stubs
 
-## Next Phase Readiness
-- The marketing app now has a single audited data source for all public content claims.
-- Phase 15-02 can focus on visual section assembly and mockup components without inventing new copy or platform truth.
-- No blockers remain for the next plan.
+None — 所有 getter 返回真实双语内容，无 placeholder / 空值流向 UI。
+
+## Threat Flags
+
+无新增安全面：T-15-01/02/03 mitigations 均已落入测试断言（平台白名单 + 顺序、禁止 production `tabs` / 静态 `<all_urls>` claims、privacy facts 仅来自 PRIVACY.md 已公开机制）。
+
+## Next Steps
+
+15-02 起的组件 / 页面组装 plan 直接消费本 plan 的 getter，不在 JSX 中自由发挥文案。
 
 ## Self-Check: PASSED
-- Verified summary target exists: `/Users/seven/data/coding/projects/seven/web2chat/.claude/worktrees/agent-a9553626ff40a7f86/.planning/phases/15-promotional-page-content-visual/15-01-SUMMARY.md`
-- Verified task commits exist: `e46b014`, `c0851d9`, `4dbf44b`
 
----
-*Phase: 15-promotional-page-content-visual*
-*Completed: 2026-06-02*
+- tests/unit/marketing/site-content.spec.ts — FOUND
+- apps/marketing/src/data/site-content.ts contains `getHero` — FOUND
+- en.json / zh_CN.json contain `hero.title` — FOUND
+- Commits 38213d2, b1e160c — FOUND

@@ -1,40 +1,41 @@
 ---
 status: partial
 phase: 15-promotional-page-content-visual
-source:
-  - 15-VERIFICATION.md
-started: 2026-06-02T13:56:36Z
-updated: 2026-06-02T13:56:36Z
+source: [15-VERIFICATION.md]
+started: 2026-06-11T02:55:00Z
+updated: 2026-06-13T01:45:00Z
 ---
 
 ## Current Test
 
-[awaiting human testing]
+[awaiting human visual approval after 15-05 gap closure]
 
 ## Tests
 
-### 1. Responsive layout smoke
+### 1. marketing 页面局部视觉收敛
 
-expected: Hero → Use cases → Payload → Platforms → Flow → Trust → Limits → CTA 顺序不变；按钮可堆叠但不溢出；平台卡片与 mockup 在窄屏仍可读。
-result: [pending]
-
-### 2. Keyboard navigation and focus visibility
-
-expected: Hero CTA、locale toggle、底部 primary/secondary CTA 均可达，focus ring 清晰可见，顺序符合页面阅读顺序。
-result: [pending]
-
-### 3. Visual contrast and first-screen feel
-
-expected: 文本与背景对比可读，交替 section 不混淆，mockup 元数据与 Telegram 风险标签可见；无明显首屏性能问题。
+expected: 在 `pnpm site:preview` 的真实页面中，Hero preview、use case / platform cards、底部 CTA inset panel 相较 gap-closure 前观感更柔和、更适合 web 呈现；如果仍不满意，反馈必须具体到组件/区域，而不是要求整套 shared token 重做。
 result: [pending]
 
 ## Summary
 
-total: 3
+total: 1
 passed: 0
 issues: 0
-pending: 3
+pending: 1
 skipped: 0
 blocked: 0
 
 ## Gaps
+
+- truth: "marketing 页面在不改 shared design tokens 的前提下，局部收敛 Hero、卡片与 CTA band 的视觉层级，观感不再显得生硬。"
+  status: pending-human-review
+  severity: cosmetic
+  source_gap: "15-HUMAN-UAT.md test 4 + 15-VERIFICATION.md re_verification.gaps_remaining[0]"
+  evidence:
+    - "apps/marketing/src/app.tsx 在 Hero preview、section cards、CTA inset panel 使用 local color-mix / border / shadow 柔化"
+    - "shared/styles/design-tokens.css 未改动"
+    - "phase15-05-marketing-page.png 为本次 preview 截图"
+  acceptance_for_close:
+    - "用户确认当前视觉观感可接受"
+    - "若不接受，指出具体区域（Hero preview / use case cards / platform cards / CTA inset panel）"

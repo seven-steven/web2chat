@@ -1,115 +1,103 @@
 ---
 phase: 15-promotional-page-content-visual
-plan: 4
-subsystem: testing
-tags: [marketing, vite, vitest, readme, smoke-verifier]
+plan: 04
+subsystem: marketing
+tags: [marketing, smoke-verifier, tdd, cta]
 requires:
-  - phase: 15-01
-    provides: marketing content data and CTA targets
-  - phase: 15-02
-    provides: proof metadata labels and mockup components
-  - phase: 15-03
-    provides: final promotional page composition
+  - 15-01（REPO_URL / INSTALL_URL truth anchors + locale keys）
+  - 15-02（mockup 组件与 proof label）
+  - 15-03（最终 8-section 页面组装）
 provides:
-  - final marketing smoke verifier that asserts shipped page claims in built output
-  - regression coverage for proof labels, platform truths, and CTA targets
-  - stable README installation anchor for the marketing secondary CTA
-affects: [phase-15-verification, marketing-release, readme-anchors]
+  - 强化版 marketing build smoke verifier（REQUIRED_PAGE_MARKERS + SPA shell 断言）
+  - verifier 回归测试（11 个：3 个文件系统 + 8 个 final-page smoke）
+  - verify:readme 新增 README `## 安装` 锚点守卫（CTA-02）
+affects:
+  - Phase 16（发布验收的 site:verify gate 即本 plan 产物）
 tech-stack:
   added: []
-  patterns: [build-output smoke verification, README anchor verification, task-level TDD for verifier hardening]
+  patterns:
+    - "assertBuildOutput(distDir, errors) 纯函数 + CLI wrapper（延续 verify-manifest 模式）"
+    - "REQUIRED_PAGE_MARKERS 导出常量供测试与 CLI 共享 truth"
 key-files:
   created: []
   modified:
     - apps/marketing/scripts/verify-build.mjs
     - tests/unit/scripts/marketing-verify-build.spec.ts
-    - README.md
-key-decisions:
-  - "Smoke verification inspects built marketing JS bundles plus index.html because Vite renders page copy into compiled assets rather than raw HTML."
-  - "The install CTA keeps the existing README heading and adds an explicit Chinese anchor so the published marketing link stays stable."
-patterns-established:
-  - "Verifier pattern: keep assertBuildOutput as a pure function and accumulate missing built-output markers into errors."
-  - "CTA docs pattern: README install targets should expose explicit anchors when marketing links depend on them."
-requirements-completed: [PROOF-03, CTA-02, TRUST-01, TRUST-02]
-duration: 21 min
-completed: 2026-06-02
+    - scripts/verify-readme-anchors.ts
+decisions:
+  - "页面是 client-rendered SPA，dist/index.html 只有壳：smoke 断言拆为两层——index.html 验 SPA shell（id=\"app\" mount + module script），content markers 扫描 dist 全部文本资产（.html/.js/.mjs/.css/.json/.txt），兼容 zh_CN locale chunk 拆分"
+  - "REQUIRED_PAGE_MARKERS 锁定：hero 文案、7 个 section h2 标题、mockup proof label、4 个 shipped 平台名、Telegram 风险原文、REPO_URL 与 #%E5%AE%89%E8%A3%85 安装锚点"
+  - "README.md 与 package.json 零改动：`## 安装` 标题与全部 Phase 15 验证命令已存在；CTA-02 闭环改为在 verify:readme 加锚点守卫（标题被改名/删除时 fail），符合 Minimal Change Principle"
+metrics:
+  duration: ~15 min
+  tasks: 2/2
+  completed: 2026-06-11
 ---
 
-# Phase 15 Plan 4: Promotional Page Final Verification Summary
+# Phase 15 Plan 04: Final Smoke Gate & Install Anchor Closure Summary
 
-**Built-output smoke verification for the marketing landing page, backed by README install-anchor stability and proof/CTA regression coverage.**
+`site:verify` 从骨架期的"dist 存在"升级为最终页面内容 smoke gate：断言 SPA shell 完整、8-section 标题、mockup proof label、shipped 平台 truth、Telegram 风险文案与双 CTA 目标全部进入构建产物；`verify:readme` 新增 `## 安装` 锚点守卫闭合 CTA-02 的安装入口可验证性。
 
-## Performance
+## Tasks Completed
 
-- **Duration:** 21 min
-- **Started:** 2026-06-02T21:13:00+08:00
-- **Completed:** 2026-06-02T21:34:00+08:00
-- **Tasks:** 2
-- **Files modified:** 3
+| Task | Name | Commits | Files |
+|------|------|---------|-------|
+| 1 | 扩展 build verifier 到最终页面 smoke 断言 | f0c4b6a (RED), a50dd29 (GREEN) | verify-build.mjs, marketing-verify-build.spec.ts |
+| 2 | 固化 README 安装入口与验证命令闭环 | 57b70da | verify-readme-anchors.ts |
 
-## Accomplishments
-- Upgraded the marketing verifier from filesystem-only checks to built-output claim checks for hero copy, proof labeling, platform truth, known-risk wording, and CTA targets.
-- Added RED/GREEN coverage that reproduces missing final-page smoke markers and locks the built-bundle verification contract.
-- Added a stable `#安装` anchor to `README.md` so the marketing install CTA resolves through the existing README verifier.
+## What Was Built
 
-## Task Commits
-
-Each task was committed atomically:
-
-1. **Task 1: 扩展 marketing build verifier 到最终页面 smoke 断言** - `fd41f83` (test), `a78aaab` (feat), `7e8577a` (fix)
-2. **Task 2: 固化 README 安装入口与最终验证命令闭环** - `3204a30` (docs)
-
-## Files Created/Modified
-- `apps/marketing/scripts/verify-build.mjs` - Validates built marketing output markers instead of only checking dist existence.
-- `tests/unit/scripts/marketing-verify-build.spec.ts` - Covers missing-marker failure paths and successful built-output smoke assertions.
-- `README.md` - Adds an explicit installation anchor for the marketing secondary CTA.
-
-## Decisions Made
-- Used built bundle text as the smoke-verification source of truth because the final Vite output does not preserve section data attributes in `dist/index.html`.
-- Kept `package.json` scripts unchanged because all required Phase 15 verification entry points already existed and were verifiably present.
+- **`verify-build.mjs` 强化：** 保留原 3 项文件系统断言（dist 存在 / 非空 / index.html 存在），新增两层 final-page smoke——(1) `dist/index.html` SPA shell 完整性（`id="app"` mount point + `type="module"` script tag，缺失即白屏）；(2) `REQUIRED_PAGE_MARKERS`（17 项）在 dist 全部文本资产中逐一断言，含 hero 文案、7 个 section 标题、`mockup` proof label、OpenClaw/Discord/Slack/Telegram 平台名、`live UAT pending / known risk` 风险原文、REPO_URL 与 `#%E5%AE%89%E8%A3%85` 安装锚点。CLI 契约不变（`[verify:build] FAIL` / `OK`）。
+- **回归测试 11 个：** 3 个原文件系统失败路径 + 8 个新 smoke 路径（marker 列表契约、SPA shell 缺失、section/hero 缺失、proof label 缺失、CTA 缺失、风险文案缺失、成功路径、marker 跨 index.html 与 locale chunk 分布）。
+- **`verify:readme` 锚点守卫：** README.md 若失去 `## 安装` 标题（INSTALL_URL 的 `#%E5%AE%89%E8%A3%85` 编码目标），`pnpm verify:readme` 直接 FAIL，防止锚点漂移导致营销页安装 CTA 死链（T-15-11）。
+- **README.md / package.json 验证为零改动：** `## 安装` 标题已存在且稳定；`lint` / `typecheck` / `test` / `test:i18n-coverage` / `site:build` / `site:verify` / `verify:readme` / `verify:manifest` 全部命令入口完备。
 
 ## Deviations from Plan
 
-### Auto-fixed Issues
+### 计划文件范围内的说明
 
-**1. [Rule 1 - Bug] Switched smoke verification from raw HTML markers to built-output markers**
-- **Found during:** Task 1 (扩展 marketing build verifier 到最终页面 smoke 断言)
-- **Issue:** The first implementation checked raw `dist/index.html` for section/data-label markers, but the actual Vite build emits user-facing content into bundled JS assets, causing `site:verify` to fail against a correct build.
-- **Fix:** Updated the verifier to aggregate `index.html` plus built JS assets and assert stable rendered claims/CTA targets instead of source-only attributes.
-- **Files modified:** `apps/marketing/scripts/verify-build.mjs`, `tests/unit/scripts/marketing-verify-build.spec.ts`
-- **Verification:** `pnpm test -- tests/unit/scripts/marketing-verify-build.spec.ts`, `pnpm site:build`, `pnpm site:verify`
-- **Committed in:** `7e8577a`
+**1. README.md 与 package.json 无需修改（PLAN files_modified 列出但实际零 diff）**
+- **Found during:** Task 2
+- **Issue:** PLAN 将 README.md / package.json 列入 `files_modified`，但核对后 `## 安装` 锚点（15-01 INSTALL_URL 的目标）与全部必跑验证命令已存在且正确。
+- **Resolution:** 遵循 Minimal Change Principle 与 PLAN 自身指令（"Verify and, if needed, minimally adjust"），不做无意义改动；CTA-02 的"锚点经仓库内校验"要求改为在 `scripts/verify-readme-anchors.ts` 加守卫实现（该文件属于 `pnpm verify:readme` 的实现体，是 PLAN verify 命令的直接载体）。
+- **Files modified:** scripts/verify-readme-anchors.ts
+- **Commit:** 57b70da
 
----
+其余执行与计划完全一致。
 
-**Total deviations:** 1 auto-fixed (1 bug)
-**Impact on plan:** Necessary correction to make the smoke gate validate the real production artifact rather than source-shape assumptions. No scope creep.
+## TDD Gate Compliance
 
-## Issues Encountered
-- Initial verifier assumptions matched source JSX structure but not Vite production output. Resolved by validating stable built-text markers instead of raw authoring attributes.
+- RED gate: `test(15-04)` commit f0c4b6a — 11 个测试中 8 个新 smoke 测试对旧 verifier 失败（验证为真 RED；3 个原文件系统测试保持通过）。
+- GREEN gate: `feat(15-04)` commit a50dd29 — 499/499 全量测试通过。
+- REFACTOR: 无需独立 refactor commit（GREEN 即最简实现；pre-commit eslint/prettier 已规范格式）。
 
-## User Setup Required
-None - no external service configuration required.
+## Verification
 
-## Next Phase Readiness
-- Phase 15 now has a passing final verification loop covering README anchors, manifest truth, i18n coverage, full tests, site build, and site smoke verification.
-- Ready for orchestrator-owned verification and tracking writes without further code changes.
+- `pnpm test -- tests/unit/scripts/marketing-verify-build.spec.ts` — 58 files / 499 tests passed（全量）
+- `pnpm verify:readme` — OK（8 sections parity + `## 安装` 锚点存在 + PRIVACY 文件存在）
+- `pnpm lint` — clean
+- `pnpm typecheck` — clean
+- `pnpm test` — 499/499 passed
+- `pnpm test:i18n-coverage` — 100%（107 keys）
+- `pnpm site:build` — vite build 成功（21 modules）
+- `pnpm site:verify` — `[verify:build] OK`（真实 dist 通过全部 17 项 marker + SPA shell 断言）
+- `pnpm verify:manifest` — OK
 
-## Verification Results
-- `pnpm test -- tests/unit/scripts/marketing-verify-build.spec.ts` — PASS
-- `pnpm verify:readme` — PASS
-- `pnpm lint` — PASS
-- `pnpm typecheck` — PASS
-- `pnpm test` — PASS
-- `pnpm test:i18n-coverage` — PASS
-- `pnpm site:build` — PASS
-- `pnpm site:verify` — PASS
-- `pnpm verify:manifest` — PASS
+## Known Stubs
+
+None — verifier 断言的全部 marker 来自真实构建产物，无 placeholder。
+
+## Threat Flags
+
+无新增安全面。T-15-10（smoke assertions + 明确错误输出）、T-15-11（`## 安装` 锚点守卫进 verify:readme）、T-15-12（mockup label + Telegram 风险文本进 smoke 断言）三项 mitigation 全部落地；零新增依赖（T-15-SC accept 维持）。
+
+## Next Steps
+
+Phase 15 四个 plan 全部完成。Phase 16 发布验收可直接以 `pnpm site:build && pnpm site:verify` 作为宣传页内容回归 gate，以 `pnpm verify:readme` 作为安装锚点 gate。
 
 ## Self-Check: PASSED
-- Summary file exists at `.planning/phases/15-promotional-page-content-visual/15-04-SUMMARY.md`
-- Commits found: `fd41f83`, `a78aaab`, `7e8577a`, `3204a30`
 
----
-*Phase: 15-promotional-page-content-visual*
-*Completed: 2026-06-02*
+- apps/marketing/scripts/verify-build.mjs — FOUND（contains `assertBuildOutput` + `REQUIRED_PAGE_MARKERS`）
+- tests/unit/scripts/marketing-verify-build.spec.ts — FOUND（contains `assertBuildOutput`）
+- README.md — FOUND（contains `## 安装`）
+- Commits f0c4b6a, a50dd29, 57b70da — FOUND
