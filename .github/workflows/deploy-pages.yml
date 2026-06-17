@@ -1,0 +1,56 @@
+name: Deploy Pages
+
+# 把 apps/marketing 宣传页发布到 GitHub Pages（项目子路径
+# https://seven-steven.github.io/web2chat/）。仅 push 到 main 触发，
+# 保留 workflow_dispatch 便于手动重发布。与 ci.yml（验证）/release.yml
+#（扩展 zip 发布）职责分离。
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/marketing/**'
+      - '.github/workflows/deploy-pages.yml'
+      - 'pnpm-lock.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      # 项目子路径部署：base 注入 /web2chat/，资源路径带上前缀。
+      # 默认 base '/' 仅用于本地 dev 与 ci.yml 的 site:verify gate。
+      - run: pnpm site:build
+        env:
+          VITE_BASE: /web2chat/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/marketing/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
