@@ -28,6 +28,8 @@ web2chat was originally designed for the [llm-wiki](https://gist.github.com/karp
 
 [web2chat - Chrome Web Store](https://chromewebstore.google.com/detail/web2chat/kglpjocckfgpephljffgkamnfpnmkdnc)
 
+Project website: [https://seven-steven.github.io/web2chat/](https://seven-steven.github.io/web2chat/)
+
 Related store assets and references: [Chrome Web Store materials index](./doc/chrome-web-store/README.md)
 
 ### Download from Release

@@ -75,6 +75,7 @@ Progress: v1.2 complete (4/4 phases, 14/14 plans)。下一周期尚未定义。
 |---|-------------|------|--------|-----------|
 | 260616-235517 | webpage 添加 favicon | 2026-06-16 | b3fab16 | [260616-235517-webpage-add-favicon](./quick/260616-235517-webpage-add-favicon/) |
 | 260617-225858 | 添加 GitHub Actions 配置，把 webpage 发布到 GitHub Pages | 2026-06-17 | 5626c9a | [260617-225858-github-pages-deploy](./quick/260617-225858-github-pages-deploy/) |
+| 260618-docs-webpage-url | 文档补充项目网页地址 | 2026-06-18 | e6c0dc1 | — |
 
 ## Deferred Items
 

@@ -28,6 +28,8 @@ web2chat 最初为 [llm-wiki](https://gist.github.com/karpathy/442a6bf555914893e
 
 [web2chat - Chrome Web Store](https://chromewebstore.google.com/detail/web2chat/kglpjocckfgpephljffgkamnfpnmkdnc)
 
+项目网页：[https://seven-steven.github.io/web2chat/](https://seven-steven.github.io/web2chat/)
+
 相关上架物料与说明见 [Chrome Web Store 物料入口](./doc/chrome-web-store/README.md)
 
 ### 从 Release 下载
