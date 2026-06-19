@@ -34,6 +34,7 @@ async function loadVerifier(): Promise<any> {
 const VALID_SHELL_HTML = [
   '<!doctype html>',
   '<html lang="en"><head>',
+  '<link rel="icon" href="/favicon.svg">',
   '<script type="module" crossorigin src="/assets/index-abc.js"></script>',
   '</head><body><div id="app"></div></body></html>',
 ].join('\n');
@@ -45,6 +46,7 @@ const VALID_SHELL_HTML = [
 function writeDistFixture(distDir: string, html: string, bundleJs: string): void {
   mkdirSync(resolve(distDir, 'assets'), { recursive: true });
   writeFileSync(resolve(distDir, 'index.html'), html);
+  writeFileSync(resolve(distDir, 'favicon.svg'), '<svg xmlns="http://www.w3.org/2000/svg"></svg>');
   writeFileSync(resolve(distDir, 'assets', 'index-abc.js'), bundleJs);
 }
 
@@ -197,6 +199,10 @@ describe('verify-build assertBuildOutput — final page smoke gate (PROOF-03 / C
     const [first, ...rest] = REQUIRED_PAGE_MARKERS;
     mkdirSync(resolve(distDir, 'assets'), { recursive: true });
     writeFileSync(resolve(distDir, 'index.html'), `${VALID_SHELL_HTML}\n<!-- ${first} -->`);
+    writeFileSync(
+      resolve(distDir, 'favicon.svg'),
+      '<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+    );
     writeFileSync(resolve(distDir, 'assets', 'index-abc.js'), rest.slice(0, 3).join('\n'));
     writeFileSync(resolve(distDir, 'assets', 'zh_CN-def.js'), rest.slice(3).join('\n'));
     const errors: string[] = [];

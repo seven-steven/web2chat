@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { globSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /**
@@ -27,7 +27,14 @@ describe('marketing import isolation — BUILD-03 / D-05', () => {
 
   /** Collect all .ts/.tsx source files under marketing/src as absolute paths */
   function getMarketingSources(): string[] {
-    return globSync('**/*.{ts,tsx}', { cwd: marketingSrc }).map((f) => resolve(marketingSrc, f));
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const fullPath = resolve(dir, entry.name);
+        if (entry.isDirectory()) return walk(fullPath);
+        return /\.tsx?$/.test(entry.name) ? [fullPath] : [];
+      });
+
+    return walk(marketingSrc);
   }
 
   const FORBIDDEN_TOKENS = [
