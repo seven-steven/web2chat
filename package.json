@@ -1,6 +1,6 @@
 {
   "name": "web2chat",
-  "version": "0.1.0",
+  "version": "1.2.0",
   "description": "Chrome MV3 web-clipper extension that delivers structured page metadata + a user-defined prompt into a target IM / AI Agent web chat session.",
   "private": true,
   "type": "module",

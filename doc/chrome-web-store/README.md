@@ -6,10 +6,15 @@
 
 ## 物料索引
 
+### 上架准备清单
+
+- [`./MATERIALS-CHECKLIST.md`](./MATERIALS-CHECKLIST.md) — Chrome Web Store Developer Dashboard 上架材料清单；明确每次上架必须准备中英文文案、中英文截图/宣传图、版本号更新和 zip 打包产物。
+- [`./SUBMISSION-v1.2.0.md`](./SUBMISSION-v1.2.0.md) — 当前最新已交付版本 v1.2.0 的实际上架填写材料；后续提交 Dashboard 时优先使用该文件。
+
 ### 上架文案
 
-- [`../../STORE-LISTING.md`](../../STORE-LISTING.md) — 中文版商店文案；本次保留在仓库根目录，因为现有文档链接与相对引用依赖该路径。
-- [`../../STORE-LISTING.en.md`](../../STORE-LISTING.en.md) — 英文版商店文案；本次保留在仓库根目录，避免把整理任务扩大成路径重构。
+- [`../../STORE-LISTING.md`](../../STORE-LISTING.md) — 中文版商店文案唯一来源；包含字段说明与 Developer Dashboard 可粘贴纯文本区块。
+- [`../../STORE-LISTING.en.md`](../../STORE-LISTING.en.md) — 英文版商店文案唯一来源；包含字段说明与 Developer Dashboard 可粘贴纯文本区块。
 - [`../../PRIVACY.md`](../../PRIVACY.md) — 英文隐私政策；本次保留在仓库根目录，因为 README 链接与 `scripts/verify-readme-anchors.ts` 依赖该精确路径。
 - [`../../PRIVACY.zh_CN.md`](../../PRIVACY.zh_CN.md) — 中文隐私政策；本次保留在仓库根目录，因为 README 链接与 `scripts/verify-readme-anchors.ts` 依赖该精确路径。
 

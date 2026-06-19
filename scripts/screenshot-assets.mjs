@@ -37,7 +37,7 @@ async function main() {
   await mkdir(OUT, { recursive: true });
 
   const browser = await chromium.launch();
-  const context = await browser.newContext();
+  const context = await browser.newContext({ deviceScaleFactor: 2 });
 
   let ok = 0;
   for (const file of files) {
@@ -46,9 +46,18 @@ async function main() {
     const dst = resolve(OUT, png);
     const vp = viewportFor(file);
 
-    const page = await context.newPage({ viewport: vp });
+    const page = await context.newPage();
+    await page.setViewportSize(vp);
     await page.goto(`file://${src}`, { waitUntil: 'load' });
-    await page.screenshot({ path: dst, fullPage: false });
+    await page.addStyleTag({
+      content: `
+        * {
+          -webkit-font-smoothing: antialiased !important;
+          text-rendering: geometricPrecision !important;
+        }
+      `,
+    });
+    await page.screenshot({ path: dst, fullPage: false, scale: 'css' });
     await page.close();
 
     console.log(`  ${file} → ${png} (${vp.width}×${vp.height})`);

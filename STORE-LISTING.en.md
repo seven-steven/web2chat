@@ -6,75 +6,151 @@ English | [简体中文](./STORE-LISTING.md)
 
 This field is the `manifest.json` `description`, already set via i18n locale. Current en value:
 
-> One-click clip-and-send to your favorite IM or AI agent chat.
+```text
+One-click clip-and-send to your favorite IM or AI agent chat.
+```
 
 (Within the 132-character limit. Source: `locales/en.yml` -> `extension_description`.)
 
-## Detailed Description
+## Detailed Description (plain text, ready to paste into Developer Dashboard)
 
-web2chat is a Chrome extension built for llm-wiki knowledge building, AI Agent collaboration, and automated IM delivery.
+```text
+web2chat is a local-first Chrome MV3 web clipper that helps you send structured information from the current web page, together with your own prompt, to supported IM or AI agent web chat sessions.
 
-Inspired by Karpathy's llm-wiki pattern — using an LLM to incrementally build a persistent wiki from web sources. web2chat lets you send web page information through common IM tools like Discord, Slack, and Telegram to AI Agent platforms such as openclaw and hermes-agent, enabling one-click knowledge ingestion.
+After you click the toolbar icon, web2chat captures the current page title, URL, description, captured time, and readable content. It sanitizes the content and converts it to Markdown. You can preview and edit the captured content in the popup, add a custom prompt, and send the composed message to a configured target session.
 
-With a single click, web2chat captures structured page information (title, URL, description, body content), converts it to clean Markdown, pairs it with your custom prompt, and delivers it to a target IM or AI Agent chat session.
+1. How it works
 
-### How It Works
+1) Capture
+- Click the toolbar icon to extract the current page content.
+- Extraction uses Readability.
+- Sanitization uses DOMPurify.
+- Markdown conversion uses Turndown.
 
-1. **Capture** -- Click the toolbar icon to extract page content (Readability + DOMPurify + Turndown)
-2. **Edit** -- Preview and edit the title, description, and body in the popup; attach a custom prompt
-3. **Deliver** -- Choose a target session (OpenClaw / Discord) and send the formatted message
+2) Edit
+- Preview the title, description, and body in the popup.
+- Edit the captured result before sending.
+- Add a custom prompt as an instruction for the downstream chat or AI agent.
 
-### Supported Platforms
+3) Deliver
+- Choose a target session.
+- web2chat opens or focuses the target chat page.
+- It inserts the formatted message into the target input box and sends it.
 
-- **OpenClaw Web UI** -- Self-hosted AI Agent platform (hosts llm-wiki / hermes-agent). Configure your instance URL and start using it
-- **Discord** -- Deliver messages to channels. Paste a channel URL to get started
+2. Supported platforms
 
-### Key Features
+- OpenClaw Web UI
+  Supports user-hosted OpenClaw instances. After you configure an instance URL, the extension requests access only to that specific origin at runtime.
 
-- Smart page content extraction (Readability + DOMPurify + Turndown -- outputs clean Markdown)
-- Custom prompts bound to target sessions; switching targets auto-switches the prompt
-- Delivery history with most-recently-used sorting for quick re-delivery
-- Draft recovery -- closing the popup does not lose your edits
-- Bilingual interface (English / Chinese)
-- All data stays local -- no cloud services, no telemetry, no third-party analytics
+- Discord Web
+  Sends messages to Discord channel URLs. You must be signed in to Discord in the same browser profile.
 
-### Privacy
+- Slack Web
+  Sends messages to Slack channel URLs. You must be signed in to Slack in the same browser profile.
 
-web2chat does not upload any data to remote servers. Captured page information and user settings are stored only in the browser's local storage (chrome.storage.local / .session). Delivery happens through direct browser tab navigation to the target session.
+- Telegram Web
+  Sends messages to Telegram Web chat URLs. You must be signed in to Telegram Web in the same browser profile.
+
+3. Key features
+
+- Smart page extraction
+  Captures title, URL, description, captured time, and readable body content, then outputs clean Markdown.
+
+- Custom prompts
+  Combines captured page content with your own instruction before sending.
+
+- Target history
+  Saves frequently used send_to targets with most-recently-used sorting.
+
+- Prompt bindings
+  Saves a prompt for each target session and automatically restores it when switching targets.
+
+- Draft recovery
+  Recovers unsent edits after closing the popup.
+
+- Low-confidence confirmation
+  Asks for confirmation before sending when the target input selector is less stable.
+
+- Login and timeout feedback
+  Shows retryable errors when the target platform is not signed in or takes too long to respond.
+
+- Bilingual UI
+  Supports English and Chinese.
+
+- Local-first privacy model
+  Settings and history stay in local Chrome extension storage. web2chat does not operate a backend service, does not upload clipped content, does not sell data, and does not use telemetry, third-party analytics, or advertising SDKs.
+
+4. Privacy
+
+- web2chat processes the current active tab only after you explicitly click the extension.
+- It inserts the composed message into the selected target chat page only after you confirm the dispatch.
+- Captured content, prompts, target history, and settings are stored only in local Chrome extension storage.
+- web2chat does not operate a backend service, does not upload clipped content, does not sell data, and does not use advertising or analytics SDKs.
+
+5. Notes
+
+- Discord, Slack, and Telegram delivery is performed through DOM injection in your local browser session.
+- This is a form of browser automation and may be subject to each platform's terms of service.
+- Use it only with accounts, workspaces, channels, or chats that you are authorized to use.
+```
 
 ## Dashboard Fields Reference (Manual)
 
 ### Category
 
-Recommended: **Productivity**
+Recommended: Productivity
 
 ### Permissions Justification
 
-Text for each permission to enter in the CWS developer dashboard:
+Text for each permission to enter in the Chrome Web Store Developer Dashboard:
 
-- **`activeTab`** -- Reads the current active tab's content to extract the page title, URL, description, and body text
-- **`scripting`** -- Injects content scripts into target pages to automate message delivery to IM or AI Agent chat sessions
-- **`storage`** -- Stores the user's delivery target history, prompt bindings, and extension settings
-- **`webNavigation`** -- Monitors target page SPA route changes to inject the delivery script at the correct moment
-- **`alarms`** -- Manages timeout timers for the delivery state machine, ensuring dispatches do not hang indefinitely
-- **`host_permissions (discord.com)`** -- Injects the message delivery script into Discord channel pages
+```text
+activeTab: Used only after the user clicks the extension to access the current active tab and extract the page title, URL, description, and readable content.
+
+scripting: Used to run the page extractor in the active tab and inject platform-specific sending adapters into the user-selected target chat page.
+
+storage: Used to store user settings, target history, prompt history, prompt bindings, and dispatch state locally.
+
+webNavigation: Used to observe SPA route changes and page loading state on target chat pages, so the extension can inject the sending adapter at the correct time and handle login or redirect flows.
+
+alarms: Used to manage timeout timers for the dispatch state machine, preventing dispatches from hanging indefinitely.
+
+host permissions: Limited to supported public platform domains (Discord, Slack, and Telegram). Used to detect target page readiness and insert the composed message into user-selected chat pages.
+
+optional host permissions: Used for user-configured self-hosted OpenClaw or custom destinations. The extension requests access only to the specific origin at runtime; it does not get access to all websites by default.
+```
 
 ### Single Purpose Description
 
-> Captures structured web page information and delivers it with a user-defined prompt to a target IM or AI Agent chat session in one click.
+```text
+web2chat lets users capture structured information from the current web page and send it, together with a user-defined prompt, to a supported chat or AI agent web session selected by the user.
+```
 
 ### Privacy Policy URL
 
-```
+```text
 https://github.com/seven-steven/web2chat/blob/main/PRIVACY.md
+```
+
+### Homepage / Support URLs
+
+```text
+Homepage / Official URL: https://seven-steven.github.io/web2chat/
+Support URL: https://github.com/seven-steven/web2chat/issues
 ```
 
 ### Privacy Practices Labels
 
-In the CWS dashboard "Privacy Practices" tab, declare the following:
+In the Chrome Web Store Developer Dashboard "Privacy practices" section, declare the following:
 
-- **Data collected**: Web browsing activity (current tab URL), User-generated content (title / description / body / prompt)
-- **Data usage**: Functionality (compose and deliver messages to target IM or AI Agent sessions)
-- **Data storage**: Local only (chrome.storage.local / .session)
-- **Data sharing**: None
-- **Remote code**: No
+```text
+Data categories: Website content; Web browsing activity (current active tab URL only; not full browsing history); User-provided content (prompt, target session URL, and user edits).
+
+Data usage: Functionality. The data is used to compose and deliver the current page information and the user's prompt to the user-selected chat or AI agent session.
+
+Data storage: Local only (chrome.storage.local / chrome.storage.session).
+
+Data sharing: No selling, no transfer to data brokers, no advertising use, no creditworthiness use, and no upload to developer servers. Data sent by the user to a third-party chat platform is then handled under that platform's own policies.
+
+Remote code: No. All executable JavaScript is packaged with the extension.
+```
