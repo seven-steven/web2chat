@@ -2,7 +2,7 @@
 
 ## 这是什么 (What This Is)
 
-类似 Notion / Pocket / Obsidian Web Clipper 的 Chrome MV3 浏览器扩展。用户在任意网页点击图标后，扩展抓取页面结构化信息（title / url / description / create_at / content），结合用户预设的提示词（prompt），一键发送到目标 IM 会话或 AI Agent 会话。面向需要把"网上看到的内容"快速沉淀到知识库 / 团队聊天 / Agent 工作流的个人与小团队。
+类似 Notion / Pocket / Obsidian Web Clipper 的 Chrome MV3 浏览器扩展。用户在任意网页点击图标后，扩展抓取页面结构化信息（title / url / description / create_at / content），结合用户预设的提示词（prompt），一键发送到目标 IM 会话或 AI Agent 会话。面向需要把“网上看到的内容”快速沉淀到知识库 / 团队聊天 / Agent 工作流的个人与小团队。
 
 ### 设计初衷 (Design Intent)
 
@@ -10,17 +10,18 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ## 核心价值 (Core Value)
 
-让用户用一次点击，把"当前网页的格式化信息 + 预设 prompt"投递到指定的 IM 会话或 AI Agent 会话——其余功能可以让步，这条主链路必须稳定可用。
+让用户用一次点击，把“当前网页的格式化信息 + 预设 prompt”投递到指定的 IM 会话或 AI Agent 会话——其余功能可以让步，这条主链路必须稳定可用。
 
-## Current Milestone: v2.0 待规划
+## Current Milestone: v2.0 Prompt 模板变量引用
 
-**状态:** v1.2 已于 2026-06-17 交付。下一 milestone 尚未定义 requirements，通过 `/gsd:new-milestone` 进入新一轮 questioning → research → requirements → roadmap。
+**Goal:** 用户可以在 prompt 中用 `{{title}}` / `{{url}}` / `{{description}}` / `{{create_at}}` / `{{content}}` 引用当前网页抓取结果，popup 预览与实际投递使用同一渲染结果。
 
-**v2.0 候选方向（尚未立项）:**
-- 重新评估 Feishu/Lark 是否存在可稳定定位会话的新技术路径（平台 API / 稳定 chat identity / 新定位模型）
-- 为 Telegram 补 live session headed-browser UAT，或作为 v1.1.x closeout 补证据
-- 扩展宣传页为 docs portal / changelog page / localized site / hosted interactive demo
-- 历史记录搜索 / 收藏管理界面、配置导入导出、自定义模板编辑器
+**Target features:**
+- 支持 5 个固定 ArticleSnapshot 字段变量：`title`、`url`、`description`、`create_at`、`content`
+- prompt 预览、平台级完整预览、实际 dispatch 共用同一渲染语义
+- 未知变量或拼写错误（例如 `{{dedcription}}`）保留原文，并在 popup 中非阻断提示
+- 采用模型 A：prompt 含已识别变量时跳过自动追加 snapshot；无变量时保持旧的 prompt-first auto-append 行为
+- prompt history / binding / draft 继续保存原始模板字符串，不保存某次渲染结果
 
 ## 需求 (Requirements)
 
@@ -32,7 +33,7 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - [x] 点击扩展图标弹出 popup，抓取并展示当前页面 `title` / `url` / `description` / `create_at` / `content` — Validated in Phase 2（CAP-01..05、Readability + DOMPurify + Turndown 抽取流水线、4-state popup UI、E2E 3/3 + 真实文章 visual UAT 通过）
 - [x] popup 提供 `send_to`（IM channel）输入：下拉历史记录、根据填写内容识别 IM 平台并展示对应 icon — Validated in Phase 3（DSP-01..03）
 - [x] popup 提供 `prompt` 输入：自动按历史记录提示，与 `send_to` 绑定，切换 `send_to` 时自动切换 prompt — Validated in Phase 3（DSP-04..06、DSP-09）
-- [x] 用户点击"确认"后：新开 tab / 唤起本地应用，导航到目标会话并把格式化信息 + prompt 发送到该会话 — Validated in Phase 3（DSP-07..10、STG-03）
+- [x] 用户点击“确认”后：新开 tab / 唤起本地应用，导航到目标会话并把格式化信息 + prompt 发送到该会话 — Validated in Phase 3（DSP-07..10、STG-03）
 - [x] MVP 渠道：OpenClaw Web UI（`http://localhost:18789/chat?session=agent:<agent_name>:<session_name>`）— Validated in Phase 4（ADO-01..07、optional_host_permissions 动态授权）
 - [x] MVP 渠道：Discord Web（`https://discord.com/channels/<server_id>/<channel_id>`）— Validated in Phase 5（ADD-01..09、ClipboardEvent 粘贴注入 + MAIN world bridge + ToS 声明）
 - [x] 投递超时分层 + 登录检测泛化 + 重试 UI + 选择器置信度 — Validated in Phase 9（DSPT-01..04）
@@ -44,24 +45,30 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 ### 进行中 (Active)
 
-(None — v1.2 已交付，下一 milestone v2.0 待规划。候选方向见下方 Deferred。)
+- [ ] 支持 prompt 中通过 `{{field}}` 引用当前 snapshot 字段（v2.0；详见 `.planning/REQUIREMENTS.md`）
+- [ ] popup 显示渲染后 prompt / 平台级完整预览，并对未知变量做非阻断提示
+- [ ] dispatch 使用同一渲染结果，采用模型 A 防止 `{{content}}` 与 auto-append 双重写入
+- [ ] prompt history / binding / draft 保留原始模板字符串，避免把某次网页内容固化进配置
 
 ### 不在范围 (Out of Scope)
 
 - Firefox / Safari 适配 — v1 仅 Chromium MV3，避免分裂工程精力
 - 云端同步配置 / 用户账户 — 本地存储足够覆盖个人使用，云同步推后
-- 自建 IM 后端 / Server-to-Server 发送 — 走"新开 tab + 注入会话"路径，不引入服务器
+- 自建 IM 后端 / Server-to-Server 发送 — 走“新开 tab + 注入会话”路径，不引入服务器
 - 内容 OCR / 图片附件抽取 — v1 只处理文本与基础 metadata，图片与 OCR 推后
 - AI 内容总结 / 改写 — 用户自带 prompt 由下游 Agent 处理，扩展本身不调用 LLM
-- v1.2 不补 Telegram live UAT / Phase 11-12 Nyquist partial — 仅作为已知风险记录，避免宣传页 milestone 混入扩展可靠性 closeout
+- v2.0 不做 user-defined variables / per-binding variables / named template library — 本轮只支持固定 ArticleSnapshot 字段，完整模板库另起 milestone
+- v2.0 不做模板 filters / conditionals / nested paths / alias table — 避免把固定字段替换扩张为模板引擎
+- v2.0 不做 `create_at` 本地化变体 — `{{create_at}}` 直接使用 snapshot 原始 ISO 字符串
 
-### 推迟事项 (Deferred — v2 候选)
+### 推迟事项 (Deferred — v2+ 候选)
 
 - 飞书/Lark 适配器重新评估（Phase 12 因共享 URL blocker dropped，需平台 API、稳定 chat identity 或新的目标定位方案）
 - 其余 IM/协作平台分发：Google Chat、LINE、Microsoft Teams、Nextcloud Talk、Signal、WhatsApp、Zalo、QQ、WeCom
 - 历史记录搜索 / 收藏管理界面
 - 配置导入导出
-- 自定义模板编辑器
+- 自定义模板编辑器 / 命名模板库
+- user-defined prompt variables / per-binding variables
 
 ## 上下文 (Context)
 
@@ -73,6 +80,7 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - **已交付 v1.0**：313 commits, 11,399 LOC TypeScript/TSX, 225 单元测试, 7 phases / 41 plans
 - **已交付 v1.1**：支持平台扩展到 OpenClaw / Discord / Slack / Telegram；27 plans 收尾，Feishu/Lark 经 UAT 证伪后不进入 shipped scope
 - **已交付 v1.2**：仓库内 `apps/marketing` 静态宣传页（en/zh_CN 双语 8-section）+ `verify:claims` 跨源校验 CI gate + 发布验收运营基线；14 plans / 4 phases，16/16 requirements 满足，不改扩展主链路
+- **v2.0 research 结论**：prompt 模板变量是零依赖纯字符串替换能力，但必须处理 prompt-first auto-append 与显式变量引用的结构性冲突；详见 `.planning/research/SUMMARY.md`
 - **技术栈**：WXT 0.20.x + Preact 10.29 + @preact/signals + Tailwind v4 + Vitest 3 + Playwright 1.58（marketing app 复用 Preact + Tailwind v4 + 独立 Vite build）
 
 ## 约束 (Constraints)
@@ -83,6 +91,8 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - **i18n**：所有 UI 文案必须走 `chrome.i18n` 或同等 i18n 框架，禁止硬编码字符串
 - **发送通道**：通过新开/激活 tab + content script 注入目标会话输入框完成发送，不使用平台官方 Bot API（避免 token 管理与服务端依赖）
 - **权限模型**：抓取走 `activeTab`；静态 `host_permissions` 仅声明已知公共平台域名；用户自部署 OpenClaw 与未来平台通过 `optional_host_permissions: ["<all_urls>"]` + 运行时 `chrome.permissions.request` 动态获取具体 origin 权限。静态 `host_permissions` 中禁止 `<all_urls>`
+- **模板变量范围**：v2.0 只支持固定 ArticleSnapshot 字段；不得引入 user-defined variables、per-binding variables 或模板引擎依赖
+- **模板持久化**：history / binding / draft 必须保存原始模板字符串，不保存渲染结果
 
 ## Current State
 
@@ -93,6 +103,8 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 
 **Current shipped platform set:** OpenClaw / Discord / Slack / Telegram
 
+**Current milestone:** v2.0 Prompt 模板变量引用 — planning complete，requirements 与 roadmap 已生成，准备从 Phase 17 开始执行。
+
 **Marketing site:** `apps/marketing`（仓库内 Preact + Tailwind v4 静态页，en / zh_CN 双语，独立 build / preview / smoke test，与扩展 runtime 完全隔离）。所有对外 claim 由 `verify:claims` 在 CI 自动校验，与 `PROJECT.md` / `PRIVACY.md` / `STORE-LISTING.md` / 生产 `wxt.config.ts` 一致。
 
 **Known closeout gaps:**
@@ -100,12 +112,10 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 - Feishu/Lark 已正式 dropped，不属于当前 shipped scope
 - Phase 11/12 Nyquist closeout 仍 partial
 
-**Phase 16 complete (2026-06-16):** 发布验收与运营基线交付——`verify:claims` 跨源一致性校验器（self-enforcing CI gate）、marketing + claims CI wiring、a11y 收口（WR-08/09/02）、`MAINTENANCE.md` 维护路径 + `CHANGELOG [v1.2]` 诚实 Known Issues。WCAG G201 可见字形 + responsive 经 Playwright `launchPersistentContext` 实测确认（375px/1280px 双断点，zh_CN/en 双 locale），Phase 15/16 verification 从 `human_needed` 推到 `passed`。
-
 ## Next Milestone Goals
 
-- v2.0 尚未立项。通过 `/gsd:new-milestone` 进入新一轮 requirements 定义。
-- 候选方向（非承诺）：Feishu/Lark 新技术路径重评、Telegram live UAT 补证据、宣传页扩展为 docs portal / changelog / localized site、扩展侧历史记录 / 配置导入导出 / 模板编辑器。
+- v2.0 执行 Prompt 模板变量引用，优先保障主链路：预览所见、dispatch 所发、平台截断/escape 行为一致且可测。
+- 默认从 Phase 17 开始执行：模板渲染核心 → dispatch/模型 A → popup 平台级预览 → E2E/回归。
 - Telegram live UAT 与 Phase 11-12 Nyquist partial 继续作为已知风险记录，除非被显式立项为某 milestone 的交付范围。
 
 ## 关键决策 (Key Decisions)
@@ -114,7 +124,7 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 | ---- | ---- | ---- |
 | Chrome MV3 only（v1） | 用户首发只覆盖 Chrome；MV3 是 2025 年 Chromium 主推标准，Firefox/Safari 推后避免分散精力 | ✓ 验证：v1 全程 Chrome MV3，无兼容性阻塞 |
 | MVP 仅集成 OpenClaw + Discord | 这两个平台的 URL pattern 已确定，可优先打通主链路；其余平台沉淀适配模式后批量补齐 | ✓ 验证：两个适配器均完整交付，`IMAdapter` 接口已被证明可复用 |
-| 通过新开 tab + content script 注入消息（非 Bot API） | 不需要管理服务端 token / OAuth，符合"本地优先"约束，但需要为每个平台维护 DOM 适配器 | ✓ 验证：ClipboardEvent 粘贴注入 + property-descriptor setter 在 OpenClaw/Discord 均稳定工作 |
+| 通过新开 tab + content script 注入消息（非 Bot API） | 不需要管理服务端 token / OAuth，符合“本地优先”约束，但需要为每个平台维护 DOM 适配器 | ✓ 验证：ClipboardEvent 粘贴注入 + property-descriptor setter 在 OpenClaw/Discord 均稳定工作 |
 | 所有配置 `chrome.storage.local` | 隐私优先 + 单设备使用；云同步推到 v2 | ✓ 验证：全部 storage 写入走 typed repo，无直接 chrome.storage 调用 |
 | Quality 模型档（GSD agents） | 项目核心抽象（适配器架构、i18n 边界）需要更深入的研究与规划 | ✓ 验证：7 phase / 46 plan / 47 req 全部完成 |
 | send_to / prompt 绑定 + 历史 | 让重复任务一次配置反复使用，是 Core Value 的关键 UX | ✓ 验证：MRU 历史 + 绑定在 Phase 3 UAT 通过 |
@@ -126,10 +136,13 @@ web2chat 最初为 llm-wiki 模式（Karpathy 提出：LLM 从摄取的网页来
 | 宣传页走共享 design tokens 而非共享组件 | extension popup 与 marketing 需视觉一致但运行时隔离；仅共享 CSS，禁止 import 扩展 runtime | ✓ 验证：BUILD-03 隔离测试持续通过 |
 | `verify:claims` 作为 self-enforcing CI gate | 人工 claim checklist 易腐化；把一致性变成编译期拦截 | ✓ 验证：5 条规则在 CI 每个 PR 自动跑，Phase 16 TRUST-03 / OPS-02 闭合 |
 | WCAG G201（visible glyph + sr-only）而非 aria-label | 保留可访问名来自字符串子节点，sr-only 走 i18n 路由 | ✓ 验证：Playwright 实测双 locale glyph 可见 + sr-only 视觉隐藏 |
+| v2.0 模板变量只支持固定 ArticleSnapshot 字段 | 满足用户用 `{{title}}` 等引用网页内容的核心需求；避免引入模板引擎、变量作用域、schema migration | — Pending |
+| v2.0 采用模型 A 防重复 | prompt 含已识别变量时跳过自动追加 snapshot，避免 `{{content}}` 导致正文重复与平台硬限截断；无变量时保持旧行为兼容 | — Pending |
+| `{{create_at}}` 使用原始 ISO 字符串 | 最小复杂度、确定性最强，不引入 locale 分叉；本地化时间变体推后 | — Pending |
 
 ## 演进 (Evolution)
 
 本文档在 phase 切换与 milestone 边界处更新。
 
 ---
-*Last updated: 2026-06-17 after v1.2 milestone (添加 web 宣传页面 shipped)*
+*Last updated: 2026-06-19 after v2.0 milestone planning (Prompt 模板变量引用)*

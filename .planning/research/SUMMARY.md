@@ -1,123 +1,130 @@
-# v1.2 Research Summary — Web 宣传页
+# Project Research Summary
+
+**Project:** web2chat v2.0 — Prompt Template Variable References
+**Domain:** Chrome MV3 web-clipper 扩展增量特性（现有 capture → preview → dispatch 链路）
+**Researched:** 2026-06-19
+**Confidence:** HIGH（核心结论基于 v1.0–v1.2 全量代码审查；scope 严格限定为 5 个固定 ArticleSnapshot 字段）
 
 ## Executive Summary
 
-v1.2 不是扩展主链路能力扩张，而是为已交付的 Chrome MV3 扩展补一个仓库内、静态、公开可访问的 web 宣传页。产品本体已经完成 OpenClaw / Discord / Slack / Telegram 的能力验证；因此 v1.2 的目标不是再碰适配器、dispatch pipeline 或 Telegram live UAT，而是以最小扰动把“是什么、怎么用、支持哪些平台、为什么可信”清晰对外表达出来。
+本里程碑为 web2chat 的 prompt 文本新增“变量引用”能力：用户在 prompt 中写 `{{title}}` / `{{url}}` / `{{description}}` / `{{create_at}}` / `{{content}}`，在投递前替换为对应 ArticleSnapshot 字段值。popup 预览与投递必须使用**同一份渲染结果**；未知变量（含拼写错误如 `{{dedcription}}`）**原样保留**并以**非阻断式 warning** 提示，绝不静默吞掉或阻断投递。这是一个约 40 行纯函数 + 一处 dispatch-pipeline 接线 + schema 扩展一个 code 的最小改动面特性，**零新依赖**。
 
-研究材料存在技术路径分歧：一条路径倾向把宣传页放进现有 WXT 工程，作为 unlisted/internal page 复用现有栈；另一条路径倾向单独的 Vite marketing site。默认推荐服务于“公开 web 宣传页面、构建/部署清晰隔离、最小影响扩展主链路”，因此本总结明确推荐：**在仓库内新增独立静态 marketing app，和扩展工程并存，但构建与发布分离**。
+业界做这类“固定字段占位符替换”的标准做法就是单正则 `String.replace`，**不需要任何模板引擎**（Mustache/Handlebars 的“未定义→空串”默认行为与我们的“未知→原样保留”需求正好相反，属过度设计）。四个 researcher 在“渲染必须是纯函数、放在 `shared/`、由 popup 与 SW/adapter 共享”上完全一致——这是满足“预览≡投递”质量门与 SW 重启确定性的唯一解。
 
-风险重点不在技术难度，而在边界失守：一旦把宣传页做成“扩展工程顺手挂一个页面”，后续很容易出现资源耦合、构建脚本污染、部署语义不清、以及为宣传页需求反向影响扩展代码组织。v1.2 应把 guardrail 定死：宣传页只读项目事实、不依赖扩展运行时、不引入新后端、不借机处理 Telegram live UAT / Phase 11-12 Nyquist partial，只把这些列为已知风险或待验证项。
+最大的结构性风险是**新特性与现有 prompt-first auto-append 模型的冲突**（PITFALLS T1）：当前 4 个 `compose*` 函数会“先放 prompt，再自动追加所有非空 snapshot 字段”。若引入显式 `{{content}}` 后仍保留 auto-append，消息正文会**重复一整份**，在 Discord 2000 / Telegram 4096 字符硬限下被截断，直接破坏“主链路稳定可用”的核心价值。roadmap 必须在动第一个 formatter 前裁定为“模型 A（含已识别变量则跳过 auto-append）”并贯穿全部 formatter。
 
-## Stack Additions
+### 关键 scope 裁定（researcher 分歧已解决）
 
-### 推荐方案
+ARCHITECTURE research 的部分建议**超出了用户确认的 scope**——它引入了 user-defined variables（`{{audience}}` / `{{tone}}`）、per-binding 变量存储、schema v2 migration、`composeForAdapter` 预览调度器、`promptVariables` 跨边界字段。**这些全部排除在本里程碑之外**（见 FEATURES AF-5/AF-6/AF-7、DIF-5）。本 synthesis 按 STACK/FEATURES/PITFALLS 的严格 scope 裁定：
 
-- **独立 Vite 静态站点（仓库内子应用）**：公开宣传页、静态部署、和扩展主工程构建清晰隔离。
-- **沿用 TypeScript + Preact + Tailwind v4**：复用仓库已有技术栈，不引入重型框架。
-- **静态产物部署**：部署到任意静态托管即可，无服务端依赖。
+- **只支持 5 个固定 ArticleSnapshot 字段**，无 user-defined 变量、无 shadowing 决策、无变量 scope 问题。
+- **`DispatchStartInputSchema` 形状不变**——渲染仅作用于 prompt 字符串，使用已随 payload 携带的 snapshot；无需新增 `promptVariables` 字段。
+- **无 storage schema migration**——binding/history 仍存原始 prompt 模板文本，`CURRENT_SCHEMA_VERSION` 保持 1。
+- **预览共享同一纯函数**，但**不引入 `composeForAdapter` 调度器**做平台级预览；本里程碑预览目标是“渲染后的 prompt 文本”，平台级截断/escape 差异作为已知 limitation 在预览标注，不做完整平台级 preview parity（除非 requirements 阶段用户明确要求）。
 
-### 不推荐作为默认方案
+## Key Findings
 
-- **WXT unlisted page 作为公开宣传页**：能力上可行，但语义更偏扩展内部页面，会让构建输出、资源引用、路由语义、部署方式与扩展产物纠缠。
+### Recommended Stack
 
-### 不引入
+**零新依赖。** 详见 `.planning/research/STACK.md`。整个特性落在一个纯 TS 模块 + 现有 dispatch-pipeline 一处调用 + `DispatchWarning` schema 扩一个 code + 2 个 i18n key。
 
-- Astro / Next / 路由器 / CMS / 数据库 / 分析后端 / 表单后端。
-- 扩展 runtime、storage、permissions、adapter bundle。
+**核心改动：**
+- **`shared/prompt-template.ts`（新增）** — 单一纯函数 `renderPromptTemplate(prompt, snapshot) → { rendered, unknownVariables }`，与 `shared/dom-injector.ts`、`shared/adapters/*-format.ts` 同层（无 `chrome.*`、无 Preact、无 `t()`）。正则 `/\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/g`，单次扫描、不递归。
+- **`background/dispatch-pipeline.ts`（改 1 处）** — 在组装 `ADAPTER_DISPATCH` payload 前调用渲染，把 `rendered` 喂给既有 `compose*`；`unknownVariables` 转 warning 上报。**format 函数零改动契约由模型 A 保证。**
+- **`shared/messaging/routes/dispatch.ts`（扩展）** — `DispatchWarningCodeSchema` 从 `z.literal('SELECTOR_LOW_CONFIDENCE')` 改为 `z.enum([...])` 加 `UNKNOWN_TEMPLATE_VARIABLE`，加可选 `detail` 字段。向后兼容。
+- **i18n（2 个新 key）** — `prompt_template_hint`、`warning_unknown_template_variable`，en + zh_CN 双 locale 100% 覆盖，CI 门禁兜底。
 
-## Feature Table Stakes
+**明确不引入：** Mustache/Handlebars/micromustache、过滤器/嵌套语法、async 渲染或 storage 依赖。
 
-### v1.2 必备内容
+### Expected Features
 
-- **Hero 价值主张**：把当前网页的结构化信息 + prompt 一键发送到 IM / AI Agent 会话。
-- **安装 / 获取 CTA**：提供源码仓库、扩展安装方式或后续发布入口占位。
-- **已支持平台**：OpenClaw / Discord / Slack / Telegram。
-- **3-step 核心流程**：Capture → choose target → inject/send。
-- **隐私承诺**：本地优先、用户主动触发、不上传第三方分析服务。
-- **权限说明**：基于生产 `wxt.config.ts` 和 `PRIVACY.md`，不写 dev-only 权限。
+**Must have（TS-1..TS-9）：** 5 变量替换；未知变量原样保留不抛错；空值→空串；多次出现/任意位置；popup 实时预览且字段编辑跟随；投递≡预览（共享渲染函数，阻断 ship）；替换后内容受平台 escape 覆盖（render→then escape）；历史/binding 携带变量（存原始模板）；UI 文案走 `t()`。
 
-### 建议纳入但保持简洁
+**Should have（可 defer）：** 预览实时标注未知变量（DIF-1，成本低建议纳入）；变量插入按钮（DIF-2，可 defer）。
 
-- 为什么不是复制粘贴：结构化 payload、prompt 绑定、目标会话复用。
-- 架构可信度信号：registry-driven adapter architecture、local-first、no backend。
-- 当前限制与风险：Telegram live UAT closeout 缺口、Feishu/Lark dropped、未来平台 deferred。
+**Defer：** `create_at` 本地化变体（DIF-3）；命名模板库/编辑器（DIF-5/AF-7，独立 v2 milestone）。
 
-### 明确不做
+**Anti-features：** 静默纠错（AF-1）、阻断投递（AF-2）、`{{name}}` 以外语义（AF-3）、AI 总结变量值（AF-4）、新增 snapshot 字段（AF-5）、per-platform 命名空间（AF-6）。
 
-- 完整官网 / 文档门户 / 博客 / newsletter / telemetry / lead capture。
-- 在线 demo 后端。
-- Telegram live UAT 补做。
-- Phase 11-12 Nyquist partial 收尾实现。
+### Architecture Approach
 
-## Architecture Recommendation
+单一渲染纯函数置于 `shared/`，popup 与 SW 共享；SW 在 `dispatch.start` 组装 payload 前渲染一次。**关键纪律：存储层只存原始模板，渲染只发生在投递与预览的瞬时。**
 
-### 推荐架构
+**主要组件：** (1) `shared/prompt-template.ts`（新，基石）；(2) `background/dispatch-pipeline.ts`（改，渲染调用 + warning）；(3) `dispatch.ts` schema 扩展；(4) 4 个 `compose*`（改，模型 A 开关）；(5) popup `SendForm`/`CapturePreview`（改，实时预览 + 标注）。
 
-**仓库内独立 marketing 子应用**，与扩展工程平级共存：
+**Researcher 分歧与裁定：** ARCHITECTURE research 建议预览走 `composeForAdapter` 调度器做平台级 parity。本 milestone **不采纳**——预览目标为“渲染后 prompt 文本”，平台级差异作为已知 limitation 标注，避免 scope 膨胀。
 
-- `apps/marketing` 或等价目录承载宣传页源码。
-- 独立 Vite config / build output。
-- 只消费稳定事实源：文案、平台列表、仓库链接、截图资源。
-- 与扩展工程共享设计 token / 静态资源可以有，但共享必须是“只读、弱耦合”。
+### Critical Pitfalls
 
-### 推荐原因
+1. **T1 — auto-append 双重写入（最严重）**：裁定模型 A（含已识别变量则跳过 auto-append），判定用**白名单**（非“是否含 `{{`”，否则 typo 既不替换又关闭 append）。每 formatter 单测断言 content 恰好一次。
+2. **T2 — 预览与投递两套代码**：单一纯函数 popup 与 SW/adapter 共享，共享边界 fixture。
+3. **T8 — 模板注入**：强制单次替换不递归（防二次解析/无限循环）；严格 `interpolate → compose → escape` 顺序（防 `@everyone` 逃逸）。
+4. **T5 — `{{content}} 撑爆 prompt 上限**：渲染后、构造 `DispatchStartInput` 前做长度校验，返回专门 error code（如 `PROMPT_TOO_LONG`）；预览截断但告知“投递含全文”。
+5. **T11 — SW 重启确定性**：渲染纯函数仅依赖 (prompt, snapshot)，绝不用 `new Date()`；locale 若参与作为显式参数传入。
 
-1. **公开页面语义正确**：宣传页本质是网站，不是扩展内部页。
-2. **构建隔离**：不会污染 WXT 输出、manifest、extension bundles。
-3. **部署清晰**：静态站点直接部署；扩展继续走自己的打包 / 发布链路。
-4. **回归面最小**：宣传页迭代不触发扩展主链路风险。
-5. **后续演进自然**：以后加 docs、changelog 仍在 web 层解决，不侵入扩展。
+## Implications for Roadmap
 
-## Pitfalls / Guardrails
+建议 4 个 phase。依赖链：渲染纯函数（1）→ dispatch 接线 + 模型 A（2）→ popup 预览/i18n（3）→ 硬化/E2E（4）。模型 A 裁定必须在动 formatter 前定下（phase 2）。
 
-1. **Claims 必须对齐 shipped scope**：只写 OpenClaw / Discord / Slack / Telegram；不要把 deferred/dropped 平台混进主卖点。
-2. **隐私文案必须锚定 `PRIVACY.md`**：用户点击时才处理当前 tab；默认仅本地存储；确认投递时通过浏览器传到目标聊天页；无遥测、无第三方分析、无远程服务器。
-3. **权限说明必须基于生产 `wxt.config.ts`**：不要写 dev-only `<all_urls>`、`tabs` 等内容。
-4. **宣传页禁止依赖扩展 runtime**：不 import service worker、storage、adapter、messaging。
-5. **不为 marketing 引入服务端复杂度**：不加 SSR、数据库、analytics backend、表单后端。
-6. **把遗留验证缺口标为风险，不标为功能**：Telegram live UAT、Nyquist partial 仅出现在限制或风险说明。
-7. **验收包含双语一致性、a11y、首屏性能、截图过期治理**：不要上线后补。
+### Phase 1: 模板渲染核心（纯函数 + 边界矩阵）
 
-## Recommended Requirement Categories
+**Rationale:** 基石，popup/dispatch 都依赖它；先落地并穷举单测避免 T2/T3/T8/T11。
+**Delivers:** `shared/prompt-template.ts` + `tests/unit/prompt-template.spec.ts`（PITFALLS T3 边界矩阵全表 + 注入 + 确定性）。
+**Addresses:** TS-1..TS-4；两个 DECISION NEEDED（空白容忍 on、大小写敏感）。
+**Avoids:** T2, T3, T8(a), T11。
 
-1. **Positioning & Messaging**：Hero、核心价值、一句话定位、适用人群。
-2. **Product Proof**：已支持平台、核心流程、关键截图、可信度说明。
-3. **Trust & Constraints**：本地优先、隐私边界、权限说明、当前限制、已知风险。
-4. **Acquisition CTA**：仓库入口、安装说明、下载 / 试用占位。
-5. **Content Operations**：文案来源、截图资源、版本状态更新方式。
-6. **Build & Deploy Isolation**：marketing app 独立构建、独立输出、独立部署。
+### Phase 2: dispatch 接线 + 模型 A + warning 通道
 
-## Open Decisions
+**Rationale:** SW 渲染契约与模型 A 必须先定，formatter 与预览才有正确依赖。
+**Delivers:** dispatch-pipeline 渲染调用 + `UNKNOWN_TEMPLATE_VARIABLE` warning（非阻断）+ 4 个 `compose*` 模型 A 开关（白名单判定）+ 渲染后长度校验（T5）。
+**Addresses:** TS-6, TS-7, TS-8；T1 模型 A 落地。
+**Avoids:** T1, T8(b), T5。
 
-- 宣传页目录落点：`apps/marketing` 还是 `site/`。
-- UI 采用 Preact/Tailwind，还是更小的纯静态 HTML/CSS。
-- 部署目标：GitHub Pages、Cloudflare Pages、Vercel、Netlify 或其他静态托管。
-- 对外 CTA 形式：源码优先、Chrome 安装包、还是等待商店上架。
-- 是否展示平台路线图；若展示，必须明确 shipped vs deferred vs risky。
-- 截图 / 录屏素材来源与更新策略。
+### Phase 3: popup 预览 + 未知变量标注 + i18n
 
-## Confidence / Research Notes
+**Rationale:** 数据流证明后做纯展示层。
+**Delivers:** `SendForm`/`CapturePreview` 实时预览 + 未知变量非阻断标注（DIF-1）+ 渲染 debounce（M1）+ 2 个 i18n key 双 locale + 顺手修 `discord-format`/`openclaw-format` 硬编码 `'采集时间:'`（T10）。
+**Addresses:** TS-5, TS-9, DIF-1；create_at 格式一致性（T7）。
+**Avoids:** T6, T10, M1, M3。
+
+### Phase 4: 硬化 + E2E + 回归
+
+**Rationale:** 质量门需端到端验证；现有 dispatch.spec.ts 不含模板场景。
+**Delivers:** 4 平台含 `{{content}}` E2E（mock platform 可做 payload 断言无需 headed）+ 跨层“预览字符数=投递字符数”断言 + SW 重启确定性 E2E + CI 绿。
+**Addresses:** TS-6 验收；T11, M4。
+**Avoids:** T11, M4, L1。
+
+### Research Flags
+
+**需 plan-phase 带 research：**
+- Phase 2（模型 A 开关判定逻辑 + 兼容存量无变量 binding 回退）— `--research-phase 2`
+- Phase 3（若 requirements 裁定 `create_at`→本地化时间，需抽共享 `formatCreatedAt` 并验证 content script `navigator.language`）— `--research-phase 3`
+
+**标准模式可跳过：** Phase 1（成熟正则替换）、Phase 4（沿用 v1.1 mock-platform fixture）。
+
+## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| 独立静态站点优于 WXT unlisted page | HIGH | 与公开访问、构建隔离、最小影响扩展主链路一致 |
-| stack 选择延续 Vite/TS/Preact/Tailwind | MEDIUM-HIGH | 现有依赖接近满足；建议显式补 `vite`，避免依赖 WXT 传递依赖 |
-| feature table stakes | HIGH | 来自竞品模式、项目目标和已交付事实 |
-| claims / privacy / permission guardrails | HIGH | 来自 `PROJECT.md`、`PRIVACY.md`、`wxt.config.ts` 事实源 |
-| 具体部署/目录实现细节 | MEDIUM | 需要在 requirements/phase planning 阶段定稿 |
+| Stack | HIGH | 零新依赖；正则替换标准做法；字段全为 string 已核验 |
+| Features | HIGH | 全部源码核验；两 DECISION NEEDED 已有推荐 |
+| Architecture | HIGH（scope 内） | STACK/FEATURES/PITFALLS 一致；ARCHITECTURE 超范围部分已裁定排除 |
+| Pitfalls | HIGH | 全量代码审查；T1 为结构性事实 |
 
-## Source Basis
+**Overall:** HIGH
 
-- `.planning/PROJECT.md`
-- `.planning/research/STACK.md`
-- `.planning/research/FEATURES.md`
-- `.planning/research/ARCHITECTURE.md`
-- `.planning/research/PITFALLS.md`
-- `PRIVACY.md`
-- `STORE-LISTING.md`
-- `wxt.config.ts`
-- `package.json`
+### Gaps to Address（requirements 阶段，保持最小）
 
-## Synthesis Notes
+- **`{{create_at}}` 真值（T7）**：raw ISO（最简单、确定性最强）vs 本地化绝对时间（UX 更好但需共享 formatter + locale 参数）。用户 context 默认 raw ISO；选本地化则进 phase 3 research。**唯一真正影响实现复杂度的决策。**
+- **`{{content}}` 撑爆上限策略（T5）**：提升 `prompt` max 到 ~210_000 并实测 `tabs.sendMessage`，还是限制 `{{content}}`？建议提升 + 专门 error code + 预览截断提示。
+- **平台级 preview parity 是否在本 milestone**：默认不做（标注 limitation），用户要求则新增工作。
 
-本次研究源文件中存在 WXT unlisted page 与独立 Vite marketing site 的方案分歧。结论上，**应优先保护扩展主链路与构建边界**，所以选择独立静态 marketing app，而不是把宣传页并入 WXT unlisted page。
+## Sources
+
+Primary（HIGH，源码）：`shared/messaging/routes/{capture,dispatch}.ts`、`background/dispatch-pipeline.ts:285-300`、`shared/adapters/{openclaw,discord,slack,telegram}-format.ts`、`shared/storage/repos/{binding,history}.ts`、`shared/storage/migrate.ts`、`entrypoints/popup/components/{SendForm,CapturePreview}.tsx`、`tests/lint/no-hardcoded-strings.test.ts`、`scripts/i18n-coverage.ts`。
+
+Secondary：`CLAUDE.md`、`.planning/PROJECT.md`、`.planning/research/STACK.md`、`.planning/research/FEATURES.md`、`.planning/research/ARCHITECTURE-PROMPT-VARIABLES.md`、`.planning/research/PITFALLS-PROMPT-VARIABLES.md`。
+
+---
+
+_Research summary written: 2026-06-19_
